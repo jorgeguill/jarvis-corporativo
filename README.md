@@ -13,6 +13,7 @@ financeiro, administrativo e estratégico de **Jorge Ferreira** —
 |---|---|
 | [`PROMPT-MESTRE-JARVIS.md`](./PROMPT-MESTRE-JARVIS.md) | **Prompt mestre** — identidade, princípios, os 14 módulos funcionais, integrações, memória corporativa, rotinas, alertas, padrões (análise/relatório/planilha/documento), governança e ordem de implantação. Fonte única da configuração. |
 | [`CLAUDE.md`](./CLAUDE.md) | Instrução de persona — faz o Claude assumir o JARVIS ao operar neste repositório. |
+| [`agentes/`](./agentes/) | **Agentes especializados** — um documento por área (Financeiro, Cobrança, Diretoria, Produção…) + o Coordenador, prontos para virar Projetos do Claude. |
 | [`painel/`](./painel/) | App **PWA** inicial: Painel Inicial de Configuração, 14 módulos, pendências e alertas. Instalável no celular, offline. |
 
 ## Como usar

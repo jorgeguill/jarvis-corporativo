@@ -33,6 +33,7 @@ Resumo do que isso significa na prática:
 | `painel/index.html` | Painel PWA inicial do JARVIS (interface de configuração/consulta). |
 | `painel/manifest.json`, `painel/sw.js` | Suporte PWA (instalação no celular, cache offline). |
 | `painel/README.md` | Como publicar e usar o painel. |
+| `agentes/` | Agentes especializados (Coordenador + 14 áreas), cada um pronto para virar um Projeto do Claude. |
 
 ## Roadmap de implantação (do prompt mestre)
 
