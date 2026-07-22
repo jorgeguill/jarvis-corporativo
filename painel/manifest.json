@@ -1,17 +1,17 @@
 {
-  "name": "JARVIS Corporativo — Jorge Ferreira",
-  "short_name": "JARVIS",
-  "description": "Assistente executivo, financeiro e estratégico — SKAL, Grupo Kalfix e Radar Assessoria Empresarial.",
+  "name": "JARVIS RADAR — Jorge Ferreira",
+  "short_name": "JARVIS RADAR",
+  "description": "Painel executivo do JARVIS RADAR — Sistema de Inteligência Empresarial (SKAL · Grupo Kalfix · Radar).",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#0b1220",
-  "theme_color": "#0b1f3a",
+  "orientation": "landscape",
+  "background_color": "#04120b",
+  "theme_color": "#04120b",
   "lang": "pt-BR",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512'%3E%3Crect width='512' height='512' rx='96' fill='%2312356e'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial,sans-serif' font-size='210' font-weight='800' fill='white' text-anchor='middle' dominant-baseline='central'%3EJV%3C/text%3E%3C/svg%3E",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512'%3E%3Crect width='512' height='512' rx='96' fill='%2304120b'/%3E%3Ccircle cx='256' cy='256' r='150' fill='none' stroke='%232dff8c' stroke-width='10'/%3E%3Ccircle cx='256' cy='256' r='96' fill='none' stroke='%232dff8c' stroke-width='6' opacity='0.6'/%3E%3Ctext x='50%25' y='53%25' font-family='Arial,sans-serif' font-size='120' font-weight='800' fill='%232dff8c' text-anchor='middle' dominant-baseline='central'%3EJR%3C/text%3E%3C/svg%3E",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"

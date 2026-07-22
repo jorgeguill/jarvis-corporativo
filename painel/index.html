@@ -1,248 +1,349 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0b1f3a">
-<title>JARVIS Corporativo — Jorge Ferreira</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#04120b">
+<title>JARVIS RADAR — Jorge Ferreira</title>
 <link rel="manifest" href="manifest.json">
 <style>
   :root{
-    --bg:#0b1220; --panel:#111c30; --panel2:#16233c; --line:#22304d;
-    --txt:#e8eef7; --muted:#93a3bd; --brand:#2f6df6; --brand2:#1a4fd0;
-    --ok:#1f9d63; --warn:#d98a1a; --crit:#d84343; --chip:#1b2942;
+    --bg:#04120b; --panel:rgba(7,22,15,.55); --pb:rgba(45,255,140,.28);
+    --green:#2dff8c; --neon:#8dffbe; --gr2:#12c86a; --deep:#0a3322;
+    --txt:#e6fff0; --muted:#84c9a3; --dim:#4f7a62; --yellow:#ffd23a; --red:#ff6a5a;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace; --sans:"Segoe UI",system-ui,Roboto,sans-serif;
   }
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-    background:var(--bg);color:var(--txt);line-height:1.45}
-  header{position:sticky;top:0;z-index:10;background:linear-gradient(135deg,#0b1f3a,#12356e);
-    padding:16px 16px calc(14px + env(safe-area-inset-top,0)) 16px;
-    padding-top:calc(16px + env(safe-area-inset-top,0));border-bottom:1px solid var(--line)}
-  .brand{display:flex;align-items:center;gap:12px}
-  .logo{width:42px;height:42px;border-radius:10px;background:#fff;color:#12356e;
-    display:grid;place-items:center;font-weight:800;font-size:19px;letter-spacing:.5px}
-  .brand h1{font-size:18px;margin:0;font-weight:700}
-  .brand p{margin:2px 0 0;font-size:12px;color:#bcd0f0}
-  .greet{margin:14px 16px 0;background:var(--panel);border:1px solid var(--line);
-    border-radius:12px;padding:14px 16px;font-size:13.5px;color:var(--muted)}
-  .greet b{color:var(--txt)}
-  nav{display:flex;gap:8px;overflow-x:auto;padding:14px 16px 4px;scrollbar-width:none}
-  nav::-webkit-scrollbar{display:none}
-  nav button{white-space:nowrap;border:1px solid var(--line);background:var(--chip);color:var(--muted);
-    padding:8px 14px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer}
-  nav button.active{background:var(--brand);border-color:var(--brand);color:#fff}
-  main{padding:8px 16px 90px}
-  section{display:none;animation:f .2s ease}
-  section.active{display:block}
-  @keyframes f{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-  h2{font-size:15px;margin:18px 2px 10px;color:#cdd9ee;letter-spacing:.3px}
-  .grid{display:grid;grid-template-columns:1fr;gap:10px}
-  @media(min-width:640px){.grid{grid-template-columns:1fr 1fr}}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
-  .card .lbl{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);
-    text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
-  .num{width:22px;height:22px;border-radius:6px;background:var(--brand);color:#fff;
-    display:grid;place-items:center;font-size:12px;font-weight:700;flex:none}
-  .card textarea,.card input{width:100%;background:var(--panel2);border:1px solid var(--line);
-    color:var(--txt);border-radius:8px;padding:9px 10px;font-size:14px;font-family:inherit;resize:vertical}
-  .card textarea{min-height:52px}
-  .modrow{display:flex;align-items:center;gap:10px;padding:11px 12px;background:var(--panel);
-    border:1px solid var(--line);border-radius:10px;margin-bottom:8px}
-  .modrow .n{width:26px;height:26px;border-radius:7px;background:var(--panel2);border:1px solid var(--line);
-    display:grid;place-items:center;font-size:12px;font-weight:700;color:#9fc0ff;flex:none}
-  .modrow b{font-size:14px}
-  .modrow span{display:block;font-size:12px;color:var(--muted)}
-  .btn{background:var(--brand);color:#fff;border:none;border-radius:9px;padding:11px 16px;
-    font-size:14px;font-weight:700;cursor:pointer;width:100%}
-  .btn.sec{background:var(--panel2);border:1px solid var(--line);color:var(--txt)}
-  .btn:active{transform:scale(.99)}
-  .row{display:flex;gap:8px;margin-top:10px}
-  .pill{font-size:11px;padding:3px 9px;border-radius:999px;font-weight:700}
-  .p-alta{background:rgba(216,67,67,.15);color:#ff9d9d;border:1px solid #5a2a2a}
-  .p-media{background:rgba(217,138,26,.15);color:#ffcf8a;border:1px solid #5a4620}
-  .p-baixa{background:rgba(31,157,99,.15);color:#8fe6bd;border:1px solid #1f4d38}
-  .pend{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:8px}
-  .pend .top{display:flex;justify-content:space-between;align-items:start;gap:10px}
-  .pend h4{margin:0 0 3px;font-size:14px}
-  .pend .meta{font-size:12px;color:var(--muted)}
-  .pend .del{background:none;border:none;color:#7d8db0;font-size:18px;cursor:pointer;padding:0 4px}
-  .empty{color:var(--muted);font-size:13px;text-align:center;padding:24px;border:1px dashed var(--line);border-radius:12px}
-  .alert{display:flex;gap:10px;align-items:start;background:var(--panel);border:1px solid var(--line);
-    border-left-width:4px;border-radius:10px;padding:11px 12px;margin-bottom:8px;font-size:13px}
-  .alert.warn{border-left-color:var(--warn)} .alert.crit{border-left-color:var(--crit)}
-  .alert.info{border-left-color:var(--brand)}
-  .alert b{display:block;margin-bottom:2px}
-  .fields{display:grid;gap:8px;margin-bottom:10px}
-  .fields label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
-  select{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);
-    border-radius:8px;padding:9px 10px;font-size:14px}
-  .saved{font-size:12px;color:#8fe6bd;text-align:center;margin-top:8px;min-height:16px}
-  footer{position:fixed;bottom:0;left:0;right:0;background:rgba(11,18,32,.92);
-    border-top:1px solid var(--line);padding:8px 16px calc(8px + env(safe-area-inset-bottom,0));
-    font-size:11px;color:var(--muted);text-align:center;backdrop-filter:blur(6px)}
+  *{box-sizing:border-box} body{margin:0}
+  .app{min-height:100vh;color:var(--txt);font-family:var(--sans);position:relative;overflow:hidden;
+    background:radial-gradient(700px 600px at 50% 42%,rgba(45,255,140,.10),transparent 62%),
+      radial-gradient(1200px 700px at 50% 118%,rgba(45,255,140,.06),transparent 60%),
+      radial-gradient(600px 400px at 12% 88%,rgba(45,255,140,.05),transparent),
+      linear-gradient(180deg,#050f0a,#020705);}
+  .app::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;
+    background-image:linear-gradient(rgba(45,255,140,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(45,255,140,.04) 1px,transparent 1px);
+    background-size:42px 42px;mask:radial-gradient(130% 100% at 50% 45%,#000 60%,transparent)}
+  .frame{position:relative;min-height:100vh;display:flex;flex-direction:column;padding:12px 18px 8px}
+
+  .top{display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:12px;padding-bottom:8px}
+  .top .l{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--green)}
+  .top .l b{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;box-shadow:0 0 8px var(--green);margin-right:6px}
+  .top .l span{color:var(--dim)} .top .l .s2{margin-left:14px;color:var(--muted)}
+  .top .c h1{margin:0;font-size:26px;letter-spacing:8px;font-weight:700;color:#cfe9db;text-align:center;text-shadow:0 0 18px rgba(45,255,140,.25)}
+  .top .c p{margin:2px 0 0;font-size:9px;letter-spacing:5px;color:var(--muted);font-family:var(--mono);text-align:center;text-transform:uppercase}
+  .top .r{display:flex;align-items:flex-start;justify-content:flex-end;gap:12px}
+  .top .r .u{text-align:right;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;margin-top:6px}
+  .top .r .u b{color:var(--txt)} .top .r .u span{color:var(--muted)}
+  .bust{width:96px;height:96px;flex:none;filter:drop-shadow(0 0 8px rgba(45,255,140,.4))}
+
+  .body{flex:1;display:grid;grid-template-columns:256px 1fr 256px;gap:14px;padding:6px 0;align-items:start}
+  @media(max-width:1040px){.body{grid-template-columns:1fr}}
+  .col{display:flex;flex-direction:column;gap:12px}
+  .panel{position:relative;background:var(--panel);border:1px solid var(--pb);border-radius:12px;padding:12px 13px;box-shadow:inset 0 0 24px rgba(45,255,140,.04)}
+  .panel h2{margin:0 0 2px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt);font-weight:600}
+  .panel .sublab{font-size:8.5px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:9px;font-family:var(--mono)}
+  .row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:3px 0;color:var(--muted)}
+  .row b{color:var(--txt);font-variant-numeric:tabular-nums}
+  .row .g{color:var(--green)} .row .y{color:var(--yellow)}
+  .rowk{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);padding:2px 0}
+  .rowk b{color:var(--green);font-family:var(--mono)}
+  .line{width:100%;height:52px;display:block;margin-bottom:4px}
+  .bars{display:flex;align-items:flex-end;gap:2px;height:52px;margin-bottom:4px}
+  .bars i{flex:1;background:linear-gradient(var(--green),rgba(45,255,140,.1));border-radius:1px}
+  .split{display:flex;gap:12px;align-items:center}
+  .donut{width:82px;height:82px;position:relative;flex:none;display:grid;place-items:center}
+  .donut::before{content:"";position:absolute;inset:0;border-radius:50%;
+    background:conic-gradient(var(--green) 0 81.3%,var(--yellow) 81.3% 96.5%,var(--red) 96.5% 100%);
+    -webkit-mask:radial-gradient(farthest-side,transparent 66%,#000 67%);mask:radial-gradient(farthest-side,transparent 66%,#000 67%)}
+  .donut.eff::before{background:conic-gradient(var(--green) 0 92.6%,rgba(45,255,140,.12) 0)}
+  .donut .c{text-align:center;z-index:2} .donut .c b{font-family:var(--mono);font-size:16px;color:var(--txt)} .donut .c small{display:block;font-size:7px;letter-spacing:1px;color:var(--red)}
+  .donut.eff .c small{color:var(--green)}
+  .dimx{font-size:8.5px;letter-spacing:1px;color:var(--dim);text-transform:uppercase}
+  .big{font-family:var(--mono);font-size:20px;color:var(--green);letter-spacing:.5px}
+  .flink{display:block;margin-top:8px;font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--green);text-transform:uppercase;cursor:pointer;opacity:.85}
+  .flink:hover{opacity:1;text-shadow:0 0 8px rgba(45,255,140,.5)}
+
+  /* CENTER HUB */
+  .center{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
+  .hub{position:relative;width:600px;height:600px;flex:none}
+  @media(max-width:1040px){.hub{transform:scale(.82);margin:-54px 0}}
+  @media(max-width:640px){.hub{transform:scale(.56);margin:-130px 0}}
+  .hub .deco{position:absolute;inset:0;border-radius:50%;pointer-events:none}
+  .deco.d1{border:1px dashed rgba(45,255,140,.16)}
+  .deco.d2{inset:14px;background:repeating-conic-gradient(from 0deg,rgba(45,255,140,.35) 0 .5deg,transparent .5deg 5deg);
+    -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px));mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px));opacity:.5}
+  /* segmented donut of modules */
+  .band{position:absolute;inset:60px;border-radius:50%;
+    -webkit-mask:radial-gradient(farthest-side,transparent 47%,#000 48% 99%);mask:radial-gradient(farthest-side,transparent 47%,#000 48% 99%)}
+  .band .seg{position:absolute;inset:0;border-radius:50%;
+    background:repeating-conic-gradient(from -18deg,rgba(45,255,140,.06) 0 32deg,transparent 32deg 36deg)}
+  .band .spokes{position:absolute;inset:0;border-radius:50%;
+    background:repeating-conic-gradient(from -18deg,rgba(45,255,140,.3) 0 .5deg,transparent .5deg 36deg)}
+  .band .ro{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(45,255,140,.35)}
+  .band .ri{position:absolute;inset:26%;border-radius:50%;border:1px solid rgba(45,255,140,.28)}
+  .node{position:absolute;width:118px;transform:translate(-50%,-50%);text-align:center;cursor:pointer;z-index:5}
+  .node .ic{width:38px;height:38px;margin:0 auto 4px;border-radius:50%;border:1px solid rgba(45,255,140,.4);display:grid;place-items:center;color:var(--green);
+    background:radial-gradient(circle,rgba(10,40,26,.9),rgba(4,14,9,.85));box-shadow:0 0 12px rgba(45,255,140,.18);transition:.15s}
+  .node .ic svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.6}
+  .node b{display:block;font-size:11px;letter-spacing:.5px;color:var(--txt);font-weight:600}
+  .node small{display:block;font-size:8px;color:var(--muted);line-height:1.25;margin-top:1px}
+  .node:hover .ic{box-shadow:0 0 20px rgba(45,255,140,.6);border-color:var(--neon);background:radial-gradient(circle,rgba(45,255,140,.2),rgba(4,14,9,.85))}
+  .node:hover b{color:var(--neon)}
+  .core{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:200px;height:200px;border-radius:50%;display:grid;place-items:center;text-align:center;z-index:6;
+    background:radial-gradient(circle at 50% 45%,rgba(45,255,140,.16),#041a10 70%);box-shadow:0 0 50px rgba(45,255,140,.35),inset 0 0 34px rgba(45,255,140,.2)}
+  .core .cr{position:absolute;border-radius:50%;border:1px solid rgba(45,255,140,.3)}
+  .core .cr.c1{inset:-14px}.core .cr.c2{inset:-2px;border-color:rgba(45,255,140,.5)}
+  .core .cr.c3{inset:10px;border-style:dashed;border-color:rgba(141,255,190,.4)}
+  .core .arc{position:absolute;inset:-14px;border-radius:50%;background:conic-gradient(var(--neon),transparent 120deg);
+    -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px));filter:drop-shadow(0 0 6px var(--green))}
+  .core .txt{position:relative;z-index:2}
+  .core .txt b{font-size:30px;font-weight:800;letter-spacing:4px;color:#dff7ea;line-height:1;text-shadow:0 0 18px rgba(45,255,140,.6)}
+  .core .txt span{display:block;font-size:17px;font-weight:700;letter-spacing:9px;color:var(--green);margin-top:2px;text-shadow:0 0 12px rgba(45,255,140,.5)}
+  .core .txt small{display:block;font-size:7px;letter-spacing:3px;color:var(--muted);margin-top:6px;font-family:var(--mono)}
+  .voicebar{margin-top:2px;text-align:center;z-index:5}
+  .voicebar .t{font-family:var(--mono);font-size:12px;letter-spacing:3px;color:var(--green);text-shadow:0 0 8px rgba(45,255,140,.4)}
+  .voicebar .t span{color:var(--muted);font-size:9px}
+  .wave{display:flex;align-items:center;justify-content:center;gap:2px;height:24px;margin-top:5px}
+  .wave i{width:2px;background:var(--green);border-radius:2px;box-shadow:0 0 5px rgba(45,255,140,.6)}
+
+  /* right lists */
+  .al{display:flex;align-items:center;gap:9px;font-size:11px;padding:4px 0;color:var(--txt)}
+  .al . i2{width:15px;height:15px;flex:none;color:var(--red)} .al.a .i2{color:var(--yellow)} .al.n .i2{color:var(--green)}
+  .al .i2 svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.6}
+  .al em{color:var(--red);font-style:normal;font-weight:700;font-family:var(--mono);margin-right:1px} .al.a em{color:var(--yellow)}
+  .act{display:flex;gap:12px;font-size:11px;padding:3px 0;color:var(--muted)} .act b{color:var(--green);font-family:var(--mono)} .act span{color:var(--txt)}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 7px var(--green);display:inline-block}
+
+  /* bottom console */
+  .console{position:relative;margin-top:auto;padding-top:6px}
+  .console .base{position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);width:1100px;max-width:96vw;height:150px;pointer-events:none;
+    background:radial-gradient(120% 150% at 50% 0%,rgba(45,255,140,.14),transparent 60%);
+    border-top:1px solid rgba(45,255,140,.4);border-radius:50%/100% 100% 0 0;box-shadow:0 -8px 40px rgba(45,255,140,.15)}
+  .console .base::before{content:"";position:absolute;inset:0;border-radius:50%/100% 100% 0 0;
+    background:repeating-radial-gradient(50% 100% at 50% 0,transparent 0 22px,rgba(45,255,140,.12) 22px 23px)}
+  .cmdbar{position:relative;display:grid;grid-template-columns:1.15fr 1fr;gap:16px;z-index:2;padding:8px 0 4px;max-width:960px;margin:0 auto}
+  @media(max-width:1040px){.cmdbar{grid-template-columns:1fr}}
+  .cmdpanel{background:rgba(6,20,13,.6);border:1px solid var(--pb);border-radius:12px;padding:11px 14px}
+  .cmdpanel h3{margin:0 0 9px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt);font-weight:600}
+  .quick{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .qbtn{display:flex;flex-direction:column;align-items:center;gap:6px;width:88px;cursor:pointer}
+  .qbtn .qi{width:44px;height:44px;border-radius:50%;border:1px solid var(--pb);display:grid;place-items:center;background:radial-gradient(circle,rgba(10,40,26,.7),transparent);transition:.15s}
+  .qbtn .qi svg{width:20px;height:20px;stroke:var(--green);fill:none;stroke-width:1.6}
+  .qbtn:hover .qi{border-color:var(--neon);box-shadow:0 0 16px rgba(45,255,140,.4)}
+  .qbtn span{font-size:8px;letter-spacing:.5px;color:var(--muted);text-align:center;text-transform:uppercase;font-family:var(--mono);line-height:1.2}
+  .ask{position:relative}
+  .q{display:block;width:100%;text-align:left;font-size:11px;color:var(--txt);background:rgba(8,24,16,.6);border:1px solid var(--pb);border-radius:18px;padding:7px 40px 7px 14px;margin-bottom:6px;cursor:pointer;transition:.15s;font-family:inherit}
+  .q:hover{border-color:var(--neon);background:rgba(45,255,140,.08)}
+  .mic{position:absolute;right:2px;bottom:2px;width:42px;height:42px;border-radius:50%;border:1px solid var(--green);background:radial-gradient(circle,rgba(45,255,140,.22),rgba(4,14,9,.9));display:grid;place-items:center;cursor:pointer;box-shadow:0 0 18px rgba(45,255,140,.4)}
+  .mic svg{width:19px;height:19px;stroke:var(--green);fill:none;stroke-width:1.7}
+  .answer{margin-top:7px;font-size:11px;color:var(--neon);border-left:2px solid var(--green);padding:2px 0 2px 10px;display:none}
+  .answer.show{display:block}
+
+  /* globe + radar orb */
+  .globe{position:absolute;left:14px;bottom:10px;width:120px;height:120px;opacity:.85;filter:drop-shadow(0 0 10px rgba(45,255,140,.4));z-index:1}
+  .rorb{position:absolute;right:270px;bottom:120px;width:74px;height:74px;z-index:1}
+  @media(max-width:1040px){.globe,.rorb{display:none}}
+  .rorb .rr{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(45,255,140,.4);
+    background:radial-gradient(circle,rgba(45,255,140,.18),transparent 70%)}
+  .rorb .sw{position:absolute;inset:0;border-radius:50%;background:conic-gradient(rgba(45,255,140,.5),transparent 90deg)}
+  .rorb .rr2{position:absolute;inset:-8px;border-radius:50%;border:1px dashed rgba(45,255,140,.3)}
+
+  .note{margin:6px auto 0;max-width:900px;text-align:center;font-size:9px;letter-spacing:.4px;color:var(--dim);font-family:var(--mono)}
+  .note b{color:var(--yellow)}
+
+  .backdrop{position:fixed;inset:0;background:rgba(1,6,4,.74);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:50}
+  .backdrop.show{display:flex}
+  .drawer{width:min(440px,92vw);background:linear-gradient(180deg,rgba(9,26,18,.98),rgba(3,12,8,.98));border:1px solid var(--green);border-radius:12px;padding:20px;box-shadow:0 0 50px rgba(45,255,140,.35);position:relative}
+  .drawer .x{position:absolute;top:10px;right:14px;color:var(--muted);cursor:pointer;font-size:20px;background:none;border:0}
+  .drawer .dic{width:52px;height:52px;border-radius:50%;border:1px solid var(--green);color:var(--green);display:grid;place-items:center;margin-bottom:12px;box-shadow:0 0 18px rgba(45,255,140,.4)}
+  .drawer .dic svg{width:25px;height:25px;stroke:currentColor;fill:none;stroke-width:1.6}
+  .drawer h3{margin:0 0 2px;font-size:18px;letter-spacing:2px;color:var(--neon);font-family:var(--mono)}
+  .drawer .sub{font-size:11px;color:var(--muted);margin-bottom:12px;font-family:var(--mono);letter-spacing:1px}
+  .drawer p{font-size:13px;color:var(--txt);line-height:1.5;margin:0 0 14px}
+  .drawer .go{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:#04140b;background:var(--green);border:0;border-radius:6px;padding:9px 16px;cursor:pointer;text-transform:uppercase;font-weight:700}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(9,26,18,.97);border:1px solid var(--green);border-radius:8px;padding:11px 18px;font-family:var(--mono);font-size:12px;color:var(--neon);box-shadow:0 0 24px rgba(45,255,140,.4);opacity:0;transition:.25s;z-index:60;pointer-events:none}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @media(prefers-reduced-motion:no-preference){.deco.d1{animation:spin 90s linear infinite}.core .arc{animation:spin 8s linear infinite}.rorb .sw{animation:spin 3s linear infinite}}
 </style>
-</head>
-<body>
-<header>
-  <div class="brand">
-    <div class="logo">JV</div>
-    <div>
-      <h1>JARVIS Corporativo</h1>
-      <p>SKAL · Grupo Kalfix · Radar Assessoria Empresarial</p>
+
+<div class="app"><div class="frame">
+  <div class="top">
+    <div class="l"><b></b>ONLINE <span class="s2">SISTEMA 100%</span> <span class="s2">🔒 CONEXÃO SEGURA</span></div>
+    <div class="c"><h1>JARVIS RADAR</h1><p>Sistema de Inteligência Empresarial</p></div>
+    <div class="r">
+      <div class="u"><span>USUÁRIO:</span> <b>JORGE FERREIRA</b><br><span>NÍVEL:</span> <b>EXECUTIVO</b></div>
+      <svg class="bust" viewBox="0 0 96 96"><g fill="none" stroke="#2dff8c" stroke-width="1" opacity=".9">
+        <path d="M48 8c11 0 18 8 18 19 0 7-2 13-5 17M48 8c-11 0-18 8-18 19 0 7 2 13 5 17"/>
+        <path d="M33 44c2 5 8 9 15 9s13-4 15-9"/>
+        <path d="M30 27h36M39 18l9 4 9-4M40 34h16M48 12v28"/>
+        <path d="M20 92c2-16 12-27 28-27s26 11 28 27"/>
+        <path d="M31 70l17 8 17-8M48 65v27"/></g>
+        <circle cx="41" cy="28" r="2.4" fill="#8dffbe"/><circle cx="55" cy="28" r="2.4" fill="#8dffbe"/>
+        <circle cx="48" cy="78" r="4" fill="none" stroke="#8dffbe" stroke-width="1.4"/><circle cx="48" cy="78" r="1.6" fill="#8dffbe"/></svg>
     </div>
   </div>
-</header>
 
-<div class="greet">
-  <b>Jorge, o JARVIS corporativo está ativo.</b> Configurado para apoiar sua gestão
-  em finanças, controladoria, cobrança, produção, logística, processos, NetSuite,
-  incentivos fiscais, auditoria e decisões de diretoria. Toda informação crítica será
-  validada, e <b>nenhuma ação de alto impacto</b> será executada sem sua autorização.
-</div>
-
-<nav id="nav"></nav>
-
-<main>
-  <!-- CONFIG -->
-  <section id="config" class="active">
-    <h2>PAINEL INICIAL DE CONFIGURAÇÃO</h2>
-    <div class="grid" id="configGrid"></div>
-    <div class="row"><button class="btn" onclick="saveConfig()">Salvar configuração</button></div>
-    <div class="saved" id="cfgSaved"></div>
-  </section>
-
-  <!-- MÓDULOS -->
-  <section id="modulos">
-    <h2>MÓDULOS FUNCIONAIS</h2>
-    <div id="modList"></div>
-  </section>
-
-  <!-- PENDÊNCIAS -->
-  <section id="pendencias">
-    <h2>NOVA PENDÊNCIA</h2>
-    <div class="fields">
-      <div><label>Descrição</label><input id="pDesc" placeholder="Ex.: Conciliar títulos vencidos > 21 dias"></div>
-      <div><label>Responsável</label><input id="pResp" placeholder="Ex.: Financeiro / João"></div>
-      <div class="row" style="margin:0">
-        <div style="flex:1"><label>Prazo</label><input id="pPrazo" type="date"></div>
-        <div style="flex:1"><label>Prioridade</label>
-          <select id="pPrio"><option>Alta</option><option selected>Média</option><option>Baixa</option></select>
-        </div>
+  <div class="body">
+    <!-- LEFT -->
+    <div class="col">
+      <div class="panel"><h2>Fluxo de Caixa</h2><div class="sublab">Visão Geral</div>
+        <svg class="line" viewBox="0 0 100 52" preserveAspectRatio="none"><polyline fill="none" stroke="#2dff8c" stroke-width="1.5" points="0,40 10,36 20,42 30,30 40,34 50,22 60,26 70,16 80,20 90,11 100,8"/></svg>
+        <div class="rowk"><span>Disponível</span><b>R$ 2.156.340,00</b></div>
+        <div class="rowk"><span>Recebíveis</span><b>R$ 1.246.730,00</b></div>
+        <div class="rowk"><span>A pagar</span><b>R$ 1.089.120,00</b></div>
+        <span class="flink" data-toast="Abrindo projeção de 13 semanas…">Projeção 13 semanas →</span>
+      </div>
+      <div class="panel"><h2>Inadimplência</h2><div class="sublab">Geral</div>
+        <div class="split"><div class="donut"><div class="c"><b>18,7%</b><small>RISCO MÉDIO</small></div></div>
+          <div style="flex:1"><div class="row"><span>A vencer</span><b>81,3%</b></div><div class="row"><span>Vencidos</span><b>15,2%</b></div><div class="row"><span>Acima +30 dias</span><b>3,5%</b></div></div></div>
+        <span class="flink" data-toast="Abrindo relatório de inadimplência…">Ver relatório completo →</span>
+      </div>
+      <div class="panel"><h2>Faturamento (mês)</h2>
+        <div class="bars" id="bars"></div>
+        <div class="rowk"><span>Meta</span><b>R$ 3.500.000,00</b></div>
+        <div class="rowk"><span>Atual</span><b>R$ 3.247.890,00</b></div>
+        <div class="row"><span>Atingido</span><b class="g" style="font-size:15px">92,8%</b></div>
+        <span class="flink" data-toast="Abrindo detalhes de faturamento…">Ver detalhes →</span>
+      </div>
+      <div class="panel"><h2>Produção Diária</h2><div class="sublab">Argamassa</div>
+        <div class="split"><div class="donut eff"><div class="c"><b>92,6%</b><small>EFICIÊNCIA</small></div></div>
+          <div style="flex:1"><div class="big">198,4/216</div><div class="dimx">Toneladas</div><div class="rowk" style="margin-top:4px"><span>Meta diária</span><b>216,0 T</b></div></div></div>
+        <span class="flink" data-toast="Abrindo produção…">Acompanhar produção →</span>
       </div>
     </div>
-    <button class="btn" onclick="addPend()">Registrar pendência</button>
-    <h2>PENDÊNCIAS ABERTAS</h2>
-    <div id="pendList"></div>
-  </section>
 
-  <!-- ALERTAS -->
-  <section id="alertas">
-    <h2>ALERTAS PRIORITÁRIOS (exemplos monitorados)</h2>
-    <div class="alert crit"><div>⛔</div><div><b>Risco de falta de caixa</b>Cruzar saldo disponível × pagamentos do dia × entradas previstas.</div></div>
-    <div class="alert crit"><div>⛔</div><div><b>Pagamento sem provisão / duplicado</b>Bloquear e submeter à aprovação do Jorge.</div></div>
-    <div class="alert warn"><div>⚠️</div><div><b>Cliente acima do limite / inadimplência</b>Bloqueio após 21 dias · negativação após 30 (política vigente).</div></div>
-    <div class="alert warn"><div>⚠️</div><div><b>Venda abaixo da margem / desconto fora da política</b>Sinalizar comercial e diretoria.</div></div>
-    <div class="alert warn"><div>⚠️</div><div><b>Produção abaixo da meta / pedido acima da capacidade</b>Rever programação (sacos 15 kg · 2 ensacadeiras · turnos).</div></div>
-    <div class="alert info"><div>📄</div><div><b>Vencimentos: contratos, certidões, obrigações fiscais</b>Alertar com antecedência · risco de perda de benefício (SUDENE/ICMS/Lei do Bem).</div></div>
-    <div class="alert info"><div>🔐</div><div><b>Acesso indevido / usuário inativo / alteração bancária de fornecedor</b>Trilha de auditoria e validação humana.</div></div>
-    <div class="alert info" style="border-left-color:var(--muted)"><div>ℹ️</div><div><b>Lembrete</b>Estes são gatilhos-modelo. A detecção real depende das integrações (NetSuite, TOTVS, banco) da Fase 7.</div></div>
-  </section>
-</main>
+    <!-- CENTER -->
+    <div class="center">
+      <div class="hub" id="hub">
+        <div class="deco d1"></div><div class="deco d2"></div>
+        <div class="band"><div class="seg"></div><div class="spokes"></div><div class="ro"></div><div class="ri"></div></div>
+        <div class="core"><div class="cr c1"></div><div class="cr c2"></div><div class="cr c3"></div><div class="arc"></div>
+          <div class="txt"><b>JARVIS</b><span>RADAR</span><small>ASSESSORIA EMPRESARIAL</small></div></div>
+      </div>
+      <div class="voicebar"><div class="t">JARVIS ATIVO <span>· AO SEU COMANDO, JORGE</span></div><div class="wave" id="wave"></div></div>
+    </div>
 
-<footer>JARVIS · uso interno e confidencial · nenhuma decisão de alto impacto sem validação humana</footer>
+    <!-- RIGHT -->
+    <div class="col">
+      <div class="panel"><h2>Projetos e Incentivos</h2>
+        <div class="row"><span>SUDENE</span><b class="g">ATIVO</b></div>
+        <div class="row"><span>ICMS</span><b class="y">EM ANÁLISE</b></div>
+        <div class="row"><span>Lei do Bem</span><b class="g">ATIVO</b></div>
+        <div class="row"><span>Projeto Resina</span><b class="y">EM EXECUÇÃO</b></div>
+        <span class="flink" data-toast="Abrindo projetos…">Acompanhar todos →</span>
+      </div>
+      <div class="panel"><h2>Alertas Críticos</h2>
+        <div class="al"><span class="i2"><svg viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.5"/></svg></span><em>3</em> Títulos vencidos hoje</div>
+        <div class="al a"><span class="i2"><svg viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.5"/></svg></span><em>2</em> Pagamentos sem provisão</div>
+        <div class="al a"><span class="i2"><svg viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.5"/></svg></span><em>1</em> Entrega atrasada</div>
+        <div class="al a"><span class="i2"><svg viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17v.5"/></svg></span>Estoque crítico: rejunte 1kg</div>
+        <div class="al n"><span class="i2"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.5"/></svg></span>Contrato a vencer em 5 dias</div>
+        <span class="flink" data-toast="Abrindo todos os alertas…">Ver todos alertas →</span>
+      </div>
+      <div class="panel"><h2>Agenda do Dia</h2>
+        <div class="act"><b>09:00</b><span>Reunião diretoria</span></div>
+        <div class="act"><b>11:30</b><span>Cobrança clientes</span></div>
+        <div class="act"><b>14:00</b><span>Análise de contratos</span></div>
+        <div class="act"><b>16:00</b><span>Planejamento produção</span></div>
+        <div class="act"><b>18:00</b><span>Acompanhamento obras</span></div>
+        <span class="flink" data-toast="Abrindo agenda completa…">Ver agenda completa →</span>
+      </div>
+      <div class="panel"><h2>Status Sistema</h2>
+        <div class="row"><span>Oracle NetSuite</span><b class="g">CONECTADO</b></div>
+        <div class="row"><span>Power BI</span><b class="g">CONECTADO</b></div>
+        <div class="row"><span>E-mail</span><b class="g">ONLINE</b></div>
+        <div class="row"><span>Banco de dados</span><b class="g">ONLINE</b></div>
+        <div class="row"><span>Armazenamento</span><b class="g">SEGURO</b></div>
+        <span class="flink" data-toast="Abrindo status do sistema…">Ver detalhes sistema →</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONSOLE -->
+  <div class="console">
+    <div class="base"></div>
+    <svg class="globe" viewBox="0 0 120 120"><g fill="none" stroke="#2dff8c" stroke-width="1" opacity=".8">
+      <circle cx="60" cy="60" r="48"/><ellipse cx="60" cy="60" rx="20" ry="48"/><ellipse cx="60" cy="60" rx="40" ry="48"/>
+      <path d="M12 60h96M20 36h80M20 84h80"/></g>
+      <path d="M40 42c6-4 10 2 8 8s-10 6-8 14 12 6 10 14" fill="none" stroke="#8dffbe" stroke-width="1.4" opacity=".7"/></svg>
+    <div class="rorb"><div class="rr2"></div><div class="rr"></div><div class="sw"></div></div>
+    <div class="cmdbar">
+      <div class="cmdpanel"><h3>Comandos Rápidos</h3><div class="quick" id="quick"></div></div>
+      <div class="cmdpanel ask"><h3>Pergunte ao Jarvis</h3>
+        <button class="q">Qual a previsão de caixa para os próximos 30 dias?</button>
+        <button class="q">Quais clientes estão com maior risco de atraso?</button>
+        <button class="q">Como está a margem por produto este mês?</button>
+        <button class="q">Quais projetos de incentivo precisam de atenção?</button>
+        <button class="mic" title="Falar com o JARVIS"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4"/></svg></button>
+        <div class="answer" id="answer"></div>
+      </div>
+    </div>
+  </div>
+  <div class="note">🛈 <b>Amostra visual interativa</b> — clique nos módulos, comandos e perguntas. Números ilustrativos (DADO A CONFIRMAR). Nenhuma ação de alto impacto sem autorização de Jorge.</div>
+</div></div>
+
+<div class="backdrop" id="backdrop"><div class="drawer" id="drawer"></div></div>
+<div class="toast" id="toast"></div>
 
 <script>
-const CFG = [
- ["Empresas e filiais","SKAL, Kalfix, FCK, Quimika Brasil, Cimex…"],
- ["Usuários e responsáveis","Nome · cargo · área"],
- ["Sistemas disponíveis","TOTVS RM, Oracle NetSuite, Power BI…"],
- ["Fontes de dados","Planilhas, Drive, e-mail, banco…"],
- ["Integrações autorizadas","APIs / conectores aprovados pela TI"],
- ["Processos prioritários","Financeiro · Cobrança · Diretoria"],
- ["Relatórios necessários","DRE, fluxo de caixa, inadimplência…"],
- ["Indicadores","Margem, atraso médio, produtividade…"],
- ["Pendências","Ver aba Pendências"],
- ["Projetos em andamento","NetSuite, SUDENE, ICMS, Lei do Bem…"],
- ["Regras de aprovação","O que exige autorização do Jorge"],
- ["Política de segurança","Menor privilégio · logs · confidencialidade"]
-];
-const MODS = [
- ["Diretoria Executiva","Resumos, pautas, atas, planos de ação, riscos"],
- ["Financeiro","Contas, fluxo de caixa, DRE, orçado × realizado"],
- ["Crédito e Cobrança","Risco, régua, bloqueio 21d · negativação 30d"],
- ["Controladoria","Plano de contas, centros de custo, indicadores"],
- ["Produção Industrial","Argamassa/rejunte, eficiência, custo/ton"],
- ["Logística e Frota","Rotas, custo/km, entregas, manutenção"],
- ["Comercial","Vendas × margem × inadimplência × capacidade"],
- ["Compras e Suprimentos","Cotações, custo total, estoque mínimo"],
- ["RH e Dep. Pessoal","Quadro, escalas, férias, CIPA, NR-1"],
- ["Incentivos Fiscais","SUDENE · ICMS · Lei do Bem"],
- ["Oracle NetSuite","Migração TOTVS, cadastros, testes, POPs"],
- ["Auditoria e Compliance","Acessos, segregação, trilha de auditoria"],
- ["Contratos e Documentos","Cláusulas, prazos, riscos, minutas"],
- ["Radar Assessoria","Diagnósticos, propostas, projetos"]
-];
-
-// build config
-const cg = document.getElementById('configGrid');
-const stored = JSON.parse(localStorage.getItem('jarvis_cfg')||'{}');
-CFG.forEach((c,i)=>{
-  const v = stored[i]||"";
-  cg.insertAdjacentHTML('beforeend',
-   `<div class="card"><div class="lbl"><span class="num">${i+1}</span>${c[0]}</div>
-    <textarea data-i="${i}" placeholder="${c[1]}">${v}</textarea></div>`);
-});
-function saveConfig(){
-  const o={}; document.querySelectorAll('#configGrid textarea').forEach(t=>o[t.dataset.i]=t.value.trim());
-  localStorage.setItem('jarvis_cfg',JSON.stringify(o));
-  const s=document.getElementById('cfgSaved'); s.textContent='✓ Configuração salva neste dispositivo';
-  setTimeout(()=>s.textContent='',2500);
-}
-
-// modules
-const ml=document.getElementById('modList');
-MODS.forEach((m,i)=>ml.insertAdjacentHTML('beforeend',
- `<div class="modrow"><div class="n">${i+1}</div><div><b>${m[0]}</b><span>${m[1]}</span></div></div>`));
-
-// nav
-const TABS=[["config","Configuração"],["modulos","Módulos"],["pendencias","Pendências"],["alertas","Alertas"]];
-const nav=document.getElementById('nav');
-TABS.forEach((t,i)=>nav.insertAdjacentHTML('beforeend',
- `<button data-t="${t[0]}" class="${i===0?'active':''}">${t[1]}</button>`));
-nav.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
-  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('section').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');document.getElementById(b.dataset.t).classList.add('active');
-  window.scrollTo(0,0);});
-
-// pendências
-function loadPend(){return JSON.parse(localStorage.getItem('jarvis_pend')||'[]');}
-function savePend(a){localStorage.setItem('jarvis_pend',JSON.stringify(a));}
-function renderPend(){
-  const list=document.getElementById('pendList');const a=loadPend();
-  if(!a.length){list.innerHTML='<div class="empty">Nenhuma pendência aberta.</div>';return;}
-  list.innerHTML=a.map((p,i)=>{
-    const cls={Alta:'p-alta',Média:'p-media',Baixa:'p-baixa'}[p.prio]||'p-media';
-    const prazo=p.prazo?new Date(p.prazo+'T00:00').toLocaleDateString('pt-BR'):'—';
-    return `<div class="pend"><div class="top"><div><h4>${esc(p.desc)}</h4>
-      <div class="meta">👤 ${esc(p.resp||'—')} · 📅 ${prazo}</div></div>
-      <button class="del" onclick="delPend(${i})">✕</button></div>
-      <div style="margin-top:8px"><span class="pill ${cls}">${p.prio}</span></div></div>`;
-  }).join('');
-}
-function addPend(){
-  const desc=document.getElementById('pDesc').value.trim();
-  if(!desc){document.getElementById('pDesc').focus();return;}
-  const a=loadPend();a.unshift({desc,resp:document.getElementById('pResp').value.trim(),
-    prazo:document.getElementById('pPrazo').value,prio:document.getElementById('pPrio').value});
-  savePend(a);document.getElementById('pDesc').value='';document.getElementById('pResp').value='';
-  document.getElementById('pPrazo').value='';renderPend();
-}
-function delPend(i){const a=loadPend();a.splice(i,1);savePend(a);renderPend();}
-function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-renderPend();
-
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+(function(){
+  var ICON={
+    fin:'<circle cx="12" cy="12" r="9"/><path d="M12 7v10M14.5 9.2c-.6-.9-3.5-1.4-4.4.3-.7 1.5 1 2 2 2.2s2.6.7 2 2.3c-.8 1.7-3.8 1.2-4.4.3"/>',
+    inc:'<path d="M12 2l2.5 6.5L21 9l-5 4 1.6 7L12 16l-5.6 4L8 13 3 9l6.5-.5z"/>',
+    fis:'<path d="M6 3h9l3 3v15H6z"/><path d="M9 8h6M9 12h6M9 16h3"/>',
+    est:'<path d="M12 3l8 4v10l-8 4-8-4V7z"/><path d="M4 7l8 4 8-4M12 11v10"/>',
+    log:'<path d="M2 7h11v9H2zM13 10h5l3 3v3h-8z"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/>',
+    dir:'<rect x="3" y="4" width="18" height="12" rx="1"/><path d="M8 20h8M12 16v4"/>',
+    rh:'<circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M3 19c0-3 2.5-5 5-5s5 2 5 5M13 19c0-3 2-5 3-5s5 2 5 5"/>',
+    cmp:'<path d="M3 4h2l2 12h11l2-8H6"/><circle cx="9" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/>',
+    com:'<path d="M4 15l5-5 4 3 7-7"/><path d="M16 6h4v4"/>',
+    cob:'<circle cx="9" cy="8" r="3"/><path d="M3 19c0-3.3 2.7-6 6-6M15 12l5 5M20 12l-5 5"/>'
+  };
+  var MODS=[
+    {k:'fin',t:'Financeiro',s:'Fluxo, DRE, Custos<br>Contas a Pagar/Receber',d:'Contas a pagar e receber, conciliação, fluxo de caixa, projeções, orçamento e DRE gerencial. Não recomenda pagamento sem confirmar documento, vencimento, favorecido, valor e aprovação.'},
+    {k:'inc',t:'Incentivos',s:'SUDENE, ICMS<br>Lei do Bem',d:'Organização documental, requisitos, prazos e evidências dos incentivos. Nunca declara benefício garantido sem análise técnica, fiscal, contábil e jurídica.'},
+    {k:'fis',t:'Fiscal / Tributário',s:'Impostos, Obrigações<br>Certidões, SPED',d:'Impostos, obrigações acessórias, certidões e SPED. Alerta vencimentos e riscos fiscais com antecedência.'},
+    {k:'est',t:'Estoque',s:'Giro, Curva ABC<br>Inventário',d:'Giro, curva ABC, inventário, estoque mínimo e excesso. Sinaliza itens críticos e compras emergenciais recorrentes.'},
+    {k:'log',t:'Logística',s:'Frota, Entregas<br>Roteirização',d:'Frota própria, rotas, entregas e custo por km/entrega. Cruza pedido, carga, veículo, motorista, rota e comprovante.'},
+    {k:'dir',t:'Diretoria',s:'Relatórios, Reuniões<br>Decisões, Indicadores',d:'Resumos executivos, pautas, atas, decisões e planos de ação. Todo relatório começa pelo RESUMO EXECUTIVO com os 5 pontos mais importantes.'},
+    {k:'rh',t:'RH / DP',s:'Colaboradores<br>Folha, Benefícios',d:'Quadro, escalas, horas, férias, CIPA e NR-1. Nunca emite conclusão trabalhista definitiva sem validação jurídica ou do DP.'},
+    {k:'cmp',t:'Compras',s:'Cotações, Pedidos<br>Fornecedores',d:'Cotações comparadas por custo total (preço + tributos + frete + prazo + condição + qualidade), não só preço unitário.'},
+    {k:'com',t:'Comercial',s:'Vendas, Metas<br>Representantes',d:'Vendas, carteira, metas, comissões e margem. Nunca avalia faturamento isolado — cruza com recebimento, inadimplência e capacidade.'},
+    {k:'cob',t:'Cobrança',s:'Inadimplência<br>Negociação',d:'Risco por cliente, régua de cobrança e negociação. Política: bloqueio 21 dias · negativação 30 dias. Nunca libera crédito automaticamente.'}
+  ];
+  var hub=document.getElementById('hub'), N=MODS.length, cx=300, cy=300, rad=182;
+  MODS.forEach(function(m,i){
+    var ang=(-90 + i*(360/N))*Math.PI/180;
+    var x=cx+rad*Math.cos(ang), y=cy+rad*Math.sin(ang);
+    var el=document.createElement('div'); el.className='node'; el.style.left=x+'px'; el.style.top=y+'px';
+    el.innerHTML='<div class="ic"><svg viewBox="0 0 24 24">'+ICON[m.k]+'</svg></div><b>'+m.t+'</b><small>'+m.s+'</small>';
+    el.onclick=function(){openDrawer(m);}; hub.appendChild(el);
+  });
+  var bd=document.getElementById('backdrop'), dw=document.getElementById('drawer');
+  function openDrawer(m){
+    dw.innerHTML='<button class="x" onclick="this.closest(\'.backdrop\').classList.remove(\'show\')">✕</button>'+
+      '<div class="dic"><svg viewBox="0 0 24 24">'+ICON[m.k]+'</svg></div><h3>'+m.t.toUpperCase()+'</h3>'+
+      '<div class="sub">'+m.s.replace('<br>',' · ')+'</div><p>'+m.d+'</p>'+
+      '<button class="go" onclick="window.__toast(\'Abrindo agente '+m.t+'…\'); this.closest(\'.backdrop\').classList.remove(\'show\')">Abrir agente</button>';
+    bd.classList.add('show');
+  }
+  bd.onclick=function(e){ if(e.target===bd) bd.classList.remove('show'); };
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') bd.classList.remove('show'); });
+  var toast=document.getElementById('toast'), tmr;
+  window.__toast=function(msg){ toast.textContent=msg; toast.classList.add('show'); clearTimeout(tmr); tmr=setTimeout(function(){toast.classList.remove('show');},2200); };
+  document.querySelectorAll('[data-toast]').forEach(function(el){ el.onclick=function(){window.__toast(el.getAttribute('data-toast'));}; });
+  var QC=[['Relatório Executivo','dir'],['Fluxo de Caixa','com'],['Análise de Inadimplência','cob'],['DRE Gerencial','fin'],['Ver Todos Relatórios','fis']];
+  var q=document.getElementById('quick');
+  QC.forEach(function(c){ var b=document.createElement('div'); b.className='qbtn';
+    b.innerHTML='<div class="qi"><svg viewBox="0 0 24 24">'+ICON[c[1]]+'</svg></div><span>'+c[0]+'</span>';
+    b.onclick=function(){ window.__toast('Gerando: '+c[0]+'…'); }; q.appendChild(b);
+  });
+  var ANS=['Projeção de caixa (30d): entradas ~R$ 2,1 mi · saídas ~R$ 1,9 mi · saldo positivo, aperto em D+4. [amostra]','Maior risco: 3 clientes acima de 21 dias — revisar limite e acionar cobrança. [amostra]','Margem média 21% no mês; rejunte acima, argamassa 15kg pressionada por frete. [amostra]','ICMS em análise precisa de atenção (prazo). SUDENE e Lei do Bem ativos. [amostra]'];
+  var ansEl=document.getElementById('answer');
+  document.querySelectorAll('.q').forEach(function(b,i){ b.onclick=function(){ ansEl.textContent='› '+ANS[i]; ansEl.classList.add('show'); }; });
+  document.querySelector('.mic').onclick=function(){ window.__toast('🎙️ Ouvindo… (voz requer integração)'); };
+  var bars=document.getElementById('bars'); if(bars){[42,50,46,58,53,64,60,72,68,80,76,88,84,92].forEach(function(v){var i=document.createElement('i');i.style.height=v+'%';bars.appendChild(i);});}
+  var wave=document.getElementById('wave'), w2=[];
+  if(wave){for(var i=0;i<46;i++){var b=document.createElement('i');b.style.height='20%';wave.appendChild(b);w2.push(b);} function a(){w2.forEach(function(b){b.style.height=(15+Math.random()*85)+'%';});} a(); setInterval(a,140);}
+})();
 </script>
-</body>
-</html>
+
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}</script>
