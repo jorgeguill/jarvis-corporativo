@@ -1,0 +1,29 @@
+data_lancamento,ref_extrato,num_documento,valor,historico,operacao,conta_caixa,portador
+2023-12-04,315568,0008556101,11200.00,"Recebimento da NF-e nº 00008556101, Gavea Construcoes LTDA  Encontro de contas com apartamento na pria",Depósito na Baixa,16.09,320
+2023-12-04,315569,0008600901,7000.00,"Recebimento da NF-e nº 00008600901, Gavea Construcoes LTDA  Encontro de contas com apartamento na pria",Depósito na Baixa,16.09,320
+2023-12-04,315570,0008623001,1820.00,"Recebimento da NF-e nº 00008623001, Gavea Construcoes LTDA  Encontro de contas com apartamento na pria",Depósito na Baixa,16.09,320
+2023-12-04,315571,0008642801,18200.00,"Recebimento da NF-e nº 00008642801, Gavea Construcoes LTDA  Encontro de contas com apartamento na pria",Depósito na Baixa,16.09,320
+2023-12-04,315572,0008643501,7000.00,"Recebimento da NF-e nº 00008643501, Gavea Construcoes LTDA  Encontro de contas com apartamento na pria",Depósito na Baixa,16.09,320
+2023-12-04,315573,0008683601,11200.00,"Recebimento da NF-e nº 00008683601, Gavea Construcoes LTDA  Encontro de contas com apartamento na pria",Depósito na Baixa,16.09,320
+2023-12-04,315574,0008773001,14000.00,"Recebimento da NF-e nº 00008773001, Gavea Construcoes LTDA  Encontro de contas com apartamento na pria",Depósito na Baixa,16.09,320
+2023-12-18,318956,0008835901,7000.00,"Recebimento da NF-e nº 00008835901, Gavea Construcoes LTDA  Encontro de contas com apartamento na praia",Depósito na Baixa,16.09,320
+2024-02-09,320935,0008894801,8400.00,"Recebimento da NF-e nº 00008894801, Gavea Construcoes LTDA  Encontro de contas com apartamento na praia",Depósito na Baixa,16.09,320
+2024-02-20,321671,0008920701,14000.00,"Recebimento da NF-e nº 00008920701, Gavea Construcoes LTDA  Encontro de contas com apartamento na praia",Depósito na Baixa,16.09,320
+2024-03-13,323460,0008983001,14000.00,"Recebimento da NF-e nº 00008983001, Gavea Construcoes LTDA  Encontro de contas com apartamento na praia",Depósito na Baixa,16.09,320
+2024-03-13,323461,0009001501,8400.00,"Recebimento da NF-e nº 00009001501, Gavea Construcoes LTDA  Encontro de contas com apartamento na praia",Depósito na Baixa,16.09,320
+2024-03-13,323462,0009035701,14000.00,"Recebimento da NF-e nº 00009035701, Gavea Construcoes LTDA",Depósito na Baixa,16.09,320
+2024-03-20,324462,0009059801,5040.00,"Recebimento da NF-e nº 00009059801, Gavea Construcoes LTDA  Encontro de contas com apartamento na praia",Depósito na Baixa,16.09,320
+2024-04-15,325997,0009053101,11200.00,"Recebimento da NF-e nº 00009053101, Gavea Construcoes LTDA  Encontro de contas com apartamento na praia",Depósito na Baixa,16.09,320
+2024-04-15,325998,0009086501,3150.00,"Recebimento da NF-e nº 00009086501, Gavea Construcoes LTDA  Encontro de contas com apartamento na praia",Depósito na Baixa,16.09,320
+2024-04-16,325999,0009075601,11200.00,"Recebimento da NF-e nº 00009075601, Gavea Construcoes LTDA  Encontro de contas com apartamento na praia",Depósito na Baixa,16.09,320
+2024-04-18,326346,0009128901,7000.00,"Recebimento da NF-e nº 00009128901, Gavea Construcoes LTDA  Encontro de contas com apartamento na praia",Depósito na Baixa,16.09,320
+2024-05-06,327673,0009093801,4200.00,"Recebimento da NF-e nº 00009093801, Gavea Construcoes LTDA  Encontro de contas com apartamento na praia",Depósito na Baixa,16.09,320
+2024-06-07,330379,0009183801,11200.00,"Recebimento da NF-e nº 00009183801, Gavea Construcoes LTDA  Encontro de contas com apartamento na praia",Depósito na Baixa,16.09,320
+2024-07-01,333018,0009322501,11200.00,"Recebimento da NF-e nº 00009322501, Gavea Construcoes LTDA  Encontro de contas com apartamento na praia",Depósito na Baixa,16.09,320
+2024-07-10,333158,0009271001,14000.00,"Recebimento da NF-e nº 00009271001, Gavea Construcoes LTDA  Encontro de contas com apartamento na praia",Depósito na Baixa,16.09,320
+2024-07-15,333947,0009363101,7000.00,"Recebimento da NF-e nº 00009363101, Gavea Construcoes LTDA  Encontro de contas com apartamento na praia",Depósito na Baixa,16.09,320
+2024-07-23,334684,0009388101,9800.00,"Recebimento da NF-e nº 00009388101, Gavea Construcoes LTDA  Encontro de contas com apartamento na praia",Depósito na Baixa,16.09,320
+2024-08-07,336241,0009433401,2100.00,"Recebimento da NF-e nº 00009433401, Gavea Construcoes LTDA  Encontro de contas com apartamento na praia",Depósito na Baixa,16.09,320
+2024-08-19,337423,0009463701,7000.00,"Recebimento da NF-e nº 00009463701, Gavea Construcoes LTDA  Encontro de contas com apartamento na praia",Depósito na Baixa,16.09,320
+2024-11-05,345660,0009678601,8320.00,"Recebimento da NF-e nº 00009678601, Gavea Construcoes LTDA  Encontro de contas com apartamento na praia",Depósito na Baixa,16.09,320
+2024-11-05,345661,0009684901,2520.00,"Recebimento da NF-e nº 00009684901, Gavea Construcoes LTDA  Encontro de contas com apartamento na praia",Depósito na Baixa,16.09,320
