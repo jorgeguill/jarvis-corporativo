@@ -70,8 +70,8 @@
   .kpi .l{font-size:8.5px;letter-spacing:1px;color:var(--muted);text-transform:uppercase}
   .kpi .v{font-family:var(--mono);font-size:15px;margin-top:5px;letter-spacing:.3px}
   .kpi .s{position:absolute;top:9px;right:9px;width:8px;height:8px;border-radius:50%}
-  .s-ok{background:var(--ok);box-shadow:0 0 8px var(--ok)}.s-aten{background:var(--aten);box-shadow:0 0 8px var(--aten)}.s-crit{background:var(--crit);box-shadow:0 0 8px var(--crit)}.s-oport{background:var(--oport);box-shadow:0 0 8px var(--oport)}
-  .v-ok{color:var(--green)}.v-aten{color:var(--aten)}.v-crit{color:var(--crit)}.v-oport{color:var(--oport)}
+  .s-ok{background:var(--ok);box-shadow:0 0 8px var(--ok)}.s-aten{background:var(--aten);box-shadow:0 0 8px var(--aten)}.s-crit{background:var(--crit);box-shadow:0 0 8px var(--crit)}.s-oport{background:var(--oport);box-shadow:0 0 8px var(--oport)}.s-sem{background:var(--dim)}
+  .v-ok{color:var(--green)}.v-aten{color:var(--aten)}.v-crit{color:var(--crit)}.v-oport{color:var(--oport)}.v-sem{color:var(--dim);font-size:11px}
   @media(max-width:560px){.agents{grid-template-columns:repeat(4,1fr)}.kpis{grid-template-columns:repeat(2,1fr)}.hero{height:250px}.sweep,.r1{width:230px;height:230px}}
 
   /* Section title */
@@ -265,13 +265,21 @@
       },
       nota:'Inadimplência: dados REAIS (ACOMPCOB 06/08). Caixa/A Receber referência de 24/07. Nenhuma ação de alto impacto sem sua autorização.'
     },
-    KALFIX:{nome:'KALFIX',status:'sem',dados:false},
+    KALFIX:{nome:'KALFIX',status:'parc',dados:true,parcial:true,
+      kpis:[{l:'Funcionários',v:'23',st:'ok'},{l:'Folha líq./mês',v:'R$ 28,0 mil',st:'ok'},{l:'Caixa',v:'aguardando',st:'sem'},{l:'Inadimplência',v:'aguardando',st:'sem'}],
+      alertAgents:[],
+      eventos:[
+        {t:'oport',tp:'Ativada',tt:'KALFIX entrou no radar com a folha de julho: 23 funcionários, líquido R$ 27.955,24 (proventos R$ 38.582,98).',q:'O que a folha de julho da KALFIX mostra sobre o quadro de pessoal?'},
+        {t:'aten',tp:'Atenção',tt:'Visão financeira ainda incompleta: falta ACOMPCOB e extratos bancários da KALFIX para caixa, a receber e inadimplência.',q:'O que falta para eu ter a visão financeira completa da KALFIX?'}
+      ],
+      nota:'KALFIX: dados de RH/folha de julho (reais). Financeiro aguardando ACOMPCOB e extratos.'
+    },
     QUIMIKA:{nome:'QUIMIKA',status:'sem',dados:false},
     FCK:{nome:'FCK',status:'sem',dados:false}
   };
   var ORDER=['SKAL','KALFIX','QUIMIKA','FCK'];
-  var STLABEL={ok:'Normal',aten:'Atenção',crit:'Crítico',oport:'Oportunidade',sem:'Sem dados'};
-  var STCOLOR={ok:'var(--ok)',aten:'var(--aten)',crit:'var(--crit)',oport:'var(--oport)',sem:'var(--dim)'};
+  var STLABEL={ok:'Normal',aten:'Atenção',crit:'Crítico',oport:'Oportunidade',parc:'Parcial · RH',sem:'Sem dados'};
+  var STCOLOR={ok:'var(--ok)',aten:'var(--aten)',crit:'var(--crit)',oport:'var(--oport)',parc:'var(--oport)',sem:'var(--dim)'};
 
   var state={co:'SKAL',grupo:false};
   var $=function(id){return document.getElementById(id);};
@@ -342,7 +350,7 @@
   }
   function renderHoje(){
     var c=co(),el=$('hoje');el.innerHTML='';
-    if(!c.dados){el.style.display='none';return;}el.style.display='grid';
+    if(!c.dados||!c.hoje){el.style.display='none';return;}el.style.display='grid';
     var items=[['decisoes',c.hoje.decisoes,'Decisões recomendadas'],['riscos',c.hoje.riscos,'Riscos prioritários'],['pendencias',c.hoje.pendencias,'Pendências críticas'],['oportunidades',c.hoje.oportunidades,'Oportunidades']];
     items.forEach(function(it){var d=document.createElement('div');d.className='hcard';d.innerHTML='<div class="n">'+it[1]+'</div><div class="l">'+it[2]+'</div>';
       d.onclick=function(){drawer.innerHTML='<div class="dh"><div class="di"><svg viewBox="0 0 24 24">'+ICON.dir+'</svg></div><h3>'+it[2]+' · '+c.nome+'</h3><button class="x">✕</button></div><div class="resp">'+c.hoje.det[it[0]]+'</div>';backdrop.classList.add('show');drawer.querySelector('.x').onclick=closeDrawer;speak(it[2]+' da '+c.nome+'. '+c.hoje.det[it[0]].replace(/\n/g,' '));};
@@ -371,7 +379,7 @@
     var gs=$('grpSum');gs.innerHTML='<div class="gchip"><div class="n">'+mon+'</div><div class="l">empresas monitoradas</div></div>'+
       '<div class="gchip"><div class="n" style="color:var(--aten)">'+aten+'</div><div class="l">requerem atenção</div></div>'+
       '<div class="gchip"><div class="n" style="color:var(--crit)">'+crit+'</div><div class="l">situação crítica</div></div>'+
-      '<div class="gchip"><div class="n" style="color:var(--dim)">'+sem+'</div><div class="l">aguardando dados</div></div>';
+      '<div class="gchip"><div class="n" style="color:var(--dim)">'+sem+'</div><div class="l">parcial / aguardando</div></div>';
     var cart=$('cart');cart.innerHTML='<div class="sec"><h2>Radar da carteira</h2><span class="c">toque para abrir</span></div>';
     ORDER.forEach(function(k){var c=DATA[k];var row=document.createElement('div');row.className='crow';
       row.innerHTML='<span class="cst" style="background:'+STCOLOR[c.status]+';box-shadow:0 0 8px '+STCOLOR[c.status]+'"></span><span class="cn">'+c.nome+'</span><span class="cx">'+STLABEL[c.status]+'</span>';
