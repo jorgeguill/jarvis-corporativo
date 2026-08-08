@@ -238,7 +238,7 @@
         {l:'Caixa',v:'R$ 827,3 mil',st:'ok'},
         {l:'A Receber',v:'R$ 1,84 mi',st:'aten'},
         {l:'Inadimplência',v:'R$ 831,1 mil',st:'crit'},
-        {l:'Resultado proj.',v:'+R$ 184 mil',st:'ok'}
+        {l:'Lucro 2024',v:'R$ 1,32 mi',st:'aten'}
       ],
       alertAgents:['cob','fis'],
       alerta:{
@@ -250,6 +250,8 @@
       eventos:[
         {t:'crit',tp:'Crítico',tt:'Inadimplência acima de 90 dias em R$ 649,9 mil — 78% da dívida. Subiu ~R$ 74 mil desde 24/07: dívida antiga apodrecendo.',q:'Detalhe a inadimplência acima de 90 dias e o que fazer para recuperar.'},
         {t:'crit',tp:'Crítico',tt:'Permutas: R$ 251,1 mil (Gávea) baixados como dinheiro em caixa, mas a contrapartida foi imóvel. Risco de caixa inflado e imóvel fora do patrimônio.',q:'Explique o risco das permutas da Gávea e o que precisa ser corrigido.'},
+        {t:'crit',tp:'Crítico',tt:'Lucro líquido de 2024 caiu 68% (R$ 4,08 mi → R$ 1,32 mi) mesmo com a receita subindo 23%: as despesas operacionais quase dobraram (vendas de R$ 77 mil para R$ 740 mil; administrativas de R$ 2,35 mi para R$ 4,51 mi). A margem comprimiu.',q:'Por que o lucro da SKAL caiu tanto em 2024 e o que fazer para recuperar a margem?'},
+        {t:'aten',tp:'Atenção',tt:'Patrimônio (Balanço 2024): imobilizado de R$ 7,37 mi cresceu R$ 1,1 mi no ano. Confirmar com a contabilidade se os imóveis de permuta estão registrados aí.',q:'Os imóveis de permuta estão no imobilizado do balanço de 2024?'},
         {t:'aten',tp:'Atenção',tt:'Passivo fiscal vencido de R$ 274 mil (Ministério da Fazenda). Precisa regularizar antes do split payment da reforma (2027).',q:'Explique o passivo fiscal de 274 mil e o impacto da reforma tributária.'},
         {t:'aten',tp:'Atenção',tt:'Contas a pagar vencidas em R$ 1,29 milhão. Priorizar por essencialidade e negociar prazos.',q:'Como está o contas a pagar vencido e o que priorizar?'},
         {t:'oport',tp:'Oportunidade',tt:'Crédito livre no BB Giro de ~R$ 400 mil não utilizado — folga para capital de giro sem tomar dívida cara.',q:'Como usar melhor o crédito livre do BB Giro?'},
