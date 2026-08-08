@@ -1,0 +1,4 @@
+JARVIS RADAR - painel
+Publicado a partir de painel-vercel/
+Atualizacao: posicao 06/08/2026 + voz natural (Antoni) + aviso de permutas.
+Root Directory na Vercel: painel-vercel
