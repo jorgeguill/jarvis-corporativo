@@ -297,7 +297,8 @@
   var $=function(id){return document.getElementById(id);};
 
   /* ---------- Voz: HTML5 Audio. Tenta automatico; a barra do JARVIS sempre toca no toque ---------- */
-  var aud=new Audio();aud.preload='auto';var lastReply='';
+  var aud=new Audio();aud.preload='auto';var lastReply='',voiceOff=false;
+  aud.addEventListener('error',function(){voiceOff=true;try{vtxt('🔇 <b>Voz indisponível</b> · leia a resposta na tela');}catch(e){}});
   function unlockAudio(){try{if(aud.paused&&!aud.src){aud.src='data:audio/wav;base64,UklGRjQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YRAAAAAAAAAAAAAAAAAAAAAAAAAA';aud.play().catch(function(){});}}catch(e){}}
   document.addEventListener('touchend',unlockAudio,true);document.addEventListener('mousedown',unlockAudio,true);
   function playTTS(t){if(!t)return;try{aud.pause();}catch(e){}try{aud.src='/api/tts?text='+encodeURIComponent(t.slice(0,600));var p=aud.play();if(p&&p.catch)p.catch(function(){});}catch(e){}}
