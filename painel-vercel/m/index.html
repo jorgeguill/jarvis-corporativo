@@ -238,7 +238,7 @@
         {l:'Caixa',v:'R$ 827,3 mil',st:'ok'},
         {l:'A Receber',v:'R$ 1,84 mi',st:'aten'},
         {l:'Inadimplência',v:'R$ 831,1 mil',st:'crit'},
-        {l:'Lucro 2024',v:'R$ 1,32 mi',st:'aten'}
+        {l:'Lucro 2025',v:'R$ 2,86 mi',st:'ok'}
       ],
       alertAgents:['cob','fis'],
       alerta:{
@@ -250,7 +250,7 @@
       eventos:[
         {t:'crit',tp:'Crítico',tt:'Inadimplência acima de 90 dias em R$ 649,9 mil — 78% da dívida. Subiu ~R$ 74 mil desde 24/07: dívida antiga apodrecendo.',q:'Detalhe a inadimplência acima de 90 dias e o que fazer para recuperar.'},
         {t:'crit',tp:'Crítico',tt:'Permutas: R$ 251,1 mil (Gávea) baixados como dinheiro em caixa, mas a contrapartida foi imóvel. Risco de caixa inflado e imóvel fora do patrimônio.',q:'Explique o risco das permutas da Gávea e o que precisa ser corrigido.'},
-        {t:'crit',tp:'Crítico',tt:'Lucro líquido de 2024 caiu 68% (R$ 4,08 mi → R$ 1,32 mi) mesmo com a receita subindo 23%: as despesas operacionais quase dobraram (vendas de R$ 77 mil para R$ 740 mil; administrativas de R$ 2,35 mi para R$ 4,51 mi). A margem comprimiu.',q:'Por que o lucro da SKAL caiu tanto em 2024 e o que fazer para recuperar a margem?'},
+        {t:'oport',tp:'Tendência',tt:'Lucro líquido: R$ 4,08 mi (2023) → R$ 1,32 mi (2024, ano de aperto por despesa) → R$ 2,86 mi (2025, recuperou). Receita cresce todo ano (R$ 33,86 mi em 2025). O foco de gestão é a despesa operacional, que ainda come boa parte da margem.',q:'Como está a trajetória de lucro e margem da SKAL e o que controlar?'},
         {t:'aten',tp:'Atenção',tt:'Patrimônio (Balanço 2024): imobilizado de R$ 7,37 mi cresceu R$ 1,1 mi no ano. Confirmar com a contabilidade se os imóveis de permuta estão registrados aí.',q:'Os imóveis de permuta estão no imobilizado do balanço de 2024?'},
         {t:'aten',tp:'Atenção',tt:'Passivo fiscal vencido de R$ 274 mil (Ministério da Fazenda). Precisa regularizar antes do split payment da reforma (2027).',q:'Explique o passivo fiscal de 274 mil e o impacto da reforma tributária.'},
         {t:'aten',tp:'Atenção',tt:'Contas a pagar vencidas em R$ 1,29 milhão. Priorizar por essencialidade e negociar prazos.',q:'Como está o contas a pagar vencido e o que priorizar?'},
@@ -270,13 +270,14 @@
       nota:'Inadimplência: dados REAIS (ACOMPCOB 06/08). Caixa/A Receber referência de 24/07. Nenhuma ação de alto impacto sem sua autorização.'
     },
     KALFIX:{nome:'KALFIX',status:'parc',dados:true,parcial:true,
-      kpis:[{l:'Funcionários',v:'23',st:'ok'},{l:'Folha líq./mês',v:'R$ 28,0 mil',st:'ok'},{l:'Caixa',v:'aguardando',st:'sem'},{l:'Inadimplência',v:'aguardando',st:'sem'}],
+      kpis:[{l:'Faturam./mês',v:'R$ 114,3 mil',st:'ok'},{l:'Funcionários',v:'23',st:'ok'},{l:'Simples/mês',v:'R$ 14,3 mil',st:'aten'},{l:'Caixa',v:'aguardando',st:'sem'}],
       alertAgents:[],
       eventos:[
-        {t:'oport',tp:'Ativada',tt:'KALFIX entrou no radar com a folha de julho: 23 funcionários, líquido R$ 27.955,24 (proventos R$ 38.582,98).',q:'O que a folha de julho da KALFIX mostra sobre o quadro de pessoal?'},
-        {t:'aten',tp:'Atenção',tt:'Visão financeira ainda incompleta: falta ACOMPCOB e extratos bancários da KALFIX para caixa, a receber e inadimplência.',q:'O que falta para eu ter a visão financeira completa da KALFIX?'}
+        {t:'oport',tp:'Faturamento',tt:'KALFIX faturou R$ 1,37 mi em 12 meses (jul/25 a jun/26), média R$ 114,3 mil/mês; melhor mês R$ 183,9 mil (out/25). É Simples Nacional.',q:'Como está o faturamento da KALFIX nos últimos 12 meses?'},
+        {t:'aten',tp:'Tributos',tt:'Simples (DAS) de maio: R$ 14.301,60 sobre R$ 131.882,59 — alíquota efetiva ~10,8%. Some-se a folha (R$ 28 mil/mês, 23 funcionários).',q:'Quanto a KALFIX paga de Simples e como está a carga sobre o faturamento?'},
+        {t:'aten',tp:'Falta',tt:'Para fechar o financeiro da KALFIX faltam caixa e inadimplência (ACOMPCOB e extratos bancários).',q:'O que falta para eu ter a visão financeira completa da KALFIX?'}
       ],
-      nota:'KALFIX: dados de RH/folha de julho (reais). Financeiro aguardando ACOMPCOB e extratos.'
+      nota:'KALFIX: faturamento, folha e Simples (reais). Caixa e inadimplência aguardando ACOMPCOB/extratos.'
     },
     QUIMIKA:{nome:'QUIMIKA',status:'sem',dados:false},
     FCK:{nome:'FCK',status:'sem',dados:false}
