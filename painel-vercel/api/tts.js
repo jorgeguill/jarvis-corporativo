@@ -58,6 +58,11 @@ module.exports = async (req, res) => {
     for (const model of MODELS) {
       const out = await tryVoice(key, voice, model, text);
       if (out.ok) {
+        if (debug) {
+          res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+          res.statusCode = 200;
+          return res.end('OK voice=' + voice + ' model=' + model + ' bytes=' + out.buf.length + ' keylen=' + key.length + (tried.length ? ' | antes: ' + tried.join(' , ') : ''));
+        }
         res.setHeader('Content-Type', 'audio/mpeg');
         res.setHeader('Cache-Control', 'public, max-age=86400');
         res.setHeader('x-tts-stage', 'ok');
