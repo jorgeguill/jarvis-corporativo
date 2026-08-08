@@ -182,7 +182,10 @@
   var ptV=null;function pk(){try{var vs=window.speechSynthesis.getVoices();ptV=vs.filter(function(v){return /pt-BR/i.test(v.lang);})[0]||vs.filter(function(v){return /pt/i.test(v.lang);})[0]||null;}catch(e){}}
   if('speechSynthesis' in window){pk();window.speechSynthesis.onvoiceschanged=pk;}
   function bsp(t){if(!('speechSynthesis' in window))return;try{window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.lang='pt-BR';if(ptV)u.voice=ptV;u.rate=.98;u.pitch=.9;window.speechSynthesis.speak(u);}catch(e){}}
-  var eok=true,cur=null;function speak(t){try{if(cur){cur.pause();cur=null;}}catch(e){} if(eok){try{var a=new Audio('/api/tts?text='+encodeURIComponent(t));cur=a;a.onerror=function(){eok=false;bsp(t);};var p=a.play();if(p&&p.catch){p.catch(function(){eok=false;bsp(t);});}return;}catch(e){eok=false;}} bsp(t);}
+  var jAudio=new Audio();jAudio.preload='auto';var aUnlocked=false;var SILENT='data:audio/wav;base64,UklGRjQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YRAAAAAAAAAAAAAAAAAAAAAAAAAA';
+  function unlockAudio(){if(aUnlocked)return;try{jAudio.src=SILENT;var p=jAudio.play();if(p&&p.then){p.then(function(){aUnlocked=true;}).catch(function(){});}else{aUnlocked=true;}}catch(e){}}
+  document.addEventListener('touchend',unlockAudio,true);document.addEventListener('mousedown',unlockAudio,true);
+  function speak(t){if(!t)return;try{window.speechSynthesis&&window.speechSynthesis.cancel();}catch(e){} try{jAudio.pause();}catch(e){} try{jAudio.onerror=function(){bsp(t);};jAudio.src='/api/tts?text='+encodeURIComponent(t);var p=jAudio.play();if(p&&p.catch){p.catch(function(){bsp(t);});}}catch(e){bsp(t);}}
   window.speak=speak;
   document.querySelectorAll('.q').forEach(function(b){b.onclick=function(){ask(b.textContent.trim());};});
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
