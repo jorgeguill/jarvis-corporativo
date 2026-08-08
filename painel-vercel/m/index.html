@@ -296,15 +296,12 @@
   var state={co:'SKAL',grupo:false};
   var $=function(id){return document.getElementById(id);};
 
-  /* ---------- Voz (auto, sem botão Ouvir) ---------- */
-  var actx=null,curSrc=null,audioReady=false;
-  function unlockAudio(){try{if(!actx){actx=new (window.AudioContext||window.webkitAudioContext)();}if(actx&&actx.state==='suspended'){actx.resume();}audioReady=!!actx;}catch(e){}}
+  /* ---------- Voz: HTML5 Audio. Tenta automatico; a barra do JARVIS sempre toca no toque ---------- */
+  var aud=new Audio();aud.preload='auto';var lastReply='';
+  function unlockAudio(){try{if(aud.paused&&!aud.src){aud.src='data:audio/wav;base64,UklGRjQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YRAAAAAAAAAAAAAAAAAAAAAAAAAA';aud.play().catch(function(){});}}catch(e){}}
   document.addEventListener('touchend',unlockAudio,true);document.addEventListener('mousedown',unlockAudio,true);
-  function speak(t){if(!t||!actx){return;}try{if(actx.state==='suspended'){actx.resume();}}catch(e){}
-    fetch('/api/tts?text='+encodeURIComponent(t.slice(0,600))).then(function(r){if(!r.ok)throw 0;return r.arrayBuffer();})
-    .then(function(b){return actx.decodeAudioData(b);})
-    .then(function(a){try{if(curSrc)curSrc.stop();}catch(e){}var s=actx.createBufferSource();s.buffer=a;s.connect(actx.destination);s.start(0);curSrc=s;})
-    .catch(function(){});}
+  function playTTS(t){if(!t)return;try{aud.pause();}catch(e){}try{aud.src='/api/tts?text='+encodeURIComponent(t.slice(0,600));var p=aud.play();if(p&&p.catch)p.catch(function(){});}catch(e){}}
+  function speak(t){if(!t)return;lastReply=t;playTTS(t);}
 
   /* ---------- Toast ---------- */
   var toast=$('toast'),tmr;function tst(m){toast.textContent=m;toast.classList.add('show');clearTimeout(tmr);tmr=setTimeout(function(){toast.classList.remove('show');},3200);}
@@ -313,7 +310,7 @@
   /* ---------- Brain ---------- */
   function askBrain(q,onText){vtxt('<b>JARVIS</b> · pensando…');
     return fetch('/api/chat?q='+encodeURIComponent(q)).then(function(r){return r.json();}).then(function(d){
-      var t=(d&&d.reply)||'Não consegui responder agora.';onText(t);vtxt('<b>JARVIS</b> · '+t.slice(0,60));speak(t);return t;
+      var t=(d&&d.reply)||'Não consegui responder agora.';onText(t);vtxt('🔊 <b>JARVIS respondeu</b> · toque aqui para ouvir');speak(t);return t;
     }).catch(function(){onText('Não consegui me conectar agora.');vtxt('<b>JARVIS</b> · sem conexão');});}
 
   /* ---------- Drawer ---------- */
@@ -434,6 +431,9 @@
    for(var i=0;i<46;i++)ps.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.6+.3,vx:(Math.random()-.5)*.18,vy:(Math.random()-.5)*.18,a:Math.random()*.5+.1});
    function tick(){cx.clearRect(0,0,W,H);for(var i=0;i<ps.length;i++){var p=ps[i];p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;cx.beginPath();cx.arc(p.x,p.y,p.r,0,6.28);cx.fillStyle='rgba(45,255,140,'+p.a+')';cx.fill();}requestAnimationFrame(tick);}
    if(window.requestAnimationFrame)tick();})();
+
+  /* ---------- Barra de voz tocável (replay garantido no toque) ---------- */
+  var vb=document.querySelector('.voicebar');if(vb){vb.style.cursor='pointer';vb.addEventListener('click',function(e){if(e.target.closest('#mic'))return;unlockAudio();if(lastReply)playTTS(lastReply);});}
 
   /* ---------- Boot ---------- */
   applyMode();
