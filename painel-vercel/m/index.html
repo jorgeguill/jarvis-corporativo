@@ -88,6 +88,18 @@
   .ev.crit .tp{color:var(--crit)}.ev.aten .tp{color:var(--aten)}.ev.oport .tp{color:var(--oport)}.ev.prev .tp{color:var(--gold)}
   .ev .tt{font-size:12.5px;color:var(--ink);margin-top:3px;line-height:1.35}
 
+  /* ALERTA JARVIS (inteligência cruzada) */
+  .alerta{position:relative;margin:16px 0 4px;border:1px solid var(--gold2);border-radius:15px;padding:13px 14px;cursor:pointer;overflow:hidden;
+    background:linear-gradient(135deg,rgba(40,20,10,.5),rgba(26,10,10,.5)),var(--panel);box-shadow:0 0 26px rgba(212,178,106,.14),inset 0 0 22px rgba(255,90,90,.05)}
+  .alerta::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--gold),var(--crit))}
+  .alerta .hd{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--gold);text-transform:uppercase}
+  .alerta .hd .pin{width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);animation:blink 1.6s infinite}
+  .alerta h4{margin:7px 0 4px;font-size:14px;color:var(--ink);letter-spacing:.3px}
+  .alerta p{margin:0;font-size:12px;line-height:1.45;color:var(--muted)}
+  .alerta .chips{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+  .alerta .chip{display:flex;align-items:center;gap:4px;font-size:8.5px;letter-spacing:.5px;color:var(--green);border:1px solid var(--line);border-radius:12px;padding:3px 8px;font-family:var(--mono);text-transform:uppercase}
+  .alerta .chip svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:1.7}
+  .alerta .cta{margin-top:9px;font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--gold)}
   /* HOJE */
   .hoje{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
   .hcard{border:1px solid var(--line);background:var(--panel);border-radius:13px;padding:11px 8px;text-align:center;cursor:pointer}
@@ -159,6 +171,8 @@
     <div class="kpis" id="kpis"></div>
     <div class="agents" id="agents"></div>
 
+    <div id="alertaWrap"></div>
+
     <div class="sec"><h2>JARVIS identificou</h2><span class="c" id="evCount"></span></div>
     <div class="feed" id="feed"></div>
 
@@ -227,6 +241,12 @@
         {l:'Resultado proj.',v:'+R$ 184 mil',st:'ok'}
       ],
       alertAgents:['cob','fis'],
+      alerta:{
+        tit:'Pressão de caixa combinada em formação',
+        txt:'A inadimplência acima de 90 dias (R$ 649,9 mil) e as contas a pagar vencidas (R$ 1,29 mi) puxam o caixa ao mesmo tempo, enquanto R$ 274 mil de impostos vencidos correm contra o prazo do split payment. E parte do caixa/faturamento pode estar inflada pelas permutas baixadas como dinheiro (Gávea R$ 251 mil). Cruzando Cobrança, Financeiro, Fiscal e Contábil, o resultado real tende a ser menor do que o painel mostra.',
+        chips:[['cob','Cobrança'],['fin','Financeiro'],['fis','Fiscal'],['comp','Contábil']],
+        q:'Como JARVIS Estratégico, cruze cobrança, caixa, fiscal e as permutas da SKAL: qual o risco combinado para o capital de giro, e quais as 3 a 4 ações prioritárias com evidência?'
+      },
       eventos:[
         {t:'crit',tp:'Crítico',tt:'Inadimplência acima de 90 dias em R$ 649,9 mil — 78% da dívida. Subiu ~R$ 74 mil desde 24/07: dívida antiga apodrecendo.',q:'Detalhe a inadimplência acima de 90 dias e o que fazer para recuperar.'},
         {t:'crit',tp:'Crítico',tt:'Permutas: R$ 251,1 mil (Gávea) baixados como dinheiro em caixa, mas a contrapartida foi imóvel. Risco de caixa inflado e imóvel fora do patrimônio.',q:'Explique o risco das permutas da Gávea e o que precisa ser corrigido.'},
@@ -329,10 +349,19 @@
       el.appendChild(d);});
   }
   function renderNote(){$('note').textContent=co().nota||'';}
+  function renderAlerta(){
+    var c=co(),el=$('alertaWrap');el.innerHTML='';
+    if(!c.dados||!c.alerta)return;var a=c.alerta;
+    var chips=(a.chips||[]).map(function(ch){return '<span class="chip"><svg viewBox="0 0 24 24">'+(ICON[ch[0]]||ICON.est2)+'</svg>'+ch[1]+'</span>';}).join('');
+    var d=document.createElement('div');d.className='alerta';
+    d.innerHTML='<div class="hd"><span class="pin"></span>Alerta JARVIS · inteligência cruzada</div><h4>'+a.tit+'</h4><p>'+a.txt+'</p><div class="chips">'+chips+'</div><div class="cta">Toque para o diagnóstico e as ações ›</div>';
+    d.onclick=function(){openDrawer('est2','Alerta JARVIS · '+c.nome,a.q,[{label:'Em quanto tempo aperta?',q:'Sobre a pressão de caixa combinada da '+c.nome+', em quanto tempo o capital de giro pode apertar e por quê?'},{label:'Plano de ação',q:'Monte um plano de ação prático para a '+c.nome+' aliviar a pressão de caixa combinada.'}]);};
+    el.appendChild(d);
+  }
 
   function renderEmpresa(){
     $('coName').textContent=state.co;
-    renderCore();renderKpis();renderAgents();renderFeed();renderHoje();renderNote();
+    renderCore();renderKpis();renderAgents();renderAlerta();renderFeed();renderHoje();renderNote();
   }
 
   /* ---------- Visão Grupo ---------- */
