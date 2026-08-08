@@ -247,20 +247,19 @@
         {l:'Inadimplência',v:'R$ 831,1 mil',st:'crit'},
         {l:'Lucro 2025',v:'R$ 2,86 mi',st:'ok'}
       ],
-      alertAgents:['cob','fis'],
+      alertAgents:['cob'],
       alerta:{
-        tit:'Pressão de caixa combinada em formação',
-        txt:'A inadimplência acima de 90 dias (R$ 649,9 mil) e as contas a pagar vencidas (R$ 1,29 mi) puxam o caixa ao mesmo tempo, enquanto R$ 274 mil de impostos vencidos correm contra o prazo do split payment. E parte do caixa/faturamento pode estar inflada pelas permutas baixadas como dinheiro (Gávea R$ 251 mil). Cruzando Cobrança, Financeiro, Fiscal e Contábil, o resultado real tende a ser menor do que o painel mostra.',
-        chips:[['cob','Cobrança'],['fin','Financeiro'],['fis','Fiscal'],['comp','Contábil']],
-        q:'Como JARVIS Estratégico, cruze cobrança, caixa, fiscal e as permutas da SKAL: qual o risco combinado para o capital de giro, e quais as 3 a 4 ações prioritárias com evidência?'
+        tit:'Dívida antiga e permutas distorcem o caixa real',
+        txt:'Contas e impostos estão em dia. Os dois pontos que realmente pesam: a inadimplência acima de 90 dias soma R$ 649,9 mil (78% da dívida) e não está entrando dinheiro novo nela; e as permutas baixadas como dinheiro (Gávea R$ 251 mil) inflam caixa e faturamento — então o caixa real é menor do que o painel sugere. Cruzando Cobrança e Contábil, o foco é recuperar a dívida antiga e trazer os imóveis de permuta para o patrimônio.',
+        chips:[['cob','Cobrança'],['comp','Contábil'],['fin','Financeiro']],
+        q:'Como JARVIS Estratégico, cruze a inadimplência antiga e as permutas da SKAL (lembrando que contas e impostos estão em dia): qual o efeito no caixa real e quais as 3 a 4 ações prioritárias com evidência?'
       },
       eventos:[
         {t:'crit',tp:'Crítico',tt:'Inadimplência acima de 90 dias em R$ 649,9 mil — 78% da dívida. Subiu ~R$ 74 mil desde 24/07: dívida antiga apodrecendo.',q:'Detalhe a inadimplência acima de 90 dias e o que fazer para recuperar.'},
         {t:'crit',tp:'Crítico',tt:'Permutas: R$ 251,1 mil (Gávea) baixados como dinheiro em caixa, mas a contrapartida foi imóvel. Risco de caixa inflado e imóvel fora do patrimônio.',q:'Explique o risco das permutas da Gávea e o que precisa ser corrigido.'},
         {t:'oport',tp:'Tendência',tt:'Lucro líquido: R$ 4,08 mi (2023) → R$ 1,32 mi (2024, ano de aperto por despesa) → R$ 2,86 mi (2025, recuperou). Receita cresce todo ano (R$ 33,86 mi em 2025). O foco de gestão é a despesa operacional, que ainda come boa parte da margem.',q:'Como está a trajetória de lucro e margem da SKAL e o que controlar?'},
         {t:'aten',tp:'Atenção',tt:'Patrimônio (Balanço 2024): imobilizado de R$ 7,37 mi cresceu R$ 1,1 mi no ano. Confirmar com a contabilidade se os imóveis de permuta estão registrados aí.',q:'Os imóveis de permuta estão no imobilizado do balanço de 2024?'},
-        {t:'aten',tp:'Atenção',tt:'Passivo fiscal vencido de R$ 274 mil (Ministério da Fazenda). Precisa regularizar antes do split payment da reforma (2027).',q:'Explique o passivo fiscal de 274 mil e o impacto da reforma tributária.'},
-        {t:'aten',tp:'Atenção',tt:'Contas a pagar vencidas em R$ 1,29 milhão. Priorizar por essencialidade e negociar prazos.',q:'Como está o contas a pagar vencido e o que priorizar?'},
+        {t:'oport',tp:'Em dia',tt:'Contas e impostos em dia (confirmado pelo Jorge). O que aparecia como "vencido" no relatório de 24/07 — R$ 1,29 mi, incluindo R$ 274 mil da Receita — eram contas já pagas e não baixadas no sistema. Não é atraso, é a mesma lição da baixa não lançada.',q:'As contas a pagar e os impostos da SKAL estão em atraso?'},
         {t:'oport',tp:'Oportunidade',tt:'Crédito livre no BB Giro de ~R$ 400 mil não utilizado — folga para capital de giro sem tomar dívida cara.',q:'Como usar melhor o crédito livre do BB Giro?'},
         {t:'prev',tp:'Previsão',tt:'Reforma tributária: a AREIA ficou FORA do Imposto Seletivo. Incentivos de ICMS valem até 2032 (com Fundo de Compensação para quem se habilitar).',q:'O que a reforma tributária muda para a SKAL nos próximos anos?'},
         {t:'oport',tp:'Positivo',tt:'2º trimestre de 2026 foi lucrativo (base R$ 982,8 mil). Mas IRPJ + CSLL somaram ~R$ 328 mil no trimestre (Lucro Real) — vale avaliar planejamento tributário.',q:'Como reduzir a carga de IRPJ e CSLL da SKAL no Lucro Real?'},
@@ -268,8 +267,8 @@
       ],
       hoje:{decisoes:5,riscos:3,pendencias:7,oportunidades:4,
         det:{
-          decisoes:'1) Acionar a régua de cobrança sobre os R$ 649,9 mil vencidos +90d.\n2) Regularizar o passivo fiscal de R$ 274 mil antes do split payment.\n3) Levantar e registrar no patrimônio os imóveis de permuta (Gávea R$ 251,1 mil).\n4) Reconciliar o "recebido" do ERP contra o extrato de junho.\n5) Renegociar/priorizar o contas a pagar vencido (R$ 1,29 mi).',
-          riscos:'1) Dívida antiga (+90d) com risco real de perda.\n2) Passivo fiscal + fim da folga com o split payment (2027).\n3) Caixa-fantasma das permutas inflando caixa e resultado.',
+          decisoes:'1) Acionar a régua de cobrança sobre os R$ 649,9 mil vencidos +90d.\n2) Levantar e registrar no patrimônio os imóveis de permuta (Gávea R$ 251,1 mil).\n3) Reconciliar o "recebido" do ERP contra o extrato de junho.\n4) Garantir a baixa no sistema das contas já pagas, para o relatório parar de mostrar "vencido".\n5) Controlar a despesa operacional, que ainda consome parte da margem (lição do DRE).',
+          riscos:'1) Dívida antiga (+90d) com risco real de perda.\n2) Caixa-fantasma das permutas inflando caixa e resultado.\n3) Baixas não lançadas distorcem o painel (contas já pagas aparecem como vencidas).',
           pendencias:'1) Cadastrar os contratos de permuta no sistema.\n2) Ler contratos escaneados (Macedo Fortes, Franklin Chakal, Village do Sol).\n3) Conferir soma MRV+Vanguarda (diferença de R$ 4.698).\n4) Obter ACOMPCOB/extratos de KALFIX, QUIMIKA e FCK.\n5) Confirmar registro dos imóveis com a contabilidade.\n6) Atualizar caixa e A Receber para 06/08.\n7) Fechar DRE e produção do mês.',
           oportunidades:'1) BB Giro de R$ 400 mil livre para capital de giro.\n2) Areia fora do Imposto Seletivo na reforma.\n3) Recuperar 0–30 dias (R$ 125,1 mil) rapidamente.\n4) Fundo de Compensação de ICMS (habilitação).'
         }
