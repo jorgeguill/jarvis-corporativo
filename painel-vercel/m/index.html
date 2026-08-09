@@ -309,7 +309,12 @@
     else{try{vtxt('🔇 <b>Voz indisponível</b> · leia a resposta na tela');}catch(e){}}});
   function unlockAudio(){try{if(aud.paused&&!aud.src){aud.src='data:audio/wav;base64,UklGRjQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YRAAAAAAAAAAAAAAAAAAAAAAAAAA';aud.play().catch(function(){});}}catch(e){} try{if('speechSynthesis' in window){window.speechSynthesis.resume();if(!VOICES.length)loadVoices();}}catch(e){}}
   document.addEventListener('touchend',unlockAudio,true);document.addEventListener('mousedown',unlockAudio,true);
-  function playTTS(t){if(!t)return;try{window.speechSynthesis&&window.speechSynthesis.cancel();}catch(e){}try{aud.pause();}catch(e){}try{aud.src='/api/tts?text='+encodeURIComponent(t.slice(0,600));var p=aud.play();if(p&&p.catch)p.catch(function(){browserSpeak(t);});}catch(e){browserSpeak(t);}}
+  var spoke=false;aud.addEventListener('playing',function(){spoke=true;});
+  function playTTS(t){if(!t)return;try{window.speechSynthesis&&window.speechSynthesis.cancel();}catch(e){}try{aud.pause();}catch(e){}
+    spoke=false;
+    try{aud.src='/api/tts?text='+encodeURIComponent(t.slice(0,600));var p=aud.play();if(p&&p.catch)p.catch(function(){browserSpeak(t);});}catch(e){browserSpeak(t);}
+    // Se a premium nao comecar a tocar (erro OU audio vazio), o aparelho assume:
+    setTimeout(function(){if(!spoke)browserSpeak(t);},1300);}
   function speak(t){if(!t)return;lastReply=t;playTTS(t);}
 
   /* ---------- Toast ---------- */
