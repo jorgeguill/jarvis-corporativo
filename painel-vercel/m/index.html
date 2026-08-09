@@ -296,11 +296,20 @@
   var $=function(id){return document.getElementById(id);};
 
   /* ---------- Voz: HTML5 Audio. Tenta automatico; a barra do JARVIS sempre toca no toque ---------- */
-  var aud=new Audio();aud.preload='auto';var lastReply='',voiceOff=false;
-  aud.addEventListener('error',function(){voiceOff=true;try{vtxt('🔇 <b>Voz indisponível</b> · leia a resposta na tela');}catch(e){}});
-  function unlockAudio(){try{if(aud.paused&&!aud.src){aud.src='data:audio/wav;base64,UklGRjQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YRAAAAAAAAAAAAAAAAAAAAAAAAAA';aud.play().catch(function(){});}}catch(e){}}
+  var aud=new Audio();aud.preload='auto';var lastReply='';
+  // Voz do aparelho (fallback gratuito quando a premium ElevenLabs esta no limite)
+  var VOICES=[];function loadVoices(){try{VOICES=window.speechSynthesis.getVoices()||[];}catch(e){}}
+  if('speechSynthesis' in window){loadVoices();try{window.speechSynthesis.onvoiceschanged=loadVoices;}catch(e){}}
+  function pickVoice(){var pt=VOICES.filter(function(v){return /pt[-_]?BR/i.test(v.lang)||/portug/i.test(v.name);});
+    var male=pt.filter(function(v){return /(male|masc|homem|Luiz|Ricardo|Felipe|Antonio|Daniel|Google portugu.s do Brasil)/i.test(v.name)&&!/female|femin/i.test(v.name);});
+    return male[0]||pt[0]||VOICES.filter(function(v){return /^pt/i.test(v.lang);})[0]||null;}
+  function browserSpeak(t){if(!('speechSynthesis' in window)||!t)return false;try{window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.lang='pt-BR';var v=pickVoice();if(v)u.voice=v;u.rate=1;u.pitch=.85;window.speechSynthesis.speak(u);return true;}catch(e){return false;}}
+  aud.addEventListener('error',function(){ // premium falhou (limite/chave) -> usa voz do aparelho
+    if(browserSpeak(lastReply)){try{vtxt('🔊 <b>JARVIS</b> · voz do aparelho (premium no limite)');}catch(e){}}
+    else{try{vtxt('🔇 <b>Voz indisponível</b> · leia a resposta na tela');}catch(e){}}});
+  function unlockAudio(){try{if(aud.paused&&!aud.src){aud.src='data:audio/wav;base64,UklGRjQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YRAAAAAAAAAAAAAAAAAAAAAAAAAA';aud.play().catch(function(){});}}catch(e){} try{if('speechSynthesis' in window){window.speechSynthesis.resume();if(!VOICES.length)loadVoices();}}catch(e){}}
   document.addEventListener('touchend',unlockAudio,true);document.addEventListener('mousedown',unlockAudio,true);
-  function playTTS(t){if(!t)return;try{aud.pause();}catch(e){}try{aud.src='/api/tts?text='+encodeURIComponent(t.slice(0,600));var p=aud.play();if(p&&p.catch)p.catch(function(){});}catch(e){}}
+  function playTTS(t){if(!t)return;try{window.speechSynthesis&&window.speechSynthesis.cancel();}catch(e){}try{aud.pause();}catch(e){}try{aud.src='/api/tts?text='+encodeURIComponent(t.slice(0,600));var p=aud.play();if(p&&p.catch)p.catch(function(){browserSpeak(t);});}catch(e){browserSpeak(t);}}
   function speak(t){if(!t)return;lastReply=t;playTTS(t);}
 
   /* ---------- Toast ---------- */
