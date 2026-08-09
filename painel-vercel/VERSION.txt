@@ -1,4 +1,3 @@
 JARVIS RADAR - painel
-Publicado a partir de painel-vercel/
-Atualizacao: posicao 06/08/2026 + voz natural (Antoni) + aviso de permutas.
-Root Directory na Vercel: painel-vercel
+Republicacao para ativar ELEVENLABS_API_KEY nova (voz premium).
+2026-08-09T23:14:00Z
