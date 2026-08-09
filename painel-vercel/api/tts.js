@@ -54,9 +54,11 @@ module.exports = async (req, res) => {
   if (!voices.includes(ADAM)) voices.push(ADAM);
 
   const tried = [];
+  let lastDetail = '';
   for (const voice of voices) {
     for (const model of MODELS) {
       const out = await tryVoice(key, voice, model, text);
+      if (out.detail) lastDetail = out.detail;
       if (out.ok) {
         if (debug) {
           res.setHeader('Content-Type', 'text/plain; charset=utf-8');
@@ -79,5 +81,5 @@ module.exports = async (req, res) => {
   res.setHeader('x-tts-stage', 'all-failed');
   res.setHeader('x-tts-detail', encodeURIComponent(tried.join(' | ')).slice(0, 400));
   res.statusCode = 502;
-  return res.end(debug ? 'ALL_FAILED ' + tried.join(' | ') : 'tts');
+  return res.end(debug ? 'ALL_FAILED keylen=' + key.length + ' inicio=' + key.slice(0, 3) + ' | ' + tried.join(' | ') + ' | motivo: ' + lastDetail.slice(0, 160) : 'tts');
 };
