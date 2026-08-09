@@ -131,7 +131,18 @@
   .drawer .dh .di svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.6}
   .drawer .dh h3{margin:0;font-size:15px;letter-spacing:.5px;flex:1}
   .drawer .x{background:none;border:1px solid var(--line2);color:var(--muted);border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:14px}
-  .drawer .resp{font-size:13.5px;line-height:1.5;color:var(--neon);border-left:2px solid var(--green);padding:4px 0 4px 12px;white-space:pre-wrap;min-height:24px}
+  .drawer .resp{font-size:13.5px;line-height:1.55;color:var(--ink);border-left:2px solid var(--green);padding:2px 0 4px 12px;min-height:24px}
+  .drawer .resp.think{color:var(--muted);white-space:pre-wrap}
+  .drawer .resp p{margin:6px 0}
+  .drawer .resp h4{margin:12px 0 5px;font-size:13px;letter-spacing:.3px;color:var(--green);text-transform:none}
+  .drawer .resp strong{color:var(--neon)}
+  .drawer .resp em{color:var(--muted);font-style:italic}
+  .drawer .resp ul,.drawer .resp ol{margin:5px 0 8px;padding-left:20px}
+  .drawer .resp li{margin:3px 0}
+  .drawer .resp code{font-family:var(--mono);font-size:12px;background:rgba(45,255,140,.1);padding:1px 4px;border-radius:4px;color:var(--green)}
+  .drawer .resp table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12px}
+  .drawer .resp th{text-align:left;color:var(--green);border-bottom:1px solid var(--line2);padding:5px 7px;font-weight:600}
+  .drawer .resp td{border-bottom:1px solid var(--line);padding:5px 7px;color:var(--ink);font-variant-numeric:tabular-nums}
   .drawer .think{color:var(--muted);font-family:var(--mono);font-size:11px}
   .drawer .qs{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
   .drawer .qs button{font-family:inherit;font-size:11px;color:var(--ink);background:rgba(8,24,16,.6);border:1px solid var(--line);border-radius:16px;padding:7px 11px;cursor:pointer}
@@ -311,6 +322,22 @@
       var t=(d&&d.reply)||'Não consegui responder agora.';onText(t);vtxt('<b>JARVIS</b> · '+t.slice(0,64));speak(t);return t;
     }).catch(function(){onText('Não consegui me conectar agora.');vtxt('<b>JARVIS</b> · sem conexão');});}
 
+  /* ---------- Markdown -> HTML (respostas ricas do JARVIS) ---------- */
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function inl(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*(?!\s)(.+?)\*(?!\*)/g,'$1<em>$2</em>').replace(/`(.+?)`/g,'<code>$1</code>');}
+  function md(t){var L=String(t||'').split(/\r?\n/),o=[],i=0;
+    function cells(ln){var a=ln.split('|').map(function(c){return c.trim();});if(a.length&&a[0]==='')a.shift();if(a.length&&a[a.length-1]==='')a.pop();return a;}
+    while(i<L.length){var ln=L[i];
+      if(/\|/.test(ln)&&i+1<L.length&&/^[\s|:\-]+$/.test(L[i+1])&&/-/.test(L[i+1])){var h=cells(ln);i+=2;var rows=[];while(i<L.length&&/\|/.test(L[i])){rows.push(cells(L[i]));i++;}
+        o.push('<table><tr>'+h.map(function(x){return '<th>'+inl(x)+'</th>';}).join('')+'</tr>'+rows.map(function(r){return '<tr>'+r.map(function(x){return '<td>'+inl(x)+'</td>';}).join('')+'</tr>';}).join('')+'</table>');continue;}
+      var m=ln.match(/^\s*#{1,6}\s+(.*)/);if(m){o.push('<h4>'+inl(m[1])+'</h4>');i++;continue;}
+      if(/^\s*[-*]\s+/.test(ln)){var u=[];while(i<L.length&&/^\s*[-*]\s+/.test(L[i])){u.push('<li>'+inl(L[i].replace(/^\s*[-*]\s+/,''))+'</li>');i++;}o.push('<ul>'+u.join('')+'</ul>');continue;}
+      if(/^\s*\d+[.)]\s+/.test(ln)){var n=[];while(i<L.length&&/^\s*\d+[.)]\s+/.test(L[i])){n.push('<li>'+inl(L[i].replace(/^\s*\d+[.)]\s+/,''))+'</li>');i++;}o.push('<ol>'+n.join('')+'</ol>');continue;}
+      if(/^\s*$/.test(ln)){i++;continue;}
+      var p=[ln];i++;while(i<L.length&&!/^\s*$/.test(L[i])&&!/^\s*[-*]\s+/.test(L[i])&&!/^\s*\d+[.)]\s+/.test(L[i])&&!/^\s*#{1,6}\s+/.test(L[i])&&!/\|/.test(L[i])){p.push(L[i]);i++;}
+      o.push('<p>'+inl(p.join(' '))+'</p>');}
+    return o.join('');}
+
   /* ---------- Drawer ---------- */
   var backdrop=$('backdrop'),drawer=$('drawer');
   function closeDrawer(){backdrop.classList.remove('show');}
@@ -323,8 +350,8 @@
     backdrop.classList.add('show');
     drawer.querySelector('.x').onclick=closeDrawer;
     var resp=$('dResp');
-    askBrain(question,function(t){resp.className='resp';resp.textContent=t;});
-    var qs=$('dQs');(extraQs||[]).forEach(function(q){var b=document.createElement('button');b.textContent=q.label;b.onclick=function(){resp.className='resp think';resp.textContent='‹ consultando…';askBrain(q.q,function(t){resp.className='resp';resp.textContent=t;});};qs.appendChild(b);});
+    askBrain(question,function(t){resp.className='resp';resp.innerHTML=md(t);});
+    var qs=$('dQs');(extraQs||[]).forEach(function(q){var b=document.createElement('button');b.textContent=q.label;b.onclick=function(){resp.className='resp think';resp.textContent='‹ consultando…';askBrain(q.q,function(t){resp.className='resp';resp.innerHTML=md(t);});};qs.appendChild(b);});
   }
 
   /* ---------- Render empresa ---------- */
@@ -410,7 +437,7 @@
       row.onclick=function(){state.co=k;state.grupo=false;closeDrawer();applyMode();};list.appendChild(row);});
   };
   $('grpBtn').onclick=function(){state.grupo=!state.grupo;applyMode();};
-  $('core').onclick=function(){unlockAudio();openDrawer('est2','JARVIS · '+state.co,'Me dê o resumo executivo do dia da '+state.co+': o que está acontecendo, por quê, e o que fazer agora.',[{label:'5 decisões de hoje',q:'Quais as 5 decisões que eu deveria tomar hoje na '+state.co+'?'},{label:'Maiores riscos',q:'Quais os maiores riscos da '+state.co+' hoje?'}]);};
+  $('core').onclick=function(){unlockAudio();openDrawer('est2','JARVIS · '+state.co,'Aja como meu consultor senior. Faça um panorama executivo da '+state.co+': o que está acontecendo, por quê, o que fazer agora, e inclua 2 ou 3 alertas preditivos (problemas que podem surgir nos próximos meses) com gatilho e ação. Use títulos, tabelas e conclua com "o que eu faria no seu lugar".',[{label:'📊 Relatório executivo',q:'Gere um relatório executivo completo e formatado da '+state.co+', com seções (resultado, caixa/cobrança, fiscal, riscos), tabelas comparando os anos, projeção e próximos passos.'},{label:'🔮 Projeção 2026',q:'Projete 2026 da '+state.co+' (receita, lucro, margem e caixa) a partir da trajetória real, com premissas explícitas e cenários conservador, base e otimista, em tabela.'},{label:'⚠️ Riscos futuros',q:'Quais problemas podem surgir nos próximos 3 a 6 meses na '+state.co+'? Traga alertas preditivos com o gatilho a observar e a ação preventiva, priorizados por impacto em reais.'},{label:'✅ 5 decisões de hoje',q:'Quais as 5 decisões prioritárias que eu deveria tomar hoje na '+state.co+', com a evidência de cada uma?'}]);};
 
   /* ---------- Microfone ---------- */
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -418,7 +445,7 @@
     if(SR){try{var rec=new SR();rec.lang='pt-BR';rec.interimResults=false;rec.maxAlternatives=1;m.classList.add('rec');tst('🎙️ Ouvindo…');
       rec.onresult=function(e){m.classList.remove('rec');var q=e.results[0][0].transcript;
         openDrawer('est2','Você perguntou','' , []);
-        drawer.querySelector('h3').textContent='"'+q+'"';var resp=$('dResp');resp.className='resp think';resp.textContent='‹ consultando…';askBrain(q,function(t){resp.className='resp';resp.textContent=t;});};
+        drawer.querySelector('h3').textContent='"'+q+'"';var resp=$('dResp');resp.className='resp think';resp.textContent='‹ consultando…';askBrain(q,function(t){resp.className='resp';resp.innerHTML=md(t);});};
       rec.onerror=function(){m.classList.remove('rec');tst('Não entendi, tente de novo');};rec.onend=function(){m.classList.remove('rec');};rec.start();return;
     }catch(e){}}
     openDrawer('est2','JARVIS','Me dê o resumo executivo do dia da '+state.co+'.',[]);};
