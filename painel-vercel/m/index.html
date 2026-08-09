@@ -300,10 +300,10 @@
   // Voz do aparelho (fallback gratuito quando a premium ElevenLabs esta no limite)
   var VOICES=[];function loadVoices(){try{VOICES=window.speechSynthesis.getVoices()||[];}catch(e){}}
   if('speechSynthesis' in window){loadVoices();try{window.speechSynthesis.onvoiceschanged=loadVoices;}catch(e){}}
-  function pickVoice(){var pt=VOICES.filter(function(v){return /pt[-_]?BR/i.test(v.lang)||/portug/i.test(v.name);});
-    var male=pt.filter(function(v){return /(male|masc|homem|Luiz|Ricardo|Felipe|Antonio|Daniel|Google portugu.s do Brasil)/i.test(v.name)&&!/female|femin/i.test(v.name);});
-    return male[0]||pt[0]||VOICES.filter(function(v){return /^pt/i.test(v.lang);})[0]||null;}
-  function browserSpeak(t){if(!('speechSynthesis' in window)||!t)return false;try{window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.lang='pt-BR';var v=pickVoice();if(v)u.voice=v;u.rate=1;u.pitch=.85;window.speechSynthesis.speak(u);return true;}catch(e){return false;}}
+  // Procura SO uma voz claramente masculina; se nao achar, deixa a voz PADRAO do Android (que o Jorge pode configurar).
+  function pickMale(){var pt=VOICES.filter(function(v){return /pt[-_]?BR/i.test(v.lang)||/portug/i.test(v.name);});
+    return pt.filter(function(v){return /(male|masc|homem|Luiz|Luciano|Ricardo|Felipe|Antonio|Daniel|João|Joao)/i.test(v.name)&&!/female|femin|Maria|Ana|Luciana|Vitoria|Fernanda/i.test(v.name);})[0]||null;}
+  function browserSpeak(t){if(!('speechSynthesis' in window)||!t)return false;try{window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.lang='pt-BR';var v=pickMale();if(v)u.voice=v;u.rate=1;u.pitch=.8;window.speechSynthesis.speak(u);return true;}catch(e){return false;}}
   aud.addEventListener('error',function(){ // premium falhou (limite/chave) -> usa voz do aparelho
     if(browserSpeak(lastReply)){try{vtxt('🔊 <b>JARVIS</b> · voz do aparelho (premium no limite)');}catch(e){}}
     else{try{vtxt('🔇 <b>Voz indisponível</b> · leia a resposta na tela');}catch(e){}}});
