@@ -447,7 +447,9 @@
    if(window.requestAnimationFrame)tick();})();
 
   /* ---------- Barra de voz tocável (replay garantido no toque) ---------- */
-  var vb=document.querySelector('.voicebar');if(vb){vb.style.cursor='pointer';vb.addEventListener('click',function(e){if(e.target.closest('#mic'))return;unlockAudio();if(lastReply)playTTS(lastReply);});}
+  var vb=document.querySelector('.voicebar');if(vb){vb.style.cursor='pointer';vb.addEventListener('click',function(e){if(e.target.closest('#mic'))return;unlockAudio();if(!lastReply)return;
+    // Toque direto: fala JA pela voz do aparelho (o Android nunca bloqueia dentro do gesto); premium volta sozinha quando o limite renovar.
+    var okBrowser=browserSpeak(lastReply); if(!okBrowser)playTTS(lastReply);});}
 
   /* ---------- Boot ---------- */
   applyMode();
