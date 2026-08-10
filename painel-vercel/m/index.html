@@ -147,6 +147,8 @@
   .drawer .dchart .lg{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;font-size:10.5px;color:var(--ink)}
   .drawer .dchart .lg span{display:inline-flex;align-items:center;gap:5px}
   .drawer .dchart .lg i{width:9px;height:9px;border-radius:2px;display:inline-block}
+  .drawer .dchart.ghost{border-style:dashed}
+  .drawer .dchart.ghost .cu{color:var(--dim);margin:6px 0 0;line-height:1.4}
   .drawer .resp table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12px}
   .drawer .resp th{text-align:left;color:var(--green);border-bottom:1px solid var(--line2);padding:5px 7px;font-weight:600}
   .drawer .resp td{border-bottom:1px solid var(--line);padding:5px 7px;color:var(--ink);font-variant-numeric:tabular-nums}
@@ -340,7 +342,21 @@
     var folha={tipo:'bars2',tit:'Folha líquida · julho/2026',unid:'R$ mil',cats:['SKAL','KALFIX'],
       series:[{nome:'Líquido',cor:'#2dff8c',vals:[124.29,27.96]}],
       q:'Analise a folha líquida de julho/2026 (SKAL 124,29 mil com 75 funcionários; KALFIX 27,96 mil com 23), o peso dos encargos e a saída de caixa mensal recorrente.'};
-    s.chartsByAgent={fin:receita,cob:aging,com:receita,dir:receita,est:receita,est2:receita,bi:receita,comp:aging,fis:fiscal,rh:folha,inc:receita};
+    var caixa={tipo:'bars2',tit:'Recursos disponíveis',unid:'R$ mil · ref. 24/07',cats:['Caixa BB','Crédito livre'],
+      series:[{nome:'Disponível',cor:'#2dff8c',vals:[827.3,400]}],
+      q:'Analise a liquidez da SKAL: caixa no Banco do Brasil ~827,3 mil (ref. 24/07) e crédito BB Giro livre ~400 mil não usado. Lembre que permutas baixadas como caixa inflam o saldo — qual o caixa real e como usar o crédito livre com disciplina.'};
+    var docs={tipo:'days',tit:'Vencimentos · documentos e taxas',unid:'dias até o vencimento',
+      items:[{nome:'Taxa Localização (Parnaíba)',date:'2026-08-22'},{nome:'AVCB Bombeiros (Parnaíba)',date:'2027-07-15'},{nome:'Licença Ambiental (matriz)',date:'2027-12-31'}],
+      q:'Liste os vencimentos de documentos e taxas da SKAL por prazo (Taxa de Localização de Parnaíba 22/08/2026; AVCB Bombeiros 15/07/2027; Licença Ambiental da matriz 31/12/2027) e o que providenciar com antecedência.'};
+    s.chartsByAgent={fin:caixa,cob:aging,com:receita,dir:receita,est2:receita,bi:receita,comp:aging,fis:fiscal,rh:folha,doc:docs};
+    s.ghostByAgent={
+      est:{tit:'Estoque',hint:'Para ligar o gráfico: envie a posição de estoque (itens, quantidade, giro, ruptura).'},
+      cmp:{tit:'Compras',hint:'Para ligar o gráfico: envie as compras por fornecedor e os preços praticados.'},
+      prod:{tit:'Operações',hint:'Para ligar o gráfico: envie a produção mensal (volume, capacidade, custo).'},
+      log:{tit:'Logística',hint:'Para ligar o gráfico: envie entregas, prazos e custo de frete.'},
+      proj:{tit:'Projetos',hint:'Para ligar o gráfico: envie a lista de projetos com status e prazos.'},
+      inc:{tit:'Incentivos',hint:'Para ligar o gráfico: envie o valor dos incentivos de ICMS e a economia gerada.'}
+    };
   })();
   var STLABEL={ok:'Normal',aten:'Atenção',crit:'Crítico',oport:'Oportunidade',parc:'Parcial · RH',sem:'Sem dados'};
   var STCOLOR={ok:'var(--ok)',aten:'var(--aten)',crit:'var(--crit)',oport:'var(--oport)',parc:'var(--oport)',sem:'var(--dim)'};
@@ -384,8 +400,25 @@
   var backdrop=$('backdrop'),drawer=$('drawer');
   function closeDrawer(){backdrop.classList.remove('show');}
   backdrop.onclick=function(e){if(e.target===backdrop)closeDrawer();};
-  function chartFor(agKey){var c=co();return (c.dados&&c.chartsByAgent&&c.chartsByAgent[agKey])||null;}
-  function chartBlock(g){if(!g)return '';var body=g.tipo==='donut'?svgDonut(g):svgBars(g);
+  function chartFor(agKey){var c=co();if(!c.dados)return null;
+    if(c.chartsByAgent&&c.chartsByAgent[agKey])return c.chartsByAgent[agKey];
+    if(c.ghostByAgent&&c.ghostByAgent[agKey]){var gg=c.ghostByAgent[agKey];return {ghost:true,tit:gg.tit,hint:gg.hint};}
+    return null;}
+  function svgDays(g){var now=new Date();var items=g.items.map(function(it){return {nome:it.nome,d:Math.round((new Date(it.date)-now)/86400000)};});
+    var max=1;items.forEach(function(x){if(x.d>max)max=x.d;});
+    var W=300,rh=34,H=items.length*rh+6,x0=8,bw=W-x0-58;var svg='<svg viewBox="0 0 '+W+' '+H+'" role="img">';
+    items.forEach(function(x,i){var y=i*rh+6;var w=Math.max(3,bw*(Math.max(x.d,0)/max));var col=x.d<30?'#ff5b6e':(x.d<120?'#e6c15a':'#2dff8c');
+      svg+='<text x="'+x0+'" y="'+(y+9)+'" fill="#eafff4" font-size="9.5">'+x.nome+'</text>';
+      svg+='<rect x="'+x0+'" y="'+(y+13)+'" width="'+w.toFixed(1)+'" height="9" rx="2" fill="'+col+'" opacity=".9"/>';
+      svg+='<text x="'+(x0+w+5).toFixed(1)+'" y="'+(y+21)+'" fill="'+col+'" font-size="8.5" font-family="ui-monospace,monospace">'+x.d+' dias</text>';});
+    return svg+'</svg>';}
+  function svgGhost(){var W=300,H=104,svg='<svg viewBox="0 0 '+W+' '+H+'" role="img">',hs=[40,66,52,80];
+    for(var i=0;i<4;i++){var x=34+i*62;svg+='<rect x="'+x+'" y="'+(H-16-hs[i])+'" width="34" height="'+hs[i]+'" rx="3" fill="none" stroke="#5a7c68" stroke-dasharray="4 3" opacity=".5"/>';}
+    svg+='<text x="'+(W/2)+'" y="'+(H/2+2)+'" fill="#5a7c68" font-size="11" text-anchor="middle" font-family="ui-monospace,monospace">aguardando dados</text>';
+    return svg+'</svg>';}
+  function chartBlock(g){if(!g)return '';
+    if(g.ghost)return '<div class="dchart ghost"><div class="ct">'+g.tit+'</div>'+svgGhost()+'<div class="cu">'+g.hint+'</div></div>';
+    var body=g.tipo==='donut'?svgDonut(g):(g.tipo==='days'?svgDays(g):svgBars(g));
     return '<div class="dchart"><div class="ct">'+g.tit+'</div><div class="cu">'+g.unid+'</div>'+body+'</div>';}
   function openDrawer(iconKey,title,question,extraQs,chartSpec){
     unlockAudio();
