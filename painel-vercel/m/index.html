@@ -140,6 +140,13 @@
   .drawer .resp ul,.drawer .resp ol{margin:5px 0 8px;padding-left:20px}
   .drawer .resp li{margin:3px 0}
   .drawer .resp code{font-family:var(--mono);font-size:12px;background:rgba(45,255,140,.1);padding:1px 4px;border-radius:4px;color:var(--green)}
+  .drawer .dchart{background:rgba(8,24,16,.5);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:2px 0 12px}
+  .drawer .dchart .ct{font-size:11px;letter-spacing:.4px;color:var(--muted);text-transform:uppercase}
+  .drawer .dchart .cu{font-size:10.5px;color:var(--muted);margin-bottom:6px}
+  .drawer .dchart svg{width:100%;height:auto;display:block;overflow:visible}
+  .drawer .dchart .lg{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;font-size:10.5px;color:var(--ink)}
+  .drawer .dchart .lg span{display:inline-flex;align-items:center;gap:5px}
+  .drawer .dchart .lg i{width:9px;height:9px;border-radius:2px;display:inline-block}
   .drawer .resp table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12px}
   .drawer .resp th{text-align:left;color:var(--green);border-bottom:1px solid var(--line2);padding:5px 7px;font-weight:600}
   .drawer .resp td{border-bottom:1px solid var(--line);padding:5px 7px;color:var(--ink);font-variant-numeric:tabular-nums}
@@ -325,6 +332,16 @@
     FCK:{nome:'FCK',status:'sem',dados:false}
   };
   var ORDER=['SKAL','KALFIX','QUIMIKA','FCK'];
+  // Gráfico por agente (só dados reais). Monta a partir do DATA.
+  (function(){var s=DATA.SKAL;if(!s.graf)return;var receita=s.graf[0],aging=s.graf[1];
+    var fiscal={tipo:'bars2',tit:'Tributos · 2º tri/2026',unid:'R$ mil · Lucro Real',cats:['IRPJ','Adic.10%','CSLL'],
+      series:[{nome:'Apurado',cor:'#57b6ff',vals:[147.43,92.28,88.46]}],
+      q:'Analise a carga de IRPJ (147,43 mil), adicional de 10% (92,28 mil) e CSLL (88,46 mil) apurados no 2º trimestre de 2026 da SKAL (Lucro Real, base 982,8 mil): peso sobre o resultado e caminhos de planejamento tributário lícito.'};
+    var folha={tipo:'bars2',tit:'Folha líquida · julho/2026',unid:'R$ mil',cats:['SKAL','KALFIX'],
+      series:[{nome:'Líquido',cor:'#2dff8c',vals:[124.29,27.96]}],
+      q:'Analise a folha líquida de julho/2026 (SKAL 124,29 mil com 75 funcionários; KALFIX 27,96 mil com 23), o peso dos encargos e a saída de caixa mensal recorrente.'};
+    s.chartsByAgent={fin:receita,cob:aging,com:receita,dir:receita,est:receita,est2:receita,bi:receita,comp:aging,fis:fiscal,rh:folha,inc:receita};
+  })();
   var STLABEL={ok:'Normal',aten:'Atenção',crit:'Crítico',oport:'Oportunidade',parc:'Parcial · RH',sem:'Sem dados'};
   var STCOLOR={ok:'var(--ok)',aten:'var(--aten)',crit:'var(--crit)',oport:'var(--oport)',parc:'var(--oport)',sem:'var(--dim)'};
 
@@ -367,9 +384,13 @@
   var backdrop=$('backdrop'),drawer=$('drawer');
   function closeDrawer(){backdrop.classList.remove('show');}
   backdrop.onclick=function(e){if(e.target===backdrop)closeDrawer();};
-  function openDrawer(iconKey,title,question,extraQs){
+  function chartFor(agKey){var c=co();return (c.dados&&c.chartsByAgent&&c.chartsByAgent[agKey])||null;}
+  function chartBlock(g){if(!g)return '';var body=g.tipo==='donut'?svgDonut(g):svgBars(g);
+    return '<div class="dchart"><div class="ct">'+g.tit+'</div><div class="cu">'+g.unid+'</div>'+body+'</div>';}
+  function openDrawer(iconKey,title,question,extraQs,chartSpec){
     unlockAudio();
     drawer.innerHTML='<div class="dh"><div class="di"><svg viewBox="0 0 24 24">'+(ICON[iconKey]||ICON.est2)+'</svg></div><h3>'+title+'</h3><button class="x">✕</button></div>'+
+      chartBlock(chartSpec)+
       '<div class="resp think" id="dResp">‹ consultando o JARVIS…</div>'+
       '<div class="qs" id="dQs"></div>';
     backdrop.classList.add('show');
@@ -403,7 +424,7 @@
           {label:'🔮 Projeção',q:'Projete os próximos 3 a 6 meses da área de '+a[1]+' da '+c.nome+', com premissas explícitas e cenários.'},
           {label:'⚠️ Riscos',q:'Quais os principais riscos em '+a[1]+' da '+c.nome+' e como preveni-los? Priorize por impacto em reais.'},
           {label:'✅ Ações de hoje',q:'Sobre '+a[1]+' da '+c.nome+', quais as ações recomendadas para hoje, priorizadas?'}
-        ]);};
+        ],chartFor(a[0]));};
       el.appendChild(d);});
   }
   function renderFeed(){
@@ -512,7 +533,7 @@
       row.onclick=function(){state.co=k;state.grupo=false;closeDrawer();applyMode();};list.appendChild(row);});
   };
   $('grpBtn').onclick=function(){state.grupo=!state.grupo;applyMode();};
-  $('core').onclick=function(){unlockAudio();openDrawer('est2','Relatório integrado · '+state.co,'Aja como meu consultor sênior e gere o RELATÓRIO INTEGRADO da '+state.co+', consolidando TODAS as áreas (Financeiro, Cobrança, Fiscal, Contábil/Controladoria, RH, Comercial, Operações, Compliance). Estrutura: 1) **Painel de áreas** — uma tabela com cada área que tem dados, seu status (🟢/🟡/🔴) e o número-chave; 2) **Inteligência cruzada** — como as áreas se afetam (ex.: cobrança × caixa × permutas × fiscal); 3) **Diagnóstico consolidado**; 4) **3 alertas preditivos** com gatilho e ação; 5) conclua com "o que eu faria no seu lugar" em 2 ou 3 pontos. Use títulos e tabelas. Só use os números reais que você tem; onde faltar dado, diga o que falta.',[{label:'📊 Relatório executivo',q:'Gere um relatório executivo completo e formatado da '+state.co+', com seções (resultado, caixa/cobrança, fiscal, riscos), tabelas comparando os anos, projeção e próximos passos.'},{label:'🔮 Projeção 2026',q:'Projete 2026 da '+state.co+' (receita, lucro, margem e caixa) a partir da trajetória real, com premissas explícitas e cenários conservador, base e otimista, em tabela.'},{label:'⚠️ Riscos futuros',q:'Quais problemas podem surgir nos próximos 3 a 6 meses na '+state.co+'? Traga alertas preditivos com o gatilho a observar e a ação preventiva, priorizados por impacto em reais.'},{label:'✅ 5 decisões de hoje',q:'Quais as 5 decisões prioritárias que eu deveria tomar hoje na '+state.co+', com a evidência de cada uma?'}]);};
+  $('core').onclick=function(){unlockAudio();openDrawer('est2','Relatório integrado · '+state.co,'Aja como meu consultor sênior e gere o RELATÓRIO INTEGRADO da '+state.co+', consolidando TODAS as áreas (Financeiro, Cobrança, Fiscal, Contábil/Controladoria, RH, Comercial, Operações, Compliance). Estrutura: 1) **Painel de áreas** — uma tabela com cada área que tem dados, seu status (🟢/🟡/🔴) e o número-chave; 2) **Inteligência cruzada** — como as áreas se afetam (ex.: cobrança × caixa × permutas × fiscal); 3) **Diagnóstico consolidado**; 4) **3 alertas preditivos** com gatilho e ação; 5) conclua com "o que eu faria no seu lugar" em 2 ou 3 pontos. Use títulos e tabelas. Só use os números reais que você tem; onde faltar dado, diga o que falta.',[{label:'📊 Relatório executivo',q:'Gere um relatório executivo completo e formatado da '+state.co+', com seções (resultado, caixa/cobrança, fiscal, riscos), tabelas comparando os anos, projeção e próximos passos.'},{label:'🔮 Projeção 2026',q:'Projete 2026 da '+state.co+' (receita, lucro, margem e caixa) a partir da trajetória real, com premissas explícitas e cenários conservador, base e otimista, em tabela.'},{label:'⚠️ Riscos futuros',q:'Quais problemas podem surgir nos próximos 3 a 6 meses na '+state.co+'? Traga alertas preditivos com o gatilho a observar e a ação preventiva, priorizados por impacto em reais.'},{label:'✅ 5 decisões de hoje',q:'Quais as 5 decisões prioritárias que eu deveria tomar hoje na '+state.co+', com a evidência de cada uma?'}],chartFor('est2'));};
 
   /* ---------- Microfone ---------- */
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
