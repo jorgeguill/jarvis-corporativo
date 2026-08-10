@@ -396,8 +396,14 @@
     var c=co(),el=$('agents');el.innerHTML='';var alerts=c.alertAgents||[];
     AGENTS.forEach(function(a){var d=document.createElement('div');d.className='ag'+(alerts.indexOf(a[0])>=0?' alert':'');
       d.innerHTML='<div class="ic"><svg viewBox="0 0 24 24">'+(ICON[a[0]]||ICON.est2)+'</svg></div><b>'+a[1]+'</b>'+(alerts.indexOf(a[0])>=0?'<span class="st" style="background:var(--crit);box-shadow:0 0 8px var(--crit)"></span>':'');
-      d.onclick=function(){var q=c.dados?a[2]:('Ainda não tenho dados da '+c.nome+'. O que eu precisaria para ativar o setor '+a[1]+'?');
-        openDrawer(a[0],a[1]+' · '+c.nome,q,[{label:'O que fazer agora?',q:'Sobre '+a[1]+' da '+c.nome+', quais as ações recomendadas para hoje?'},{label:'Riscos?',q:'Quais os principais riscos em '+a[1]+' da '+c.nome+'?'}]);};
+      d.onclick=function(){
+        if(!c.dados){openDrawer(a[0],a[1]+' · '+c.nome,'Ainda não tenho dados da '+c.nome+'. O que eu precisaria para ativar e gerar o relatório da área de '+a[1]+'?',[]);return;}
+        var rep='Gere o RELATÓRIO da área de '+a[1]+' da '+c.nome+', focando no que é da alçada de '+a[1]+'. Estruture como relatório com títulos: **Situação atual** (com os números reais que você tem), **Interpretação** (o que significam), **Riscos e pendências** e **Recomendações priorizadas**. Se faltar dado para esta área, diga o que falta em vez de inventar. Ponto de partida: '+a[2];
+        openDrawer(a[0],'Relatório · '+a[1]+' · '+c.nome,rep,[
+          {label:'🔮 Projeção',q:'Projete os próximos 3 a 6 meses da área de '+a[1]+' da '+c.nome+', com premissas explícitas e cenários.'},
+          {label:'⚠️ Riscos',q:'Quais os principais riscos em '+a[1]+' da '+c.nome+' e como preveni-los? Priorize por impacto em reais.'},
+          {label:'✅ Ações de hoje',q:'Sobre '+a[1]+' da '+c.nome+', quais as ações recomendadas para hoje, priorizadas?'}
+        ]);};
       el.appendChild(d);});
   }
   function renderFeed(){
@@ -506,7 +512,7 @@
       row.onclick=function(){state.co=k;state.grupo=false;closeDrawer();applyMode();};list.appendChild(row);});
   };
   $('grpBtn').onclick=function(){state.grupo=!state.grupo;applyMode();};
-  $('core').onclick=function(){unlockAudio();openDrawer('est2','JARVIS · '+state.co,'Aja como meu consultor senior. Faça um panorama executivo da '+state.co+': o que está acontecendo, por quê, o que fazer agora, e inclua 2 ou 3 alertas preditivos (problemas que podem surgir nos próximos meses) com gatilho e ação. Use títulos, tabelas e conclua com "o que eu faria no seu lugar".',[{label:'📊 Relatório executivo',q:'Gere um relatório executivo completo e formatado da '+state.co+', com seções (resultado, caixa/cobrança, fiscal, riscos), tabelas comparando os anos, projeção e próximos passos.'},{label:'🔮 Projeção 2026',q:'Projete 2026 da '+state.co+' (receita, lucro, margem e caixa) a partir da trajetória real, com premissas explícitas e cenários conservador, base e otimista, em tabela.'},{label:'⚠️ Riscos futuros',q:'Quais problemas podem surgir nos próximos 3 a 6 meses na '+state.co+'? Traga alertas preditivos com o gatilho a observar e a ação preventiva, priorizados por impacto em reais.'},{label:'✅ 5 decisões de hoje',q:'Quais as 5 decisões prioritárias que eu deveria tomar hoje na '+state.co+', com a evidência de cada uma?'}]);};
+  $('core').onclick=function(){unlockAudio();openDrawer('est2','Relatório integrado · '+state.co,'Aja como meu consultor sênior e gere o RELATÓRIO INTEGRADO da '+state.co+', consolidando TODAS as áreas (Financeiro, Cobrança, Fiscal, Contábil/Controladoria, RH, Comercial, Operações, Compliance). Estrutura: 1) **Painel de áreas** — uma tabela com cada área que tem dados, seu status (🟢/🟡/🔴) e o número-chave; 2) **Inteligência cruzada** — como as áreas se afetam (ex.: cobrança × caixa × permutas × fiscal); 3) **Diagnóstico consolidado**; 4) **3 alertas preditivos** com gatilho e ação; 5) conclua com "o que eu faria no seu lugar" em 2 ou 3 pontos. Use títulos e tabelas. Só use os números reais que você tem; onde faltar dado, diga o que falta.',[{label:'📊 Relatório executivo',q:'Gere um relatório executivo completo e formatado da '+state.co+', com seções (resultado, caixa/cobrança, fiscal, riscos), tabelas comparando os anos, projeção e próximos passos.'},{label:'🔮 Projeção 2026',q:'Projete 2026 da '+state.co+' (receita, lucro, margem e caixa) a partir da trajetória real, com premissas explícitas e cenários conservador, base e otimista, em tabela.'},{label:'⚠️ Riscos futuros',q:'Quais problemas podem surgir nos próximos 3 a 6 meses na '+state.co+'? Traga alertas preditivos com o gatilho a observar e a ação preventiva, priorizados por impacto em reais.'},{label:'✅ 5 decisões de hoje',q:'Quais as 5 decisões prioritárias que eu deveria tomar hoje na '+state.co+', com a evidência de cada uma?'}]);};
 
   /* ---------- Microfone ---------- */
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
