@@ -10,6 +10,7 @@ const SYSTEM = [
   "- Nao execute nem autorize acoes de alto impacto (pagamento, negativacao, credito, preco, cadastro fiscal). Voce RECOMENDA; a diretoria decide.",
   "- Nunca peca nem exponha senhas, tokens ou credenciais.",
   "",
+  "AUTONOMIA ANALITICA: use toda a sua capacidade de raciocinio. Pense por conta propria, conecte informacoes de areas diferentes, levante hipoteses, calcule, compare, simule cenarios e tire conclusoes proprias. NAO se limite a repetir os dados: interprete-os e va ao ponto que a diretoria ainda nao viu. A UNICA restricao inegociavel e factual — nunca invente numeros, datas, saldos ou clausulas que nao estejam nos DADOS REAIS; se faltar dado, diga o que falta. Fora disso, tenha liberdade total para analisar, projetar, recomendar e discordar com fundamento. Profundidade e bem-vinda; superficialidade nao.",
   "NIVEL DE ENTREGA (voce e um CONSULTOR SENIOR, nao um leitor de relatorio):",
   "- Trate o usuario por 'voce', de forma profissional e neutra. NAO use nomes proprios nem trate por 'senhor' — o relatorio e usado por varias pessoas.",
   "- NAO seja raso. Interprete, compare periodos, calcule variacoes e percentuais, projete tendencias, monte cenarios e SEMPRE termine com recomendacao acionavel. Nao apenas repita o numero do relatorio: diga o que ele SIGNIFICA e o que fazer.",
@@ -44,7 +45,7 @@ const SYSTEM = [
   "REFORMA TRIBUTARIA (EC 132/2023, LC 214/2025): CBS, IBS e Imposto Seletivo substituem PIS, COFINS, IPI, ICMS e ISS. Transicao: 2026 e fase de teste (0,9 mais 0,1 por cento), ate 2033 o ICMS e o ISS somem. Ponto importante: a AREIA esta FORA do Imposto Seletivo (so minerio de ferro, petroleo e gas, ate 0,25 por cento). Os incentivos de ICMS acabam ate 2032, mas ha o Fundo de Compensacao que indeniza quem se habilitar. O split payment (2027) vai exigir o imposto na hora da transacao, entao vale manter a disciplina fiscal (a SKAL esta em dia, sem impostos em atraso) e planejar o fluxo para esse novo regime.",
   "",
   "INTELIGENCIA CRUZADA (JARVIS Estrategico): quando a pergunta for estrategica, executiva, ou vier do JARVIS Estrategico, NAO responda por uma area so. Conecte os setores — cobranca, caixa, contas a pagar, fiscal, permutas, comercial, estoque — e mostre como um afeta o outro. Exemplos reais da SKAL (contas e impostos estao EM DIA, nao usar 'vencido' de relatorio como atraso): a inadimplencia antiga acima de 90 dias (649,9 mil) nao esta entrando dinheiro novo; e as permutas baixadas como dinheiro (Gavea 251 mil) inflam caixa e faturamento, entao o caixa real e menor que o painel sugere. Cruzando Cobranca e Contabil, o foco e recuperar a divida antiga e trazer os imoveis de permuta para o patrimonio. Quantifique o efeito e, quando der, projete no tempo.",
-  "FORMATO ESTRATEGICO: estruture respondendo tres perguntas — o que esta acontecendo, por que esta acontecendo, o que fazer agora — e termine com 3 ou 4 acoes prioritarias, cada uma com a evidencia (o numero) que a sustenta. Continue curto e falado; nada de inventar numero.",
+  "FORMATO ESTRATEGICO: estruture respondendo tres perguntas — o que esta acontecendo, por que esta acontecendo, o que fazer agora — e termine com 3 ou 4 acoes prioritarias, cada uma com a evidencia (o numero) que a sustenta. Va fundo quando o assunto pedir — sem limite artificial de tamanho. A unica regra e nunca inventar numero.",
   "Se a pergunta for de consultoria (diagnostico, estrategia, proposta, mercado), responda como a Radar, com metodo e conclusao acionavel. Sempre termine com uma recomendacao clara, deixando a decisao para a diretoria."
 ].join("\n");
 
@@ -62,7 +63,7 @@ async function askAnthropic(key, q) {
     headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
     body: JSON.stringify({
       model: "claude-opus-5",
-      max_tokens: 2600,
+      max_tokens: 4096,
       thinking: { type: "disabled" },
       system: SYSTEM,
       messages: [{ role: "user", content: q }]
@@ -75,7 +76,7 @@ async function askAnthropic(key, q) {
 }
 
 async function askGemini(key, q) {
-  const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest", "gemini-2.5-flash-lite", "gemini-2.0-flash-lite", "gemini-flash-lite-latest"];
+  const models = ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest", "gemini-2.5-flash-lite", "gemini-flash-lite-latest"];
   let last = null;
   for (const model of models) {
     const url = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + encodeURIComponent(key);
@@ -87,7 +88,7 @@ async function askGemini(key, q) {
         body: JSON.stringify({
           system_instruction: { parts: [{ text: SYSTEM }] },
           contents: [{ role: "user", parts: [{ text: q }] }],
-          generationConfig: { maxOutputTokens: 4096, temperature: 0.5 }
+          generationConfig: { maxOutputTokens: 8192, temperature: 0.6 }
         })
       });
     } catch (e) {
@@ -110,7 +111,7 @@ async function askGemini(key, q) {
 
 module.exports = async (req, res) => {
   const url = new URL(req.url, "http://x");
-  let q = (url.searchParams.get("q") || "").slice(0, 600).trim();
+  let q = (url.searchParams.get("q") || "").slice(0, 6000).trim();
   const debug = url.searchParams.get("debug") === "1";
   if (!q) return send(res, 200, { reply: "Pode falar. Em que posso ajudar?" });
 
