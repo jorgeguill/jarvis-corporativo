@@ -2,7 +2,7 @@
 // Tenta a melhor qualidade (multilingual_v2) e, se falhar, cai para flash_v2_5;
 // tenta a voz preferida e, se falhar, cai para vozes masculinas comprovadas.
 // Nunca deixa cair na voz mecânica do navegador (a menos que falte a chave).
-// Voz clonada do Jorge no futuro: defina ELEVENLABS_VOICE_ID no Vercel.
+// Voz clonada no futuro: defina ELEVENLABS_VOICE_ID no Vercel.
 const ADAM = 'pNInz6obpgDQGcFmaJgB';   // masculina, comprovada nesta conta
 const ANTONI = 'ErXwobaYiN019PkySvjV'; // masculina, mais quente
 const MODELS = ['eleven_multilingual_v2', 'eleven_flash_v2_5'];
