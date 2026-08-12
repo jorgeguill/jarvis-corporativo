@@ -17,14 +17,13 @@
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);overflow-x:hidden}
-  #particles{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.28}
+  #particles{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.14}
   .app{position:relative;z-index:1;min-height:100vh;padding:10px 14px 96px;max-width:920px;margin:0 auto}
   .app::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
-    background:linear-gradient(180deg,rgba(11,6,7,.40),rgba(6,3,4,.66)),url('/img/kalfix-bg.jpg') center center / cover no-repeat;
-    background-color:#0b0607}
-  /* Imagem principal (arte inteira do Grupo Kalfix) */
-  .heroimg{display:block;width:100%;margin:4px 0 8px;border:1px solid var(--line2);border-radius:18px;overflow:hidden;
-    cursor:pointer;box-shadow:0 0 34px rgba(232,32,46,.20)}
+    background:radial-gradient(900px 620px at 50% 0%,#160a0b,#080405 58%,#050203);
+    background-color:#070304}
+  /* Imagem principal (logotipo do Grupo Kalfix em fundo preto — mescla com o app) */
+  .heroimg{display:block;width:100%;margin:0 0 4px;cursor:pointer}
   .heroimg img{width:100%;height:auto;display:block;pointer-events:none;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;-webkit-touch-callout:none}
 
   /* Top bar */
@@ -201,7 +200,7 @@
 
   <!-- VISÃO EMPRESA -->
   <div id="empView">
-    <div class="heroimg" id="core"><img src="/img/kalfix-bg.jpg" alt="Grupo Kalfix" draggable="false"></div>
+    <div class="heroimg" id="core"><img src="/img/kalfix-logo.jpg" alt="Grupo Kalfix" draggable="false"></div>
 
     <div class="coreCap">
       <div class="tag">JARVIS</div>
