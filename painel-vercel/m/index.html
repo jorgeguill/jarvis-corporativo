@@ -329,7 +329,13 @@
          q:'Analise a trajetória de receita e lucro líquido da SKAL de 2023 a 2025 (Receita 24,68 → 30,46 → 33,86 mi; Lucro 4,08 → 1,32 → 2,86 mi): o que explica a queda de lucro em 2024 e a recuperação em 2025, o que está acontecendo com a margem, e projete 2026.'},
         {tipo:'donut',tit:'Inadimplência por idade',unid:'R$ 833,9 mil · total',
          partes:[{nome:'0–30 dias',val:107.92,cor:'#2dff8c'},{nome:'30–90 dias',val:55.60,cor:'#e6c15a'},{nome:'+90 dias',val:670.37,cor:'#ff5b6e'}],
-         q:'Analise a composição por idade da inadimplência da SKAL em 11/08 (0–30: R$ 107,9 mil; 31–60: R$ 38,0 mil; 61–90: R$ 17,6 mil; +90 dias: R$ 670,4 mil, 80% do total de R$ 833,9 mil): o total caiu vs 10/08 mas o +90 subiu; o que é recuperável, o que é risco de perda, e qual a estratégia de cobrança por faixa.'}
+         q:'Analise a composição por idade da inadimplência da SKAL em 11/08 (0–30: R$ 107,9 mil; 31–60: R$ 38,0 mil; 61–90: R$ 17,6 mil; +90 dias: R$ 670,4 mil, 80% do total de R$ 833,9 mil): o total caiu vs 10/08 mas o +90 subiu; o que é recuperável, o que é risco de perda, e qual a estratégia de cobrança por faixa.'},
+        {tipo:'bars2',tit:'Faturamento mensal 2026',unid:'R$ milhões · líquido (ago parcial)',cats:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago*'],
+         series:[{nome:'Faturamento',cor:'#2dff8c',vals:[2.08,1.87,2.35,1.90,1.89,2.34,2.39,0.81]}],
+         q:'Analise o faturamento mensal da SKAL em 2026 (jan 2,08; fev 1,87; mar 2,35; abr 1,90; mai 1,89; jun 2,34; jul 2,39 mi; ago parcial). Compare com a média de 2025 (2,12 mi/mês) e diga se o ano está acelerando, estável ou desacelerando, e projete o fechamento de 2026.'},
+        {tipo:'bars2',tit:'Compras por centro de custo 2025',unid:'R$ milhões · ano',cats:['Mat-Prima','Admin','Embal.','Prod SKAL','Forno'],
+         series:[{nome:'Compras',cor:'#e6c15a',vals:[8.53,4.05,2.66,2.61,0.96]}],
+         q:'Analise as compras da SKAL por centro de custo em 2025 (Matéria-Prima 8,53 mi, Administrativo 4,05, Embalagens 2,66, Produção SKAL 2,61, Forno 0,96): onde está o maior gasto, o que é custo variável de produção, e onde há espaço para negociação com fornecedores.'}
       ],
       entradas:{data:'11/08 · fluxo',
         cards:[['Faturamento do dia','R$ 166,7 mil','ok'],['Resgatado','R$ 14,6 mil','ok'],['Venceu no dia','R$ 0,3 mil','aten'],['Previsão 13–19/08','R$ 515,6 mil','oport']],
@@ -385,7 +391,8 @@
     var docs={tipo:'days',tit:'Vencimentos · documentos e taxas',unid:'dias até o vencimento',
       items:[{nome:'Taxa Localização (Parnaíba)',date:'2026-08-22'},{nome:'AVCB Bombeiros (Parnaíba)',date:'2027-07-15'},{nome:'Licença Ambiental (matriz)',date:'2027-12-31'}],
       q:'Liste os vencimentos de documentos e taxas da SKAL por prazo (Taxa de Localização de Parnaíba 22/08/2026; AVCB Bombeiros 15/07/2027; Licença Ambiental da matriz 31/12/2027) e o que providenciar com antecedência.'};
-    s.chartsByAgent={fin:caixa,cob:aging,com:receita,dir:receita,est2:receita,bi:receita,comp:aging,fis:fiscal,rh:folha,doc:docs};
+    var fatmes=s.graf[2],compras=s.graf[3];
+    s.chartsByAgent={fin:caixa,cob:aging,com:fatmes,cmp:compras,dir:receita,est2:receita,bi:receita,comp:aging,fis:fiscal,rh:folha,doc:docs};
     s.ghostByAgent={
       est:{tit:'Estoque',hint:'Para ligar o gráfico: envie a posição de estoque (itens, quantidade, giro, ruptura).'},
       cmp:{tit:'Compras',hint:'Para ligar o gráfico: envie as compras por fornecedor e os preços praticados.'},
