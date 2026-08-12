@@ -220,7 +220,7 @@
     <div class="sec" id="entradasSec"><h2>Entradas do dia</h2><span class="c" id="entData"></span></div>
     <div id="entradas"></div>
 
-    <div class="sec" id="prodSec"><h2>Produção</h2><span class="c" id="prodData"></span></div>
+    <div class="sec" id="prodSec"><h2>Produção · Operações</h2><span class="c" id="prodData"></span></div>
     <div id="prodBox"></div>
 
     <div class="sec" id="chartsSec"><h2>Painel visual</h2><span class="c">toque para a análise</span></div>
@@ -600,7 +600,17 @@
     if(!c.dados||!c.producao){sec.style.display='none';el.style.display='none';return;}
     sec.style.display='flex';el.style.display='block';var p=c.producao;
     $('prodData').textContent=p.data;
-    el.innerHTML='<div class="ecards">'+p.cards.map(function(k){return '<div class="ecard"><div class="l">'+k[0]+'</div><div class="v v-'+k[2]+'">'+k[1]+'</div></div>';}).join('')+'</div>';
+    el.innerHTML='<div class="ecards">'+p.cards.map(function(k){return '<div class="ecard"><div class="l">'+k[0]+'</div><div class="v v-'+k[2]+'">'+k[1]+'</div></div>';}).join('')+'</div>'+
+      '<div class="chart" id="prodCTA"><div class="cta">🏭 Abrir a análise de Operações · Produção ›</div></div>';
+    $('prodCTA').onclick=function(){
+      openDrawer('prod','Operações · Produção · '+c.nome,
+        'Aja como meu consultor de operações e gere o relatório de Produção da '+c.nome+': volume por mês e turno, mix de produtos, consumo de insumos, o diagnóstico (disponibilidade e sequência, produção por campanhas, fragmentação, governança documental) e as recomendações do programa de 90 dias. Use títulos e tabelas; compare em toneladas.',
+        [{label:'🏭 Mix de produtos',q:'Analise o mix de produtos da produção da '+c.nome+' e a estratégia de campanhas (top 3 concentram 89%).'},
+         {label:'🌙 Por turno',q:'Compare a produção por turno (diurno vs noturno) da '+c.nome+' e o balanceamento de capacidade.'},
+         {label:'📦 Consumo e custo/saco',q:'Analise o consumo de insumos da produção da '+c.nome+' e o que falta para fechar o custo por saco.'},
+         {label:'⚠️ Governança',q:'Quais as falhas de governança documental das ordens de fabricação da '+c.nome+' e como corrigir?'}],
+        chartFor('prod'));
+    };
   }
 
   function renderEmpresa(){
