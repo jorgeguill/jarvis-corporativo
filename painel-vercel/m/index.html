@@ -183,6 +183,12 @@
   .chart .lg{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;font-size:10.5px;color:var(--ink)}
   .chart .lg span{display:inline-flex;align-items:center;gap:5px}
   .chart .lg i{width:9px;height:9px;border-radius:2px;display:inline-block}
+  /* Entradas do dia */
+  .ecards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:4px 0 10px}
+  @media(max-width:560px){.ecards{grid-template-columns:repeat(2,1fr)}}
+  .ecard{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:9px 11px}
+  .ecard .l{font-size:8.5px;letter-spacing:.6px;color:var(--dim);text-transform:uppercase}
+  .ecard .v{font-family:var(--mono);font-size:14px;margin-top:4px;font-variant-numeric:tabular-nums}
 </style></head><body>
 <canvas id="particles"></canvas>
 <div class="app">
@@ -210,6 +216,9 @@
 
     <div class="kpis" id="kpis"></div>
     <div class="agents" id="agents"></div>
+
+    <div class="sec" id="entradasSec"><h2>Entradas do dia</h2><span class="c" id="entData"></span></div>
+    <div id="entradas"></div>
 
     <div class="sec" id="chartsSec"><h2>Painel visual</h2><span class="c">toque para a análise</span></div>
     <div class="charts" id="charts"></div>
@@ -318,7 +327,12 @@
         {tipo:'donut',tit:'Inadimplência por idade',unid:'R$ 848,2 mil · total',
          partes:[{nome:'0–30 dias',val:122.23,cor:'#2dff8c'},{nome:'30–90 dias',val:55.78,cor:'#e6c15a'},{nome:'+90 dias',val:670.19,cor:'#ff5b6e'}],
          q:'Analise a composição por idade da inadimplência da SKAL em 10/08 (0–30: R$ 122,2 mil; 31–60: R$ 38,0 mil; 61–90: R$ 17,8 mil; +90 dias: R$ 670,2 mil, 79% do total de R$ 848,2 mil): o que é recuperável, o que é risco de perda, e qual a estratégia de cobrança por faixa.'}
-      ]
+      ],
+      entradas:{data:'10/08 · fluxo',
+        cards:[['Faturamento do dia','R$ 188,5 mil','ok'],['Resgatado','R$ 34,2 mil','ok'],['Venceu no dia','R$ 12,7 mil','aten'],['Previsão 12–18/08','R$ 468,7 mil','oport']],
+        graf:{tipo:'bars2',tit:'Previsão de entrada · 12–18/08',unid:'R$ mil',cats:['12/08','13/08','14/08','17/08','18/08'],
+          series:[{nome:'Previsto',cor:'#57b6ff',vals:[33.93,88.22,66.31,90.61,189.61]}]},
+        q:'Analise as entradas do dia 10/08 da SKAL (faturamento do dia R$ 188.519,05 — à vista NFe 26.107,98, NG 7.784,10, a prazo 154.626,97; resgatado de inadimplência R$ 34.187,61; venceu e não pagou R$ 12.749,16) e a previsão de entrada de 12 a 18/08 (12/08 33.930,66; 13/08 88.224,69; 14/08 66.306,22; 17/08 90.609,97; 18/08 189.614,20; total 468.685,74). O que isso diz sobre o fluxo de caixa da semana, considerando a folha mensal (~124 mil líquido) e as saídas recorrentes, e o que priorizar na cobrança e no caixa?'}
     },
     KALFIX:{nome:'KALFIX',status:'parc',dados:true,parcial:true,
       kpis:[{l:'Faturam./mês',v:'R$ 114,3 mil',st:'ok'},{l:'Funcionários',v:'23',st:'ok'},{l:'Simples/mês',v:'R$ 14,3 mil',st:'aten'},{l:'Caixa',v:'aguardando',st:'sem'}],
@@ -530,9 +544,23 @@
       el.appendChild(d);});
   }
 
+  function renderEntradas(){
+    var c=co(),sec=$('entradasSec'),el=$('entradas');
+    if(!c.dados||!c.entradas){sec.style.display='none';el.style.display='none';return;}
+    sec.style.display='flex';el.style.display='block';var e=c.entradas;
+    $('entData').textContent=e.data;
+    var stat='<div class="ecards">'+e.cards.map(function(k){return '<div class="ecard"><div class="l">'+k[0]+'</div><div class="v v-'+k[2]+'">'+k[1]+'</div></div>';}).join('')+'</div>';
+    var chart='<div class="chart" id="entChart"><div class="ct">'+e.graf.tit+'</div><div class="cv"><small>'+e.graf.unid+'</small></div>'+svgBars(e.graf)+'<div class="cta">toque para a análise do JARVIS ›</div></div>';
+    el.innerHTML=stat+chart;
+    $('entChart').onclick=function(){openDrawer('fin','Entradas · '+c.nome,e.q,[
+      {label:'🔮 Fluxo da semana',q:'Projete o fluxo de caixa da '+c.nome+' nesta semana: some as entradas previstas de 12 a 18/08 e confronte com as saídas recorrentes (folha ~124 mil líquido e demais). Sobra ou aperta?'},
+      {label:'✅ O que priorizar',q:'Com base nas entradas do dia e da semana da '+c.nome+', o que priorizar na cobrança e no caixa?'}
+    ]);};
+  }
+
   function renderEmpresa(){
     $('coName').textContent=state.co;
-    renderCore();renderKpis();renderAgents();renderCharts();renderAlerta();renderFeed();renderHoje();renderNote();
+    renderCore();renderKpis();renderAgents();renderEntradas();renderCharts();renderAlerta();renderFeed();renderHoje();renderNote();
   }
 
   /* ---------- Visão Grupo ---------- */
