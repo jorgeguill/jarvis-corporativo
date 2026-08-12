@@ -220,6 +220,9 @@
     <div class="sec" id="entradasSec"><h2>Entradas do dia</h2><span class="c" id="entData"></span></div>
     <div id="entradas"></div>
 
+    <div class="sec" id="prodSec"><h2>Produção</h2><span class="c" id="prodData"></span></div>
+    <div id="prodBox"></div>
+
     <div class="sec" id="chartsSec"><h2>Painel visual</h2><span class="c">toque para a análise</span></div>
     <div class="charts" id="charts"></div>
 
@@ -335,14 +338,34 @@
         q:'Analise as entradas do dia 11/08 da SKAL (faturamento do dia R$ 166.662,84 — à vista NFe 33.741,29, NG 7.597,00, a prazo 125.324,55; resgatado de inadimplência R$ 14.608,52; venceu e não pagou R$ 303,84) e a previsão de entrada de 13 a 19/08 (13/08 84.755,32; 14/08 64.928,94; 17/08 90.609,97; 18/08 173.035,79; 19/08 102.281,23; total 515.611,25). O que isso diz sobre o fluxo de caixa da semana, considerando a folha mensal (~124 mil líquido) e as saídas recorrentes, e o que priorizar na cobrança e no caixa?'}
     },
     KALFIX:{nome:'KALFIX',status:'parc',dados:true,parcial:true,
-      kpis:[{l:'Faturam./mês',v:'R$ 114,3 mil',st:'ok'},{l:'Funcionários',v:'23',st:'ok'},{l:'Simples/mês',v:'R$ 14,3 mil',st:'aten'},{l:'Caixa',v:'aguardando',st:'sem'}],
+      kpis:[{l:'Produção jun–ago',v:'532,1 mil sc',st:'ok'},{l:'Faturam./mês',v:'R$ 114,3 mil',st:'ok'},{l:'Funcionários',v:'23',st:'ok'},{l:'Simples/mês',v:'R$ 14,3 mil',st:'aten'}],
       alertAgents:[],
+      producao:{data:'jun–ago 2026 · 404 ordens',
+        cards:[['Produção (jun–ago)','532,1 mil sc','ok'],['Ordens de fabricação','404','ok'],['Areia consumida','6.201 t','aten'],['Cimento consumido','1.725 t','aten']]},
+      graf:[
+        {tipo:'bars2',tit:'Produção por mês',unid:'mil sacos · 2026 (ago parcial)',cats:['Junho','Julho','Agosto*'],
+         series:[{nome:'Sacos',cor:'#2dff8c',vals:[244.8,228.9,58.5]}],
+         q:'Analise a produção mensal da KALFIX (Junho 244,8 mil sacos; Julho 228,9; Agosto 58,5 parcial): tendência, sazonalidade e o que explica a variação. Projete o fechamento de agosto.'},
+        {tipo:'donut',tit:'Mix por produto',unid:'532,1 mil sacos',center:'mil sacos',legpre:'',legsuf:' mil sc',
+         partes:[{nome:'Master',val:197.8,cor:'#2dff8c'},{nome:'Interna Plus',val:145.8,cor:'#57b6ff'},{nome:'Externa',val:130.5,cor:'#e6c15a'},{nome:'Gold',val:42.8,cor:'#c78bff'},{nome:'Outros',val:15.2,cor:'#8a99a6'}],
+         q:'Analise o mix de produtos da produção KALFIX (Master 37%, Interna Plus 27%, Externa 25%, Gold 8%, outros 3%): concentração, o que puxa o volume e implicações de estoque de insumos.'},
+        {tipo:'bars2',tit:'Produção por turno',unid:'mil sacos · jun–ago',cats:['Diurno','Noturno'],
+         series:[{nome:'Sacos',cor:'#57b6ff',vals:[298.3,233.9]}],
+         q:'Compare a produção por turno da KALFIX (Diurno 298,3 mil sacos / 56%; Noturno 233,9 / 44%): equilíbrio de capacidade e oportunidades de balanceamento.'},
+        {tipo:'donut',tit:'Consumo de insumos',unid:'toneladas · jun–ago',center:'toneladas',legpre:'',legsuf:' t',
+         partes:[{nome:'Areia',val:6201,cor:'#e6c15a'},{nome:'Cimento',val:1725,cor:'#8a99a6'},{nome:'Resina',val:45.5,cor:'#2dff8c'},{nome:'Celulose',val:17.8,cor:'#57b6ff'}],
+         q:'Analise o consumo de insumos da produção KALFIX (Areia 6.201 t, Cimento 1.725 t, Resina 45,5 t, Celulose 17,8 t): peso de cada um, e como estimar o custo de produção por saco quando tivermos os custos unitários.'}
+      ],
       eventos:[
+        {t:'oport',tp:'Produção',tt:'KALFIX produziu 532,1 mil sacos em jun–ago/2026 (404 ordens). Junho 244,8k · Julho 228,9k · Agosto 58,5k (parcial). Mix: Master 37%, Interna Plus 27%, Externa 25%, Gold 8%.',q:'Analise a produção da KALFIX de junho a agosto: volume, mix e tendência.'},
+        {t:'aten',tp:'Insumos',tt:'Consumo jun–ago: Areia 6.201 t e Cimento 1.725 t (o grosso do peso). Com o custo unitário desses insumos, fecho o custo de produção por saco.',q:'Qual o consumo de insumos da produção KALFIX e como estimar o custo por saco?'},
+        {t:'oport',tp:'Turno',tt:'Diurno responde por 56% da produção (298,3k sacos, 228 ordens) e Noturno 44% (233,9k, 176 ordens).',q:'Compare a produção por turno da KALFIX (diurno vs noturno).'},
+        {t:'aten',tp:'Controle',tt:'Nas fichas de produção os campos Qtd Paradas e Qtd Perda vieram em branco — sem eles não dá para medir perda/rendimento real. É o dado que mais falta para a análise técnica.',q:'Por que preencher Qtd Paradas e Qtd Perda é importante para a análise de produção?'},
         {t:'oport',tp:'Faturamento',tt:'KALFIX faturou R$ 1,37 mi em 12 meses (jul/25 a jun/26), média R$ 114,3 mil/mês; melhor mês R$ 183,9 mil (out/25). É Simples Nacional.',q:'Como está o faturamento da KALFIX nos últimos 12 meses?'},
         {t:'aten',tp:'Tributos',tt:'Simples (DAS) de maio: R$ 14.301,60 sobre R$ 131.882,59 — alíquota efetiva ~10,8%. Some-se a folha (R$ 28 mil/mês, 23 funcionários).',q:'Quanto a KALFIX paga de Simples e como está a carga sobre o faturamento?'},
-        {t:'aten',tp:'Falta',tt:'Para fechar o financeiro da KALFIX faltam caixa e inadimplência (ACOMPCOB e extratos bancários).',q:'O que falta para eu ter a visão financeira completa da KALFIX?'}
+        {t:'aten',tp:'Falta',tt:'Para fechar o custo de produção falta o custo unitário dos insumos; para o financeiro faltam caixa e inadimplência (ACOMPCOB e extratos).',q:'O que falta para eu ter a visão completa da KALFIX?'}
       ],
-      nota:'KALFIX: faturamento, folha e Simples (reais). Caixa e inadimplência aguardando ACOMPCOB/extratos.'
+      nota:'KALFIX: produção REAL (404 OFs, jun–ago); faturamento, folha e Simples reais. Faltam custos de insumos (custo/saco) e caixa/inadimplência.'
     },
     QUIMIKA:{nome:'QUIMIKA',status:'sem',dados:false},
     FCK:{nome:'FCK',status:'sem',dados:false}
@@ -371,6 +394,10 @@
       proj:{tit:'Projetos',hint:'Para ligar o gráfico: envie a lista de projetos com status e prazos.'},
       inc:{tit:'Incentivos',hint:'Para ligar o gráfico: envie o valor dos incentivos de ICMS e a economia gerada.'}
     };
+  })();
+  // Gráficos por agente da KALFIX (produção)
+  (function(){var k=DATA.KALFIX;if(!k.graf)return;var mes=k.graf[0],mix=k.graf[1],turno=k.graf[2],cons=k.graf[3];
+    k.chartsByAgent={prod:mes,est:cons,cmp:cons,com:mix,dir:mes,bi:mes,est2:mes,fis:mix};
   })();
   var STLABEL={ok:'Normal',aten:'Atenção',crit:'Crítico',oport:'Oportunidade',parc:'Parcial · RH',sem:'Sem dados'};
   var STCOLOR={ok:'var(--ok)',aten:'var(--aten)',crit:'var(--crit)',oport:'var(--oport)',parc:'var(--oport)',sem:'var(--dim)'};
@@ -525,12 +552,13 @@
       var xi1=cx+r*Math.cos(a1),yi1=cy+r*Math.sin(a1),xi0=cx+r*Math.cos(a0),yi0=cy+r*Math.sin(a0);
       svg+='<path d="M'+x0.toFixed(1)+' '+y0.toFixed(1)+' A'+R+' '+R+' 0 '+big+' 1 '+x1.toFixed(1)+' '+y1.toFixed(1)+' L'+xi1.toFixed(1)+' '+yi1.toFixed(1)+' A'+r+' '+r+' 0 '+big+' 0 '+xi0.toFixed(1)+' '+yi0.toFixed(1)+' Z" fill="'+p.cor+'" opacity=".9"/>';
       a0=a1;});
+    var pre=(g.legpre!==undefined?g.legpre:'R$ '),suf=(g.legsuf!==undefined?g.legsuf:' mil'),ctr=(g.center||'R$ mil');
     svg+='<text x="'+cx+'" y="'+(cy-2)+'" fill="#ff5b64" font-size="13" text-anchor="middle" font-weight="700" font-family="ui-monospace,monospace">'+nfmt(tot)+'</text>';
-    svg+='<text x="'+cx+'" y="'+(cy+11)+'" fill="#8fbfa8" font-size="8" text-anchor="middle">R$ mil</text>';
+    svg+='<text x="'+cx+'" y="'+(cy+11)+'" fill="#8fbfa8" font-size="8" text-anchor="middle">'+ctr+'</text>';
     parts.forEach(function(p,i){var y=30+i*26,pc=Math.round(p.val/tot*100);
       svg+='<rect x="120" y="'+(y-8)+'" width="10" height="10" rx="2" fill="'+p.cor+'"/>';
       svg+='<text x="135" y="'+y+'" fill="#eafff4" font-size="9">'+p.nome+'</text>';
-      svg+='<text x="135" y="'+(y+10)+'" fill="#8fbfa8" font-size="8.5">R$ '+nfmt(p.val)+' mil · '+pc+'%</text>';});
+      svg+='<text x="135" y="'+(y+10)+'" fill="#8fbfa8" font-size="8.5">'+pre+nfmt(p.val)+suf+' · '+pc+'%</text>';});
     svg+='</svg>';return svg;
   }
   function renderCharts(){
@@ -558,9 +586,17 @@
     ]);};
   }
 
+  function renderProducao(){
+    var c=co(),sec=$('prodSec'),el=$('prodBox');
+    if(!c.dados||!c.producao){sec.style.display='none';el.style.display='none';return;}
+    sec.style.display='flex';el.style.display='block';var p=c.producao;
+    $('prodData').textContent=p.data;
+    el.innerHTML='<div class="ecards">'+p.cards.map(function(k){return '<div class="ecard"><div class="l">'+k[0]+'</div><div class="v v-'+k[2]+'">'+k[1]+'</div></div>';}).join('')+'</div>';
+  }
+
   function renderEmpresa(){
     $('coName').textContent=state.co;
-    renderCore();renderKpis();renderAgents();renderEntradas();renderCharts();renderAlerta();renderFeed();renderHoje();renderNote();
+    renderCore();renderKpis();renderAgents();renderEntradas();renderProducao();renderCharts();renderAlerta();renderFeed();renderHoje();renderNote();
   }
 
   /* ---------- Visão Grupo ---------- */
