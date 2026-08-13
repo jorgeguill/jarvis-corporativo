@@ -515,7 +515,7 @@
     if(!c.dados||!c.hoje){el.style.display='none';return;}el.style.display='grid';
     var items=[['decisoes',c.hoje.decisoes,'Decisões recomendadas'],['riscos',c.hoje.riscos,'Riscos prioritários'],['pendencias',c.hoje.pendencias,'Pendências críticas'],['oportunidades',c.hoje.oportunidades,'Oportunidades']];
     items.forEach(function(it){var d=document.createElement('div');d.className='hcard';d.innerHTML='<div class="n">'+it[1]+'</div><div class="l">'+it[2]+'</div>';
-      d.onclick=function(){drawer.innerHTML='<div class="dh"><div class="di"><svg viewBox="0 0 24 24">'+ICON.dir+'</svg></div><h3>'+it[2]+' · '+c.nome+'</h3><button class="x">✕</button></div><div class="resp">'+c.hoje.det[it[0]]+'</div>';backdrop.classList.add('show');drawer.querySelector('.x').onclick=closeDrawer;speak(it[2]+' da '+c.nome+'. '+c.hoje.det[it[0]].replace(/\n/g,' '));};
+      d.onclick=function(){drawer.innerHTML='<div class="dh"><div class="di"><svg viewBox="0 0 24 24">'+ICON.dir+'</svg></div><h3>'+it[2]+' · '+c.nome+'</h3><button class="x">✕</button></div><div class="resp">'+md(c.hoje.det[it[0]])+'</div>';backdrop.classList.add('show');drawer.querySelector('.x').onclick=closeDrawer;speak(it[2]+' da '+c.nome+'. '+c.hoje.det[it[0]].replace(/\n/g,' '));};
       el.appendChild(d);});
   }
   function renderNote(){$('note').textContent=co().nota||'';}
