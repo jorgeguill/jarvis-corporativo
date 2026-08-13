@@ -1,11 +1,11 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1"><meta name="theme-color" content="#0b0607"><title>JARVIS · Central de Comando Kalfix</title>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1"><meta name="theme-color" content="#0b0607"><title>R.A.D.A.R. · Central de Comando Kalfix</title>
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="/icons/kalfix-192.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/icons/kalfix-32.png">
 <link rel="apple-touch-icon" href="/icons/kalfix-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="JARVIS Kalfix">
+<meta name="apple-mobile-web-app-title" content="R.A.D.A.R. Kalfix">
 <style>
   :root{
     --bg:#0b0607;--bg2:#050203;--panel:rgba(28,12,14,.62);--glass:rgba(30,12,14,.5);
@@ -99,7 +99,7 @@
   .ev.crit .tp{color:var(--crit)}.ev.aten .tp{color:var(--aten)}.ev.oport .tp{color:var(--oport)}.ev.prev .tp{color:var(--gold)}
   .ev .tt{font-size:12.5px;color:var(--ink);margin-top:3px;line-height:1.35}
 
-  /* ALERTA JARVIS (inteligência cruzada) */
+  /* ALERTA R.A.D.A.R. (inteligência cruzada) */
   .alerta{position:relative;margin:16px 0 4px;border:1px solid var(--gold2);border-radius:15px;padding:13px 14px;cursor:pointer;overflow:hidden;
     background:linear-gradient(135deg,rgba(40,20,10,.5),rgba(26,10,10,.5)),var(--panel);box-shadow:0 0 26px rgba(212,178,106,.14),inset 0 0 22px rgba(255,90,90,.05)}
   .alerta::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--gold),var(--crit))}
@@ -209,8 +209,8 @@
     <div class="heroimg" id="core"><img src="/img/kalfix-logo.jpg" alt="Grupo Kalfix" draggable="false"></div>
 
     <div class="coreCap">
-      <div class="tag">JARVIS</div>
-      <div class="sub">Inteligência Empresarial</div>
+      <div class="tag">R.A.D.A.R.</div>
+      <div class="sub">Raciocínio Assistido · Diagnóstico e Ação Rápida</div>
       <div class="stat" id="coreStat">● ONLINE</div>
     </div>
 
@@ -228,7 +228,7 @@
 
     <div id="alertaWrap"></div>
 
-    <div class="sec"><h2>JARVIS identificou</h2><span class="c" id="evCount"></span></div>
+    <div class="sec"><h2>R.A.D.A.R. identificou</h2><span class="c" id="evCount"></span></div>
     <div class="feed" id="feed"></div>
 
     <div class="sec"><h2>Hoje</h2><span class="c">o que fazer agora</span></div>
@@ -241,7 +241,7 @@
 <div class="backdrop" id="backdrop"><div class="drawer" id="drawer"></div></div>
 <div class="toast" id="toast"></div>
 <div class="voicebar">
-  <div class="txt" id="vtxt"><b>JARVIS</b> · ao seu comando</div>
+  <div class="txt" id="vtxt"><b>R.A.D.A.R.</b> · ao seu comando</div>
   <div class="mic" id="mic"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4"/></svg></div>
 </div>
 
@@ -283,7 +283,7 @@
     ['comp','Compliance','Quais inconsistências, riscos, desvios e controles precisam de atenção?'],
     ['bi','BI & Relatórios','Que análises e relatórios gerenciais você pode gerar agora?'],
     ['proj','Projetos','Quais ações estão em implantação, com que responsáveis e prazos?'],
-    ['est2','JARVIS Estratégico','Cruzando todos os setores, quais as 5 decisões que eu deveria tomar hoje?']
+    ['est2','R.A.D.A.R. Estratégico','Cruzando todos os setores, quais as 5 decisões que eu deveria tomar hoje?']
   ];
 
   // Dados por empresa. SKAL = real (06/08). Demais = aguardando dados (honesto).
@@ -300,7 +300,7 @@
         tit:'Dívida antiga e permutas distorcem o caixa real',
         txt:'Contas e impostos estão em dia. Os dois pontos que realmente pesam: a inadimplência acima de 90 dias soma R$ 670,4 mil (80% da dívida) e não está entrando dinheiro novo nela; e as permutas baixadas como dinheiro (Gávea R$ 251 mil) inflam caixa e faturamento — então o caixa real é menor do que o painel sugere. Cruzando Cobrança e Contábil, o foco é recuperar a dívida antiga e trazer os imóveis de permuta para o patrimônio.',
         chips:[['cob','Cobrança'],['comp','Contábil'],['fin','Financeiro']],
-        q:'Como JARVIS Estratégico, cruze a inadimplência antiga e as permutas da SKAL (lembrando que contas e impostos estão em dia): qual o efeito no caixa real e quais as 3 a 4 ações prioritárias com evidência?'
+        q:'Como R.A.D.A.R. Estratégico, cruze a inadimplência antiga e as permutas da SKAL (lembrando que contas e impostos estão em dia): qual o efeito no caixa real e quais as 3 a 4 ações prioritárias com evidência?'
       },
       eventos:[
         {t:'crit',tp:'Crítico',tt:'Inadimplência acima de 90 dias em R$ 670,4 mil — 80% da dívida. O total caiu de 848,2 para 833,9 mil (entrou dinheiro), mas o +90 não cede: a recuperação vem do novo (0–30), a dívida velha continua parada.',q:'Detalhe a inadimplência acima de 90 dias e o que fazer para recuperar.'},
@@ -407,8 +407,8 @@
   var state={co:'SKAL',grupo:false};
   var $=function(id){return document.getElementById(id);};
 
-  /* ---------- Voz: HTML5 Audio. Tenta automatico; a barra do JARVIS sempre toca no toque ---------- */
-  // Voz removida. O JARVIS funciona por texto. Stubs mantidos para nao quebrar chamadas.
+  /* ---------- Voz: HTML5 Audio. Tenta automatico; a barra do R.A.D.A.R. sempre toca no toque ---------- */
+  // Voz removida. O R.A.D.A.R. funciona por texto. Stubs mantidos para nao quebrar chamadas.
   var lastReply='';
   function unlockAudio(){}
   function speak(t){lastReply=t||'';}
@@ -418,12 +418,12 @@
   function vtxt(m){$('vtxt').innerHTML=m;}
 
   /* ---------- Brain ---------- */
-  function askBrain(q,onText){vtxt('<b>JARVIS</b> · pensando…');
+  function askBrain(q,onText){vtxt('<b>R.A.D.A.R.</b> · pensando…');
     return fetch('/api/chat?q='+encodeURIComponent(q)).then(function(r){return r.json();}).then(function(d){
-      var t=(d&&d.reply)||'Não consegui responder agora.';onText(t);vtxt('<b>JARVIS</b> · '+t.slice(0,64));speak(t);return t;
-    }).catch(function(){onText('Não consegui me conectar agora.');vtxt('<b>JARVIS</b> · sem conexão');});}
+      var t=(d&&d.reply)||'Não consegui responder agora.';onText(t);vtxt('<b>R.A.D.A.R.</b> · '+t.slice(0,64));speak(t);return t;
+    }).catch(function(){onText('Não consegui me conectar agora.');vtxt('<b>R.A.D.A.R.</b> · sem conexão');});}
 
-  /* ---------- Markdown -> HTML (respostas ricas do JARVIS) ---------- */
+  /* ---------- Markdown -> HTML (respostas ricas do R.A.D.A.R.) ---------- */
   function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
   function inl(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*(?!\s)(.+?)\*(?!\*)/g,'$1<em>$2</em>').replace(/`(.+?)`/g,'<code>$1</code>');}
   function md(t){var L=String(t||'').split(/\r?\n/),o=[],i=0;
@@ -467,7 +467,7 @@
     unlockAudio();
     drawer.innerHTML='<div class="dh"><div class="di"><svg viewBox="0 0 24 24">'+(ICON[iconKey]||ICON.est2)+'</svg></div><h3>'+title+'</h3><button class="x">✕</button></div>'+
       chartBlock(chartSpec)+
-      '<div class="resp think" id="dResp">‹ consultando o JARVIS…</div>'+
+      '<div class="resp think" id="dResp">‹ consultando o R.A.D.A.R.…</div>'+
       '<div class="qs" id="dQs"></div>';
     backdrop.classList.add('show');
     drawer.querySelector('.x').onclick=closeDrawer;
@@ -506,7 +506,7 @@
   function renderFeed(){
     var c=co();$('evCount').textContent=c.dados?(c.eventos.length+' eventos'):'';
     var el=$('feed');el.innerHTML='';
-    if(!c.dados){el.innerHTML='<div class="ev" style="cursor:default;border-left-color:var(--dim)"><div class="tp" style="color:var(--dim)">Sem dados</div><div class="tt">Assim que você enviar os dados da '+c.nome+', o JARVIS passa a identificar eventos automaticamente aqui.</div></div>';return;}
+    if(!c.dados){el.innerHTML='<div class="ev" style="cursor:default;border-left-color:var(--dim)"><div class="tp" style="color:var(--dim)">Sem dados</div><div class="tt">Assim que você enviar os dados da '+c.nome+', o R.A.D.A.R. passa a identificar eventos automaticamente aqui.</div></div>';return;}
     c.eventos.forEach(function(e){var d=document.createElement('div');d.className='ev '+e.t;d.innerHTML='<div class="tp">'+e.tp+'</div><div class="tt">'+e.tt+'</div>';
       d.onclick=function(){openDrawer('comp',e.tp+' · '+c.nome,e.q,[{label:'Ação recomendada',q:e.q+' Qual a ação recomendada?'}]);};el.appendChild(d);});
   }
@@ -524,8 +524,8 @@
     if(!c.dados||!c.alerta)return;var a=c.alerta;
     var chips=(a.chips||[]).map(function(ch){return '<span class="chip"><svg viewBox="0 0 24 24">'+(ICON[ch[0]]||ICON.est2)+'</svg>'+ch[1]+'</span>';}).join('');
     var d=document.createElement('div');d.className='alerta';
-    d.innerHTML='<div class="hd"><span class="pin"></span>Alerta JARVIS · inteligência cruzada</div><h4>'+a.tit+'</h4><p>'+a.txt+'</p><div class="chips">'+chips+'</div><div class="cta">Toque para o diagnóstico e as ações ›</div>';
-    d.onclick=function(){openDrawer('est2','Alerta JARVIS · '+c.nome,a.q,[{label:'Em quanto tempo aperta?',q:'Sobre a pressão de caixa combinada da '+c.nome+', em quanto tempo o capital de giro pode apertar e por quê?'},{label:'Plano de ação',q:'Monte um plano de ação prático para a '+c.nome+' aliviar a pressão de caixa combinada.'}]);};
+    d.innerHTML='<div class="hd"><span class="pin"></span>Alerta R.A.D.A.R. · inteligência cruzada</div><h4>'+a.tit+'</h4><p>'+a.txt+'</p><div class="chips">'+chips+'</div><div class="cta">Toque para o diagnóstico e as ações ›</div>';
+    d.onclick=function(){openDrawer('est2','Alerta R.A.D.A.R. · '+c.nome,a.q,[{label:'Em quanto tempo aperta?',q:'Sobre a pressão de caixa combinada da '+c.nome+', em quanto tempo o capital de giro pode apertar e por quê?'},{label:'Plano de ação',q:'Monte um plano de ação prático para a '+c.nome+' aliviar a pressão de caixa combinada.'}]);};
     el.appendChild(d);
   }
 
@@ -569,7 +569,7 @@
     el.style.display='grid';sec.style.display='flex';el.innerHTML='';
     c.graf.forEach(function(g){var d=document.createElement('div');d.className='chart';
       var body=g.tipo==='donut'?svgDonut(g):svgBars(g);
-      d.innerHTML='<div class="ct">'+g.tit+'</div><div class="cv"><small>'+g.unid+'</small></div>'+body+'<div class="cta">toque para a análise do JARVIS ›</div>';
+      d.innerHTML='<div class="ct">'+g.tit+'</div><div class="cv"><small>'+g.unid+'</small></div>'+body+'<div class="cta">toque para a análise do R.A.D.A.R. ›</div>';
       d.onclick=function(){openDrawer('bi',g.tit+' · '+c.nome,g.q,[{label:'🔮 E a projeção?',q:g.q+' Depois projete o cenário para os próximos 6 a 12 meses com premissas explícitas.'},{label:'✅ O que fazer',q:'Com base em '+g.tit+' da '+c.nome+', quais as ações práticas recomendadas, priorizadas por impacto?'}]);};
       el.appendChild(d);});
   }
@@ -580,7 +580,7 @@
     sec.style.display='flex';el.style.display='block';var e=c.entradas;
     $('entData').textContent=e.data;
     var stat='<div class="ecards">'+e.cards.map(function(k){return '<div class="ecard"><div class="l">'+k[0]+'</div><div class="v v-'+k[2]+'">'+k[1]+'</div></div>';}).join('')+'</div>';
-    var chart='<div class="chart" id="entChart"><div class="ct">'+e.graf.tit+'</div><div class="cv"><small>'+e.graf.unid+'</small></div>'+svgBars(e.graf)+'<div class="cta">toque para a análise do JARVIS ›</div></div>';
+    var chart='<div class="chart" id="entChart"><div class="ct">'+e.graf.tit+'</div><div class="cv"><small>'+e.graf.unid+'</small></div>'+svgBars(e.graf)+'<div class="cta">toque para a análise do R.A.D.A.R. ›</div></div>';
     el.innerHTML=stat+chart;
     $('entChart').onclick=function(){openDrawer('fin','Entradas · '+c.nome,e.q,[
       {label:'🔮 Fluxo da semana',q:'Projete o fluxo de caixa da '+c.nome+' nesta semana: some as entradas previstas de 12 a 18/08 e confronte com as saídas recorrentes (folha ~124 mil líquido e demais). Sobra ou aperta?'},
@@ -598,7 +598,7 @@
       '<div class="chart" id="prodCTA"><div class="cta">🏭 Abrir a análise de Operações · Produção ›</div></div>';
     var pc=$('prodCharts');(p.graf||[]).forEach(function(g){var d=document.createElement('div');d.className='chart';
       var body=g.tipo==='donut'?svgDonut(g):svgBars(g);
-      d.innerHTML='<div class="ct">'+g.tit+'</div><div class="cv"><small>'+g.unid+'</small></div>'+body+'<div class="cta">toque para a análise do JARVIS ›</div>';
+      d.innerHTML='<div class="ct">'+g.tit+'</div><div class="cv"><small>'+g.unid+'</small></div>'+body+'<div class="cta">toque para a análise do R.A.D.A.R. ›</div>';
       d.onclick=function(){openDrawer('prod',g.tit+' · '+c.nome,g.q,[{label:'🔮 Projeção',q:g.q+' Depois projete os próximos meses com premissas.'},{label:'✅ Ações',q:'Com base em '+g.tit+' da produção da '+c.nome+', quais as ações recomendadas, priorizadas?'}]);};
       pc.appendChild(d);});
     $('prodCTA').onclick=function(){
@@ -630,7 +630,7 @@
       row.innerHTML='<span class="cst" style="background:'+STCOLOR[c.status]+';box-shadow:0 0 8px '+STCOLOR[c.status]+'"></span><span class="cn">'+c.nome+'</span><span class="cx">'+STLABEL[c.status]+'</span>';
       row.onclick=function(){state.grupo=false;state.co=k;applyMode();};cart.appendChild(row);});
     var ask=document.createElement('div');ask.className='crow';ask.style.borderColor='var(--line2)';
-    ask.innerHTML='<span class="cst" style="background:var(--gold)"></span><span class="cn">Perguntar sobre a carteira</span><span class="cx">JARVIS</span>';
+    ask.innerHTML='<span class="cst" style="background:var(--gold)"></span><span class="cn">Perguntar sobre a carteira</span><span class="cx">R.A.D.A.R.</span>';
     ask.onclick=function(){openDrawer('est2','Carteira multiempresa','Considerando o grupo (SKAL com dados; KALFIX, QUIMIKA e FCK ainda sem dados), quais as prioridades e o que falta para eu ter a visão completa da carteira?',[{label:'Maior risco financeiro',q:'Quais empresas do grupo estão com maior risco financeiro hoje?'},{label:'5 decisões de hoje',q:'Quais as 5 decisões que eu deveria tomar hoje no grupo?'}]);};
     cart.appendChild(ask);
   }
@@ -659,7 +659,7 @@
         drawer.querySelector('h3').textContent='"'+q+'"';var resp=$('dResp');resp.className='resp think';resp.textContent='‹ consultando…';askBrain(q,function(t){resp.className='resp';resp.innerHTML=md(t);});};
       rec.onerror=function(){m.classList.remove('rec');tst('Não entendi, tente de novo');};rec.onend=function(){m.classList.remove('rec');};rec.start();return;
     }catch(e){}}
-    openDrawer('est2','JARVIS','Me dê o resumo executivo do dia da '+state.co+'.',[]);};
+    openDrawer('est2','R.A.D.A.R.','Me dê o resumo executivo do dia da '+state.co+'.',[]);};
 
   /* ---------- Partículas ---------- */
   (function(){var cv=$('particles'),cx=cv.getContext('2d'),ps=[],W,H;
@@ -673,7 +673,7 @@
 
   /* ---------- Boot ---------- */
   applyMode();
-  setTimeout(function(){vtxt('<b>JARVIS</b> · toque em um setor ou no microfone');},600);
+  setTimeout(function(){vtxt('<b>R.A.D.A.R.</b> · toque em um setor ou no microfone');},600);
 })();
 </script>
 </body></html>
