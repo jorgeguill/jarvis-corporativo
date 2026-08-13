@@ -40,8 +40,9 @@ function buildData(){
           {t:'prev',tp:'Previsão',tt:'Reforma tributária: a AREIA ficou FORA do Imposto Seletivo. Incentivos de ICMS valem até 2032 (com Fundo de Compensação para quem se habilitar).',q:'O que a reforma tributária muda para a SKAL nos próximos anos?'},
           {t:'oport',tp:'Positivo',tt:'2º trimestre de 2026 foi lucrativo (base R$ 982,8 mil). Mas IRPJ + CSLL somaram ~R$ 328 mil no trimestre (Lucro Real) — vale avaliar planejamento tributário.',q:'Como reduzir a carga de IRPJ e CSLL da SKAL no Lucro Real?'},
           {t:'prev',tp:'Vencimento',tt:'Taxa de Localização de Parnaíba (R$ 660,83) vence em 22/08. Licença Ambiental (matriz) e Bombeiros (Parnaíba) válidos até 2027.',q:'Quais documentos e taxas da SKAL estão vencendo?'},
-          {t:'oport',tp:'Produção',tt:'Produção de argamassa (marca Kalfix, empresa SKAL): 532,1 mil sacos em jun–ago/2026 (404 ordens). Junho 244,8k · Julho 228,9k · Agosto 58,5k (parcial). Mix: Master 37%, Interna Plus 27%, Externa 25%, Gold 8%. Consumo: Areia 6.201 t, Cimento 1.725 t.',q:'Analise a produção de argamassa da SKAL de junho a agosto: volume, mix e tendência.'},
-          {t:'oport',tp:'Estratégia',tt:'Diagnóstico de produção: o gargalo é disponibilidade + sequência, não capacidade. Mix concentrado (top 3 = 89%) pede produção por CAMPANHAS (349 de 399 trocas mudam de produto). Recomendado: programa de 90 dias (utilidades, campanhas+SMED, captura digital de tempos/perdas, custeio padrão). Falta o custo unitário dos insumos para fechar o custo por saco.',q:'Explique o programa de 90 dias recomendado para a produção da SKAL e por onde começar.'}
+          {t:'oport',tp:'Produção',tt:'Produção de argamassa (marca Kalfix, empresa SKAL) — Banco Mestre REV4: 1,54 mi de sacos em jan–ago/2026 (23.172 t, 1.316 ordens). Picos em março (244,6k) e junho (244,8k). Mix: Master 38%, Interna Plus 27%, Externa 25%, Gold 7%. Consumo: Areia 17.983 t, Cimento 4.999 t.',q:'Analise a produção de argamassa da SKAL em jan–ago: volume, mix, turno e tendência.'},
+          {t:'aten',tp:'Paradas',tt:'Paradas auditadas (63 revisadas): a FALTA DE ÁGUA domina a indisponibilidade (P0), seguida de equipamento (rosca de cimento, ensacadeira, esteira). O total auditado é um piso — muitos registros têm motivo mas sem horário. Prioridade: tornar código, início, fim, responsável e impacto de cada parada obrigatórios.',q:'Quais as principais causas de parada na produção da SKAL e como reduzir a indisponibilidade?'},
+          {t:'oport',tp:'Estratégia',tt:'Diagnóstico: gargalo é disponibilidade (água/equipamento) + sequência, não capacidade. Mix concentrado (top 3 = 90%) pede produção por CAMPANHAS + SMED. Recomendado: programa de 90 dias (estabilizar utilidades, campanhas, captura digital de tempos/perdas, custeio padrão). Falta o custo unitário dos insumos para fechar o custo por saco.',q:'Explique o programa de 90 dias recomendado para a produção da SKAL e por onde começar.'}
         ],
         hoje:{decisoes:5,riscos:3,pendencias:8,oportunidades:4,
           det:{
@@ -72,21 +73,21 @@ function buildData(){
           graf:{tipo:'bars2',tit:'Previsão de entrada · 14–20/08',unid:'R$ mil',cats:['14/08','17/08','18/08','19/08','20/08'],
             series:[{nome:'Previsto',cor:'#57b6ff',vals:[43.51,76.74,190.98,85.32,74.60]}]},
           q:'Analise as entradas do dia 12/08 da SKAL (faturamento do dia R$ 182.501,83 — à vista NFe 13.042,90, NG 11.792,40, a prazo 157.666,53; resgatado de inadimplência R$ 5.122,00; venceu e não pagou R$ 23.547,71, valor alto) e a previsão de entrada de 14 a 20/08 (14/08 43.509,28; 17/08 76.735,81; 18/08 190.978,10; 19/08 85.317,03; 20/08 74.599,80; total 471.140,02). O que isso diz sobre o fluxo de caixa da semana, considerando a folha mensal (~124 mil líquido) e as saídas recorrentes, e o que priorizar na cobrança e no caixa?'},
-        producao:{data:'jun–ago 2026 · 404 ordens · marca Kalfix',
-          cards:[['Produção (jun–ago)','532,1 mil sc','ok'],['Ordens de fabricação','404','ok'],['Areia consumida','6.201 t','aten'],['Cimento consumido','1.725 t','aten']],
+        producao:{data:'jan–ago 2026 · 1.316 ordens · marca Kalfix',
+          cards:[['Produção (jan–ago)','1,54 mi sc','ok'],['Ordens (consolidadas)','1.316','ok'],['Areia consumida','17.983 t','aten'],['Cimento consumido','4.999 t','aten']],
           graf:[
-            {tipo:'bars2',tit:'Produção por mês',unid:'mil sacos · 2026 (ago parcial)',cats:['Junho','Julho','Agosto*'],
-             series:[{nome:'Sacos',cor:'#2dff8c',vals:[244.8,228.9,58.5]}],
-             q:'Analise a produção mensal de argamassa da SKAL (Junho 244,8 mil sacos; Julho 228,9; Agosto 58,5 parcial): tendência, o que explica a queda de junho para julho (-6,5%, toda no diurno) e projete o fechamento de agosto.'},
-            {tipo:'donut',tit:'Mix por produto',unid:'532,1 mil sacos',center:'mil sacos',legpre:'',legsuf:' mil sc',
-             partes:[{nome:'Master',val:197.8,cor:'#2dff8c'},{nome:'Interna Plus',val:145.8,cor:'#57b6ff'},{nome:'Externa',val:130.5,cor:'#e6c15a'},{nome:'Gold',val:42.8,cor:'#c78bff'},{nome:'Outros',val:15.2,cor:'#8a99a6'}],
-             q:'Analise o mix de produtos da produção da SKAL (Master 37%, Interna Plus 27%, Externa 25%, Gold 8%): concentração (top 3 = 89%) e a estratégia de produção por campanhas.'},
-            {tipo:'bars2',tit:'Produção por turno',unid:'mil sacos · jun–ago',cats:['Diurno','Noturno'],
-             series:[{nome:'Sacos',cor:'#57b6ff',vals:[298.3,233.9]}],
-             q:'Compare a produção por turno da SKAL (Diurno 298,3 mil sacos / 56%; Noturno 233,9 / 44%): equilíbrio de capacidade e balanceamento.'},
-            {tipo:'donut',tit:'Consumo de insumos',unid:'toneladas · jun–ago',center:'toneladas',legpre:'',legsuf:' t',
-             partes:[{nome:'Areia',val:6201,cor:'#e6c15a'},{nome:'Cimento',val:1725,cor:'#8a99a6'},{nome:'Resina',val:45.5,cor:'#2dff8c'},{nome:'Celulose',val:17.8,cor:'#57b6ff'}],
-             q:'Analise o consumo de insumos da produção da SKAL (Areia 6.201 t, Cimento 1.725 t, Resina 45,5 t, Celulose 17,8 t) e o que falta para fechar o custo por saco.'}
+            {tipo:'bars2',tit:'Produção por mês',unid:'mil sacos · 2026 (ago parcial)',cats:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago*'],
+             series:[{nome:'Sacos',cor:'#2dff8c',vals:[199.8,187.5,244.6,187.6,191.2,244.8,228.9,58.5]}],
+             q:'Analise a produção mensal de argamassa da SKAL em 2026 (Jan 199,8 mil sacos; Fev 187,5; Mar 244,6; Abr 187,6; Mai 191,2; Jun 244,8; Jul 228,9; Ago 58,5 parcial): tendência, sazonalidade (março e junho os picos) e projete o fechamento do ano.'},
+            {tipo:'donut',tit:'Mix por produto',unid:'1,54 mi sacos',center:'mil sacos',legpre:'',legsuf:' mil sc',
+             partes:[{nome:'Master',val:581.7,cor:'#2dff8c'},{nome:'Interna Plus',val:419.8,cor:'#57b6ff'},{nome:'Externa',val:382.1,cor:'#e6c15a'},{nome:'Gold',val:112.8,cor:'#c78bff'},{nome:'Outros',val:46.3,cor:'#8a99a6'}],
+             q:'Analise o mix de produtos da produção da SKAL em jan–ago (Master 37,7%, Interna Plus 27,2%, Externa 24,8%, Gold 7,3%): concentração (top 3 = 90%) e a estratégia de produção por campanhas.'},
+            {tipo:'bars2',tit:'Produção por turno',unid:'mil sacos · jan–ago',cats:['Diurno','Noturno'],
+             series:[{nome:'Sacos',cor:'#57b6ff',vals:[856.6,686.2]}],
+             q:'Compare a produção por turno da SKAL em jan–ago (Diurno 856,6 mil sacos / 55,5%; Noturno 686,2 / 44,5%): equilíbrio de capacidade e balanceamento.'},
+            {tipo:'donut',tit:'Consumo de insumos',unid:'toneladas · jan–ago',center:'toneladas',legpre:'',legsuf:' t',
+             partes:[{nome:'Areia',val:17983,cor:'#e6c15a'},{nome:'Cimento',val:4999,cor:'#8a99a6'},{nome:'Resina',val:130.8,cor:'#2dff8c'},{nome:'Celulose',val:51.6,cor:'#57b6ff'}],
+             q:'Analise o consumo de insumos da produção da SKAL em jan–ago (Areia 17.983 t, Cimento 4.999 t, Resina 130,8 t, Celulose 51,6 t) e o que falta para fechar o custo por saco.'}
           ]}
       },
       KALFIX:{nome:'KALFIX',status:'parc',dados:true,parcial:true,
