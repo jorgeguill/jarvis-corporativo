@@ -53,6 +53,12 @@ const SYSTEM = [
   "Se a pergunta for de consultoria (diagnostico, estrategia, proposta, mercado), responda como a Radar, com metodo e conclusao acionavel. Sempre termine com uma recomendacao clara, deixando a decisao para a diretoria."
 ].join("\n");
 
+const crypto = require("crypto");
+function parseUsers(){ var raw=process.env.RADAR_USERS||"",m={}; raw.split(/[,\n]/).forEach(function(p){var i=p.indexOf(":");if(i>0){var u=p.slice(0,i).trim();if(u)m[u]=p.slice(i+1).trim();}}); return Object.keys(m).length?m:null; }
+function secret(){ return process.env.RADAR_SECRET || crypto.createHash("sha256").update("radar|"+(process.env.RADAR_USERS||"")).digest("hex"); }
+function mac(p){ return crypto.createHmac("sha256", secret()).update(p).digest("base64").replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""); }
+function authOk(req){ if(!parseUsers()) return true; var tok=req.headers["x-radar-auth"]; if(!tok){ try{ tok=new URL(req.url,"http://x").searchParams.get("t")||""; }catch(e){} } if(!tok||tok.indexOf(".")<0) return false; var a=tok.split("."); try{ if(!crypto.timingSafeEqual(Buffer.from(mac(a[0])),Buffer.from(a[1]))) return false; var o=JSON.parse(Buffer.from(a[0].replace(/-/g,"+").replace(/_/g,"/"),"base64").toString()); return o.exp&&o.exp>=Date.now(); }catch(e){ return false; } }
+
 function send(res, code, obj) {
   res.statusCode = code;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
@@ -115,6 +121,7 @@ async function askGemini(key, q) {
 
 module.exports = async (req, res) => {
   const url = new URL(req.url, "http://x");
+  if (!authOk(req)) return send(res, 401, { reply: "Acesso não autorizado. Faça login novamente.", auth: true });
   let q = (url.searchParams.get("q") || "").slice(0, 6000).trim();
   const debug = url.searchParams.get("debug") === "1";
   if (!q) return send(res, 200, { reply: "Pode falar. Em que posso ajudar?" });
