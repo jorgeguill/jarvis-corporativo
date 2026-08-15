@@ -26,34 +26,58 @@ async function jget(url, ms){
 function asList(v){ if(!v) return []; if(Array.isArray(v)) return v.filter(Boolean); return Object.keys(v).map(function(k){ return v[k]; }).filter(Boolean); }
 async function fetchForno(){
   var base = (process.env.FORNO_DB_URL||'').replace(/\/+$/,'');
-  var out = { url: process.env.FORNO_URL||'', params:{meta:8,umidade:8,densidade:1.5}, live:null };
+  var out = { url: process.env.FORNO_URL||'', params:{meta:8,umidade:8,densidade:1.5,tolerancia:15,concha_m3:2.1}, live:null };
   if(!base) return out;
-  var res = await Promise.all([ jget(base+'/turnos.json'), jget(base+'/recebimentos.json'), jget(base+'/cfg.json') ]);
-  var turnos = asList(res[0]), receb = asList(res[1]), cfg = res[2]||{};
-  var umid = Number(cfg.umidade)||8, dens = Number(cfg.densidade)||1.5, meta = Number(cfg.meta)||8;
-  out.params = { meta:meta, umidade:umid, densidade:dens };
+  var res = await Promise.all([ jget(base+'/turnos.json'), jget(base+'/recebimentos.json'), jget(base+'/parametros.json') ]);
+  var turnos = asList(res[0]), receb = asList(res[1]), pmt = res[2]||{};
+  var umid=Number(pmt.umidade)||8, dens=Number(pmt.densidade)||1.5, meta=Number(pmt.meta)||8, tol=Number(pmt.tolerancia)||15, conchaM3=Number(pmt.concha_m3)||2.1;
+  out.params = { meta:meta, umidade:umid, densidade:dens, tolerancia:tol, concha_m3:conchaM3 };
   if(!turnos.length){ return out; }
-  turnos.sort(function(a,b){ return new Date(a.data)-new Date(b.data); });
-  var totU=0, totTon=0, totOleo=0;
-  turnos.forEach(function(t){
-    var m3u=Number(t.m3_umida)||0, ton=m3u*(1-umid/100)*dens;
-    var oleo=(Number(t.tanque_ini)||0)-(Number(t.tanque_fim)||0)+(Number(t.oleo_receb)||0);
-    totU+=m3u; totTon+=ton; totOleo+=(oleo>0?oleo:0);
-  });
-  var lastT = turnos[turnos.length-1];
-  var lastTon = (Number(lastT.m3_umida)||0)*(1-umid/100)*dens;
-  var lastOleo = (Number(lastT.tanque_ini)||0)-(Number(lastT.tanque_fim)||0)+(Number(lastT.oleo_receb)||0);
-  var lastLton = (lastT.consumo_manual!=null && lastT.consumo_manual!=='') ? Number(lastT.consumo_manual) : (lastTon>0.01? lastOleo/lastTon : null);
-  var totReceb = 0; receb.forEach(function(r){ totReceb += Math.max(0,(Number(r.depois)||0)-(Number(r.antes)||0)); });
+  // ---- Espelha a lógica do painel Supervisor (mesma matemática) ----
+  function turnoConchas(t){ if(Array.isArray(t.lotes)&&t.lotes.length) return t.lotes.reduce(function(s,l){return s+(Number(l.conchas)||0);},0); return Number(t.conchas)||0; }
+  function tonOf(t){ var m3u=Number(t.m3_umida); if(!isFinite(m3u)||m3u===0){ var c=turnoConchas(t); if(c)m3u=c*conchaM3; } m3u=m3u||0; return {m3u:m3u, ton:m3u*(1-umid/100)*dens}; }
+  function precoMedio(){ var s=0,l=0; receb.forEach(function(r){ var p=Number(r.preco_litro), q=Number(r.depois)-Number(r.antes); if(isFinite(p)&&p>0&&isFinite(q)&&q>0){ s+=p*q; l+=q; } }); return l>0?s/l:2.5; }
+  function mediaLton(){ var litros=receb.reduce(function(s,r){return s+((Number(r.depois)-Number(r.antes))||0);},0); var ton=turnos.reduce(function(s,t){return s+tonOf(t).ton;},0); return ton>0?litros/ton:0; }
+  var media=mediaLton();
+  function compute(t){
+    var b=tonOf(t), ton=b.ton, oleo=0, medido=false;
+    if(t.tanque_ini!==undefined&&t.tanque_ini!==''&&t.tanque_ini!==null&&t.tanque_fim!==undefined&&t.tanque_fim!==''&&t.tanque_fim!==null){ oleo+=(Number(t.tanque_ini)-Number(t.tanque_fim)); medido=true; }
+    if(t.oleo_receb){ oleo+=Number(t.oleo_receb); medido=true; }
+    if(t.oleo_consumido!==undefined&&t.oleo_consumido!==null&&t.oleo_consumido!==''){ oleo+=Number(t.oleo_consumido); medido=true; }
+    var lton=Number(t.consumo_manual)||null, estimado=false;
+    if(!lton&&medido&&oleo>0&&ton>0.01){ lton=oleo/ton; }
+    else if(!lton&&ton>0.01){ if(media>0){ lton=media; oleo=ton*media; estimado=true; } }
+    return {m3u:b.m3u, ton:ton, oleo:oleo, lton:lton, estimado:estimado};
+  }
+  var pmed=precoMedio();
+  var computed=turnos.map(compute);
+  var areiaTotal=0, tonSeca=0, oleoPeriodo=0;
+  computed.forEach(function(c){ areiaTotal+=c.m3u||0; tonSeca+=c.ton||0; oleoPeriodo+=(isFinite(c.oleo)?c.oleo:0); });
+  var ltons=computed.map(function(c){return c.lton;}).filter(function(v){return v!=null&&isFinite(v);});
+  var mediaL=ltons.length?ltons.reduce(function(a,b){return a+b;},0)/ltons.length:0;
+  var limite=meta*(1+tol/100), dentro=ltons.filter(function(v){return v<=limite;}).length;
+  var oleoRecebido=receb.reduce(function(s,r){return s+((Number(r.depois)-Number(r.antes))||0);},0);
+  var sorted=turnos.slice().sort(function(a,b){return new Date(a.data)-new Date(b.data);});
+  var last=sorted[sorted.length-1], lastC=last?compute(last):null;
+  var custo=oleoPeriodo*pmed;
+  var status='sem'; if(lastC&&lastC.lton){ status=lastC.lton<=meta?'ok':(lastC.lton<=limite?'aten':'crit'); }
   out.live = {
     turnos: turnos.length,
-    areiaUmida_m3: +totU.toFixed(1),
-    areiaSeca_ton: +totTon.toFixed(1),
-    oleo_L: Math.round(totOleo),
-    oleoRecebido_L: Math.round(totReceb),
-    consumo_lton_medio: totTon>0.01? +(totOleo/totTon).toFixed(2) : null,
-    consumo_lton_ultimo: lastLton!=null? +lastLton.toFixed(2) : null,
-    ultimo: { data:lastT.data||'', turno:lastT.turno||'', operador:lastT.operador||'', silo:lastT.silo||'' }
+    recebimentos: receb.length,
+    areiaUmida_m3: +areiaTotal.toFixed(1),
+    areiaSeca_ton: +tonSeca.toFixed(1),
+    consumo_lton_medio: mediaL? +mediaL.toFixed(2) : null,
+    consumo_lton_ultimo: (lastC&&lastC.lton)? +lastC.lton.toFixed(2) : null,
+    ultimo_estimado: !!(lastC&&lastC.estimado),
+    dentroMeta_pct: ltons.length? Math.round(dentro/ltons.length*100) : null,
+    oleoRecebido_L: Math.round(oleoRecebido),
+    oleoConsumido_L: Math.round(oleoPeriodo),
+    preco_litro: +pmed.toFixed(2),
+    custo_periodo: +custo.toFixed(0),
+    custo_ton: tonSeca>0? +(custo/tonSeca).toFixed(2) : null,
+    custo_m3: areiaTotal>0? +(custo/areiaTotal).toFixed(2) : null,
+    status: status,
+    ultimo: { data:last.data||'', turno:last.turno||'', operador:last.operador||'', silo:last.silo||'' }
   };
   return out;
 }

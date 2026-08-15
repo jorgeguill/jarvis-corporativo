@@ -506,15 +506,26 @@
     var head='<div class="ct" style="display:flex;align-items:center;gap:8px">🔥 Forno · Areia &amp; Óleo <span class="c" style="font-weight:400">secagem de areia — insumo + energia</span></div>';
     var body;
     if(L){
-      var meta=Number(pr.meta)||8, u=L.consumo_lton_ultimo, m=L.consumo_lton_medio;
-      var col=(x)=>x==null?'aten':(x<=meta?'ok':(x<=meta*1.15?'aten':'crit'));
-      body='<div class="ecards">'+
-        '<div class="ecard"><div class="l">Consumo (último)</div><div class="v v-'+col(u)+'">'+(u!=null?u.toFixed(2):'—')+' <small>L/ton</small></div></div>'+
+      var meta=Number(pr.meta)||8, tol=Number(pr.tolerancia)||15, u=L.consumo_lton_ultimo, m=L.consumo_lton_medio;
+      var lim=meta*(1+tol/100);
+      var col=function(x){return x==null?'aten':(x<=meta?'ok':(x<=lim?'aten':'crit'));};
+      var fmt=function(n){return n!=null?Number(n).toLocaleString('pt-BR'):'—';};
+      var brl=function(n){return n!=null?('R$ '+Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})):'—';};
+      var brl0=function(n){return n!=null?('R$ '+Number(n).toLocaleString('pt-BR',{maximumFractionDigits:0})):'—';};
+      var stcol={ok:'ok',aten:'aten',crit:'crit',sem:'aten'}[L.status||'sem'];
+      var stx={ok:'dentro da meta',aten:'acima da meta (na tolerância)',crit:'acima do limite',sem:'sem L/ton'}[L.status||'sem'];
+      body='<div class="c" style="margin:0 2px 8px">Último turno: <b>'+esc(L.ultimo.data)+' · '+esc(L.ultimo.turno)+' · '+esc(L.ultimo.operador||'—')+'</b> — <span class="v-'+stcol+'">'+(u!=null?u.toFixed(2)+' L/ton · ':'')+stx+'</span></div>'+
+        '<div class="ecards">'+
         '<div class="ecard"><div class="l">Consumo médio</div><div class="v v-'+col(m)+'">'+(m!=null?m.toFixed(2):'—')+' <small>L/ton</small></div></div>'+
-        '<div class="ecard"><div class="l">Areia seca (acum.)</div><div class="v v-ok">'+L.areiaSeca_ton.toLocaleString('pt-BR')+' <small>t</small></div></div>'+
-        '<div class="ecard"><div class="l">Óleo consumido</div><div class="v v-aten">'+L.oleo_L.toLocaleString('pt-BR')+' <small>L</small></div></div>'+
+        '<div class="ecard"><div class="l">Custo do óleo</div><div class="v v-aten">'+brl(L.custo_ton)+' <small>/ton</small></div></div>'+
+        '<div class="ecard"><div class="l">Areia seca (acum.)</div><div class="v v-ok">'+fmt(L.areiaSeca_ton)+' <small>t</small></div></div>'+
+        '<div class="ecard"><div class="l">Dentro da meta</div><div class="v v-'+(L.dentroMeta_pct!=null&&L.dentroMeta_pct>=70?'ok':'aten')+'">'+(L.dentroMeta_pct!=null?L.dentroMeta_pct+'%':'—')+'</div></div>'+
+        '<div class="ecard"><div class="l">Óleo recebido</div><div class="v v-aten">'+fmt(L.oleoRecebido_L)+' <small>L</small></div></div>'+
+        '<div class="ecard"><div class="l">Preço médio</div><div class="v v-ok">'+brl(L.preco_litro)+' <small>/L</small></div></div>'+
+        '<div class="ecard"><div class="l">Custo do óleo (período)</div><div class="v v-aten">'+brl0(L.custo_periodo)+'</div></div>'+
+        '<div class="ecard"><div class="l">Turnos</div><div class="v v-ok">'+fmt(L.turnos)+'</div></div>'+
         '</div>'+
-        '<div class="c" style="margin:6px 2px 0">Meta '+meta+' L/ton · '+L.turnos+' turnos · último: '+esc(L.ultimo.data)+' '+esc(L.ultimo.turno)+' ('+esc(L.ultimo.operador||'—')+')</div>';
+        '<div class="c" style="margin:6px 2px 0">Meta '+meta+' L/ton (tol. '+tol+'%) · '+L.turnos+' turnos · '+L.recebimentos+' recebimentos'+(L.ultimo_estimado?' · <span class="v-aten">L/ton do último turno estimado pela média</span>':'')+'</div>';
     } else {
       body='<div class="c" style="margin:2px">Aguardando ligação com os dados do forno ao vivo. Parâmetros configurados: umidade '+(pr.umidade)+'% · densidade '+(pr.densidade)+' t/m³ · meta '+(pr.meta)+' L/ton. O forno controla a <b>areia seca</b> (principal insumo) e o <b>óleo</b> (energia da secagem) — os dois maiores custos variáveis.</div>';
     }
