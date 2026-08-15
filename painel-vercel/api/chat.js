@@ -144,13 +144,29 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const out = anthropicKey ? await askAnthropic(anthropicKey, q) : await askGemini(geminiKey, q);
+    let out;
+    if (anthropicKey) {
+      out = await askAnthropic(anthropicKey, q);
+      if (!out.ok && geminiKey) {
+        console.error("ANTHROPIC_FAIL_FALLBACK_GEMINI", out.status, out.detail);
+        const g = await askGemini(geminiKey, q);
+        if (g.ok) out = g;
+      }
+    } else {
+      out = await askGemini(geminiKey, q);
+    }
     if (!out.ok) {
       console.error("LLM_FAIL", out.status, out.detail, out.model || "");
       res.setHeader("x-chat-status", String(out.status));
       if (out.model) res.setHeader("x-chat-model", out.model);
+      let msg;
+      if (out.status === 429) msg = "Muitas perguntas em sequência — o limite de uso da IA (plano atual) foi atingido. Aguarde alguns minutos e tente de novo. Para uso intenso, vale um plano pago da IA.";
+      else if (out.status === 401 || out.status === 403) msg = "A chave da IA parece inválida ou expirada. É preciso revisar a chave (GEMINI_API_KEY / ANTHROPIC_API_KEY) nas variáveis do Vercel.";
+      else if (out.status === 404) msg = "O modelo de IA configurado não está disponível no momento. Preciso ajustar o nome do modelo.";
+      else msg = "Tive um problema para pensar agora (cód. " + (out.status || 0) + "). Tente de novo em instantes.";
       return send(res, 200, {
-        reply: "Tive um problema para pensar agora. Tente de novo em instantes.",
+        reply: msg,
+        status: out.status,
         error: debug ? "UPSTREAM " + out.status + " " + (out.model || "") + " " + out.detail : true
       });
     }
