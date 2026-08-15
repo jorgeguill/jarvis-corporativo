@@ -14,6 +14,50 @@ function verify(tok){ if(!tok||tok.indexOf('.')<0) return null; var a=tok.split(
 function tokenOf(req){ var h=req.headers['x-radar-auth']; if(h) return h; try{ return new URL(req.url,'http://x').searchParams.get('t')||''; }catch(e){ return ''; } }
 function eq(a,b){ if(a==null||b==null) return false; var A=Buffer.from(String(a)), B=Buffer.from(String(b)); if(A.length!==B.length) return false; return crypto.timingSafeEqual(A,B); }
 
+// -------- Interligação com o Painel Forno (controle de areia e óleo) --------
+// Puxa os dados ao vivo do Firebase Realtime DB (mesma base que o app do forno usa).
+// Ativa sozinho quando FORNO_DB_URL for configurado nas variáveis de ambiente.
+// FORNO_URL = link para abrir o app do forno a partir do Radar.
+async function jget(url, ms){
+  var ctl = new AbortController(); var to = setTimeout(function(){ ctl.abort(); }, ms||2500);
+  try { var r = await fetch(url, { signal: ctl.signal }); if(!r.ok) return null; return await r.json(); }
+  catch(e){ return null; } finally { clearTimeout(to); }
+}
+function asList(v){ if(!v) return []; if(Array.isArray(v)) return v.filter(Boolean); return Object.keys(v).map(function(k){ return v[k]; }).filter(Boolean); }
+async function fetchForno(){
+  var base = (process.env.FORNO_DB_URL||'').replace(/\/+$/,'');
+  var out = { url: process.env.FORNO_URL||'', params:{meta:8,umidade:8,densidade:1.5}, live:null };
+  if(!base) return out;
+  var res = await Promise.all([ jget(base+'/turnos.json'), jget(base+'/recebimentos.json'), jget(base+'/cfg.json') ]);
+  var turnos = asList(res[0]), receb = asList(res[1]), cfg = res[2]||{};
+  var umid = Number(cfg.umidade)||8, dens = Number(cfg.densidade)||1.5, meta = Number(cfg.meta)||8;
+  out.params = { meta:meta, umidade:umid, densidade:dens };
+  if(!turnos.length){ return out; }
+  turnos.sort(function(a,b){ return new Date(a.data)-new Date(b.data); });
+  var totU=0, totTon=0, totOleo=0;
+  turnos.forEach(function(t){
+    var m3u=Number(t.m3_umida)||0, ton=m3u*(1-umid/100)*dens;
+    var oleo=(Number(t.tanque_ini)||0)-(Number(t.tanque_fim)||0)+(Number(t.oleo_receb)||0);
+    totU+=m3u; totTon+=ton; totOleo+=(oleo>0?oleo:0);
+  });
+  var lastT = turnos[turnos.length-1];
+  var lastTon = (Number(lastT.m3_umida)||0)*(1-umid/100)*dens;
+  var lastOleo = (Number(lastT.tanque_ini)||0)-(Number(lastT.tanque_fim)||0)+(Number(lastT.oleo_receb)||0);
+  var lastLton = (lastT.consumo_manual!=null && lastT.consumo_manual!=='') ? Number(lastT.consumo_manual) : (lastTon>0.01? lastOleo/lastTon : null);
+  var totReceb = 0; receb.forEach(function(r){ totReceb += Math.max(0,(Number(r.depois)||0)-(Number(r.antes)||0)); });
+  out.live = {
+    turnos: turnos.length,
+    areiaUmida_m3: +totU.toFixed(1),
+    areiaSeca_ton: +totTon.toFixed(1),
+    oleo_L: Math.round(totOleo),
+    oleoRecebido_L: Math.round(totReceb),
+    consumo_lton_medio: totTon>0.01? +(totOleo/totTon).toFixed(2) : null,
+    consumo_lton_ultimo: lastLton!=null? +lastLton.toFixed(2) : null,
+    ultimo: { data:lastT.data||'', turno:lastT.turno||'', operador:lastT.operador||'', silo:lastT.silo||'' }
+  };
+  return out;
+}
+
 function buildData(){
     var DATA={
       SKAL:{nome:'SKAL Engenharia',status:'aten',dados:true,
@@ -141,14 +185,20 @@ function buildData(){
   return { DATA: DATA, ORDER: ORDER };
 }
 
-module.exports = (req, res) => {
+async function payloadWithForno(){
+  var p = buildData();
+  try { p.FORNO = await fetchForno(); } catch(e) { p.FORNO = { url: process.env.FORNO_URL||'', params:{meta:8,umidade:8,densidade:1.5}, live:null }; }
+  return p;
+}
+
+module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'content-type, x-radar-auth');
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
   var users = parseUsers();
-  if (!users) { res.statusCode = 200; return res.end(JSON.stringify({ auth: false, payload: buildData() })); }
+  if (!users) { res.statusCode = 200; return res.end(JSON.stringify({ auth: false, payload: await payloadWithForno() })); }
   var u = verify(tokenOf(req));
   if (!u) { res.statusCode = 401; return res.end(JSON.stringify({ auth: true })); }
-  res.statusCode = 200; return res.end(JSON.stringify({ auth: true, user: u, payload: buildData() }));
+  res.statusCode = 200; return res.end(JSON.stringify({ auth: true, user: u, payload: await payloadWithForno() }));
 };
