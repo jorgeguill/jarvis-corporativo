@@ -140,7 +140,10 @@ function buildData(){
            q:'Analise o faturamento mensal da SKAL em 2026 (jan 2,08; fev 1,87; mar 2,35; abr 1,90; mai 1,89; jun 2,34; jul 2,39 mi; ago parcial). Compare com a média de 2025 (2,12 mi/mês) e diga se o ano está acelerando, estável ou desacelerando, e projete o fechamento de 2026.'},
           {tipo:'bars2',tit:'Compras por centro de custo 2025',unid:'R$ milhões · ano',cats:['Mat-Prima','Admin','Embal.','Prod SKAL','Forno'],
            series:[{nome:'Compras',cor:'#e6c15a',vals:[8.53,4.05,2.66,2.61,0.96]}],
-           q:'Analise as compras da SKAL por centro de custo em 2025 (Matéria-Prima 8,53 mi, Administrativo 4,05, Embalagens 2,66, Produção SKAL 2,61, Forno 0,96): onde está o maior gasto, o que é custo variável de produção, e onde há espaço para negociação com fornecedores.'}
+           q:'Analise as compras da SKAL por centro de custo em 2025 (Matéria-Prima 8,53 mi, Administrativo 4,05, Embalagens 2,66, Produção SKAL 2,61, Forno 0,96): onde está o maior gasto, o que é custo variável de produção, e onde há espaço para negociação com fornecedores.'},
+          {tipo:'bars2',tit:'Previsão de caixa · desembolsos do mês',unid:'R$ mil · por data de saída',cats:['Folha (dia 03)','Encargos (~20)','Tributos (17)'],
+           series:[{nome:'Saída prevista',cor:'#ff5b6e',vals:[152.3,70.0,263.8]}],
+           q:'Monte a PREVISÃO DE CAIXA do mês da SKAL como um calendário de desembolsos recorrentes, na ordem das datas: dia 03 folha líquida R$ 152,3 mil (SKAL 124,29 + KALFIX 27,96); ~dia 20 encargos INSS+FGTS ~R$ 70,0 mil (data a confirmar); dia 17 tributos estaduais ~R$ 263,8 mil (ICMS Normal+ST+FUNEF+COTAC+DIFAL+parcela). Total de saídas recorrentes conhecidas ≈ R$ 486 mil/mês. Confronte com o caixa atual (~R$ 827,3 mil, ref. 24/07) e o crédito livre BB Giro (~R$ 400 mil). Trate contas a pagar apenas para frente como previsão. Mostre o saldo projetado ao longo do mês, aponte a data de maior aperto e conclua se sobra ou aperta, com recomendação.'}
         ],
         entradas:{data:'13/08 · fluxo',
           cards:[['Faturamento do dia','R$ 154,0 mil','ok'],['Resgatado','R$ 9,3 mil','ok'],['Venceu no dia','R$ 4,5 mil','aten'],['Previsão 17–21/08','R$ 470,1 mil','oport']],
