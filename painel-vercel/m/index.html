@@ -310,7 +310,7 @@
   ];
 
   // Dados por empresa. SKAL = real (06/08). Demais = aguardando dados (honesto).
-  var DATA={},ORDER=['SKAL','KALFIX','QUIMIKA','FCK'],AUTHTOK='';
+  var DATA={},ORDER=['SKAL','KALFIX','QUIMIKA','FCK'],AUTHTOK='',FORNO={};
   var STLABEL={ok:'Normal',aten:'Atenção',crit:'Crítico',oport:'Oportunidade',parc:'Parcial · RH',sem:'Sem dados'};
   var STCOLOR={ok:'var(--ok)',aten:'var(--aten)',crit:'var(--crit)',oport:'var(--oport)',parc:'var(--oport)',sem:'var(--dim)'};
 
@@ -498,12 +498,36 @@
     ]);};
   }
 
+  function fornoBlock(coKey){
+    if(coKey!=='SKAL') return '';
+    var f=FORNO||{}, L=f.live, pr=f.params||{meta:8,umidade:8,densidade:1.5};
+    var link=f.url? '<a class="cta" href="'+esc(f.url)+'" target="_blank" rel="noopener" style="display:block;text-decoration:none">🔥 Abrir o painel do Forno ›</a>'
+                  : '<div class="cta" style="opacity:.7">🔗 Falta ligar o app do Forno (configurar link)</div>';
+    var head='<div class="ct" style="display:flex;align-items:center;gap:8px">🔥 Forno · Areia &amp; Óleo <span class="c" style="font-weight:400">secagem de areia — insumo + energia</span></div>';
+    var body;
+    if(L){
+      var meta=Number(pr.meta)||8, u=L.consumo_lton_ultimo, m=L.consumo_lton_medio;
+      var col=(x)=>x==null?'aten':(x<=meta?'ok':(x<=meta*1.15?'aten':'crit'));
+      body='<div class="ecards">'+
+        '<div class="ecard"><div class="l">Consumo (último)</div><div class="v v-'+col(u)+'">'+(u!=null?u.toFixed(2):'—')+' <small>L/ton</small></div></div>'+
+        '<div class="ecard"><div class="l">Consumo médio</div><div class="v v-'+col(m)+'">'+(m!=null?m.toFixed(2):'—')+' <small>L/ton</small></div></div>'+
+        '<div class="ecard"><div class="l">Areia seca (acum.)</div><div class="v v-ok">'+L.areiaSeca_ton.toLocaleString('pt-BR')+' <small>t</small></div></div>'+
+        '<div class="ecard"><div class="l">Óleo consumido</div><div class="v v-aten">'+L.oleo_L.toLocaleString('pt-BR')+' <small>L</small></div></div>'+
+        '</div>'+
+        '<div class="c" style="margin:6px 2px 0">Meta '+meta+' L/ton · '+L.turnos+' turnos · último: '+esc(L.ultimo.data)+' '+esc(L.ultimo.turno)+' ('+esc(L.ultimo.operador||'—')+')</div>';
+    } else {
+      body='<div class="c" style="margin:2px">Aguardando ligação com os dados do forno ao vivo. Parâmetros configurados: umidade '+(pr.umidade)+'% · densidade '+(pr.densidade)+' t/m³ · meta '+(pr.meta)+' L/ton. O forno controla a <b>areia seca</b> (principal insumo) e o <b>óleo</b> (energia da secagem) — os dois maiores custos variáveis.</div>';
+    }
+    return '<div class="chart" id="fornoCard">'+head+'<div class="cv"></div>'+body+link+
+           '<div class="cta" id="fornoAnalise">📊 Análise do R.A.D.A.R.: custo de secagem e eficiência ›</div></div>';
+  }
   function renderProducao(){
     var c=co(),sec=$('prodSec'),el=$('prodBox');
     if(!c.dados||!c.producao){sec.style.display='none';el.style.display='none';return;}
     sec.style.display='flex';el.style.display='block';var p=c.producao;
     $('prodData').textContent=p.data;
     el.innerHTML='<div class="ecards">'+p.cards.map(function(k){return '<div class="ecard"><div class="l">'+k[0]+'</div><div class="v v-'+k[2]+'">'+k[1]+'</div></div>';}).join('')+'</div>'+
+      fornoBlock(state.co)+
       '<div class="charts" id="prodCharts"></div>'+
       '<div class="chart" id="prodCTA"><div class="cta">🏭 Abrir a análise de Operações · Produção ›</div></div>';
     var pc=$('prodCharts');(p.graf||[]).forEach(function(g){var d=document.createElement('div');d.className='chart';
@@ -511,6 +535,16 @@
       d.innerHTML='<div class="ct">'+g.tit+'</div><div class="cv"><small>'+g.unid+'</small></div>'+body+'<div class="cta">toque para a análise do R.A.D.A.R. ›</div>';
       d.onclick=function(){openDrawer('prod',g.tit+' · '+c.nome,g.q,[{label:'🔮 Projeção',q:g.q+' Depois projete os próximos meses com premissas.'},{label:'✅ Ações',q:'Com base em '+g.tit+' da produção da '+c.nome+', quais as ações recomendadas, priorizadas?'}]);};
       pc.appendChild(d);});
+    var fa=$('fornoAnalise'); if(fa){ fa.onclick=function(){
+      var L=(FORNO&&FORNO.live), pr=(FORNO&&FORNO.params)||{meta:8};
+      var ctx=L? ('Dados ao vivo do forno: consumo último '+L.consumo_lton_ultimo+' L/ton, médio '+L.consumo_lton_medio+' L/ton (meta '+pr.meta+'), areia seca acumulada '+L.areiaSeca_ton+' t, óleo consumido '+L.oleo_L+' L em '+L.turnos+' turnos.') : 'Ainda sem dados ao vivo do forno.';
+      openDrawer('prod','Forno · Areia & Óleo · '+c.nome,
+        'Aja como consultor de operações e custos. '+ctx+' Analise a eficiência da secagem de areia: consumo de óleo por tonelada vs meta, tendência, e o impacto no custo variável da produção de argamassa (a areia seca é o principal insumo). Aponte desperdício, oportunidades de redução de óleo e o que falta para fechar o custo de secagem por tonelada. Separe Fato / Cálculo / Interpretação / Recomendação.',
+        [{label:'⛽ Custo de secagem',q:'Calcule o custo de secagem por tonelada de areia no forno da '+c.nome+' (consumo L/ton × preço do óleo). Se faltar o preço do óleo, diga o que falta.'},
+         {label:'📉 Reduzir óleo',q:'Onde há desperdício de óleo no forno da '+c.nome+' e como reduzir o consumo L/ton em direção à meta?'},
+         {label:'🔗 Ligação com produção',q:'Como a areia seca do forno se conecta ao consumo de areia da produção de argamassa da '+c.nome+' (17.983 t)? Há coerência entre o que o forno seca e o que a produção consome?'}],
+        chartFor('prod'));
+    }; }
     $('prodCTA').onclick=function(){
       openDrawer('prod','Operações · Produção · '+c.nome,
         'Aja como meu consultor de operações e gere o relatório de Produção da '+c.nome+': volume por mês e turno, mix de produtos, consumo de insumos, o diagnóstico (disponibilidade e sequência, produção por campanhas, fragmentação, governança documental) e as recomendações do programa de 90 dias. Use títulos e tabelas; compare em toneladas.',
@@ -589,7 +623,7 @@
     AUTHTOK=localStorage.getItem('radar_tok')||'';
     fetch('/api/data',{headers:AUTHTOK?{'x-radar-auth':AUTHTOK}:{}}).then(function(r){ if(r.status===401) return {_401:true}; return r.json(); }).then(function(j){
       if(j._401){ showLogin(); return; }
-      DATA=j.payload.DATA; ORDER=j.payload.ORDER||ORDER; hideLogin();
+      DATA=j.payload.DATA; ORDER=j.payload.ORDER||ORDER; FORNO=j.payload.FORNO||{}; hideLogin();
       $('logoutBtn').style.display=j.user?'block':'none';
       boot();
     }).catch(function(){ vtxt('<b>R.A.D.A.R.</b> · sem conexão'); });
