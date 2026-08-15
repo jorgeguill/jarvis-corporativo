@@ -120,7 +120,9 @@ async function askGemini(key, q) {
       continue;
     }
     last = { ok: false, status: r.status, detail: (await r.text()).slice(0, 300).replace(/[\r\n]+/g, " "), model };
-    if (r.status !== 404 && r.status !== 429) break;
+    // Só para em erro de chave/requisição (400/401/403); em sobrecarga (503/500/529),
+    // quota (429) ou modelo inexistente (404), tenta o próximo modelo da lista.
+    if (r.status === 400 || r.status === 401 || r.status === 403) break;
   }
   return last || { ok: false, status: 0, detail: "sem resposta" };
 }
