@@ -88,7 +88,7 @@ function buildData(){
         kpis:[
           {l:'Caixa',v:'R$ 584,8 mil',st:'ok'},
           {l:'A Receber',v:'R$ 1,84 mi',st:'aten'},
-          {l:'Inadimplência',v:'R$ 881,5 mil',st:'crit'},
+          {l:'Inadimplência',v:'R$ 906,5 mil',st:'crit'},
           {l:'Lucro 2025',v:'R$ 2,86 mi',st:'ok'}
         ],
         alertAgents:['cob'],
@@ -100,7 +100,7 @@ function buildData(){
         },
         eventos:[
           {t:'crit',tp:'Crítico',tt:'Rivello: R$ 173,8 mil de dívida (R$ 152,6 mil no +90) e o cliente quer NOVA PERMUTA (trocar por imóvel). Foi isso que empurrou o +90 para R$ 717,8 mil (+47,5 mil). Permuta NÃO é caixa — mesmo risco da Gávea. Avaliar imóvel, matrícula e registro no patrimônio antes de aceitar. Decisão de alto impacto: requer autorização da diretoria.',q:'Explique o caso da permuta da Rivello (R$ 173,8 mil) e o que analisar antes de aceitar.'},
-          {t:'crit',tp:'Crítico',tt:'Inadimplência total R$ 881,5 mil (14/08). Acima de 90 dias: R$ 717,8 mil (81,4% da dívida). Tirando os 3 casos especiais COMPLETOS (MRV 94,9 mil, Vanguarda 49,3 mil e Rivello 173,8 mil = 318,0 mil), a inadimplência operacional real é R$ 563,5 mil — confere com a soma das faixas líquidas. É nessa dívida operacional que a régua de cobrança deve focar.',q:'Detalhe a inadimplência acima de 90 dias e a inadimplência operacional (sem MRV, Vanguarda e Rivello) na posição 14/08.'},
+          {t:'crit',tp:'Crítico',tt:'Inadimplência total R$ 906,5 mil (17/08) — subiu R$ 25,0 mil desde 14/08, e o dia teve R$ 28,5 mil de novos atrasos (atenção). Acima de 90 dias: R$ 720,3 mil (79,5% da dívida). Tirando os 3 casos especiais COMPLETOS (MRV 94,9 mil, Vanguarda 49,3 mil e Rivello 173,8 mil = 318,0 mil), a inadimplência operacional real é R$ 588,5 mil — confere com a soma das faixas líquidas. É nessa dívida operacional que a régua de cobrança deve focar.',q:'Detalhe a inadimplência acima de 90 dias e a inadimplência operacional (sem MRV, Vanguarda e Rivello) na posição 14/08.'},
           {t:'crit',tp:'Crítico',tt:'Permutas: R$ 251,1 mil (Gávea) baixados como dinheiro em caixa, mas a contrapartida foi imóvel. Risco de caixa inflado e imóvel fora do patrimônio.',q:'Explique o risco das permutas da Gávea e o que precisa ser corrigido.'},
           {t:'aten',tp:'Permutas · Patrimônio',tt:'Reconciliação oficial (PERMUTA_SALDO): valor dos imóveis R$ 3,76 mi; material já entregue R$ 2,05 mi (55%); SALDO de material a entregar R$ 1,70 mi (obrigação futura de estoque, não caixa). Regra: conta como permuta até fechar o valor do imóvel. Perto de fechar: Gávea (quitada), Boa Vista (falta 135 mil). Ainda inteiras: Triunfo, Felipe Melo, Macedo, Nailson. Registrar os R$ 3,76 mi de imóveis no imobilizado (conferir contra os 7,37 mi de 2024).',q:'Explique a reconciliação das permutas da SKAL (valor R$ 3,76 mi, compensado R$ 2,05 mi, saldo a entregar R$ 1,70 mi), quais estão perto de fechar, e o que registrar no imobilizado.'},
           {t:'oport',tp:'Tendência',tt:'Lucro líquido: R$ 4,08 mi (2023) → R$ 1,32 mi (2024, ano de aperto por despesa) → R$ 2,86 mi (2025, recuperou). Receita cresce todo ano (R$ 33,86 mi em 2025). O foco de gestão é a despesa operacional, que ainda come boa parte da margem.',q:'Como está a trajetória de lucro e margem da SKAL e o que controlar?'},
@@ -130,14 +130,14 @@ function buildData(){
             oportunidades:'1) Recuperar os ~R$ 3,35 mi de recebíveis atrasados — maior alavanca de caixa do semestre.\n2) Posição líquida a realizar +R$ 1,72 mi + crédito livre BB Giro de R$ 400 mil = folga de capital de giro.\n3) As permutas se pagam com material (custo ~R$ 3,49/saco), não com caixa — bom para o giro; falta R$ 1,70 mi de material a entregar.\n4) Crédito Presumido de 80% (Lei 6.146/11) sustenta o ICMS (abate ~R$ 383 mil/mês) — manter a habilitação em dia.\n5) Areia fora do Imposto Seletivo na reforma + Fundo de Compensação de ICMS (habilitação até 2032).'
           }
         },
-        nota:'Inadimplência: dados REAIS (ACOMPCOB 14/08). Caixa/A Receber referência de 24/07. Nenhuma ação de alto impacto sem sua autorização.',
+        nota:'Inadimplência: dados REAIS (ACOMPCOB 17/08). Caixa: posição BB de 17/08. Nenhuma ação de alto impacto sem sua autorização.',
         graf:[
           {tipo:'bars2',tit:'Receita × Lucro líquido',unid:'R$ milhões · 2023–2025',
            cats:['2023','2024','2025'],
            series:[{nome:'Receita',cor:'#2dff8c',vals:[24.68,30.46,33.86]},{nome:'Lucro',cor:'#d4b26a',vals:[4.08,1.32,2.86]}],
            q:'Analise a trajetória de receita e lucro líquido da SKAL de 2023 a 2025 (Receita 24,68 → 30,46 → 33,86 mi; Lucro 4,08 → 1,32 → 2,86 mi): o que explica a queda de lucro em 2024 e a recuperação em 2025, o que está acontecendo com a margem, e projete 2026.'},
-          {tipo:'donut',tit:'Inadimplência por idade',unid:'R$ 881,5 mil · total',
-           partes:[{nome:'0–30 dias',val:75.45,cor:'#2dff8c'},{nome:'30–90 dias',val:88.22,cor:'#e6c15a'},{nome:'+90 dias',val:717.85,cor:'#ff5b6e'}],
+          {tipo:'donut',tit:'Inadimplência por idade',unid:'R$ 906,5 mil · total',
+           partes:[{nome:'0–30 dias',val:99.55,cor:'#2dff8c'},{nome:'30–90 dias',val:86.68,cor:'#e6c15a'},{nome:'+90 dias',val:720.30,cor:'#ff5b6e'}],
            q:'Analise a composição por idade da inadimplência da SKAL em 14/08 (0–30: R$ 75,4 mil; 31–60: R$ 70,6 mil; 61–90: R$ 17,6 mil; +90 dias: R$ 717,8 mil, 81,4% do total de R$ 881,5 mil). Tirando os 3 casos especiais completos (MRV 94,9 mil, Vanguarda 49,3 mil, Rivello 173,8 mil), a inadimplência operacional é R$ 563,5 mil (faixas líquidas: 0–30 49,4; 31–60 66,3; 61–90 6,1; +90 441,7). Explique e dê a estratégia por faixa.'},
           {tipo:'bars2',tit:'Faturamento mensal 2026',unid:'R$ milhões · líquido (ago parcial)',cats:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago*'],
            series:[{nome:'Faturamento',cor:'#2dff8c',vals:[2.08,1.87,2.35,1.90,1.89,2.34,2.39,0.81]}],
@@ -157,11 +157,11 @@ function buildData(){
            series:[{nome:'Valor imóvel',cor:'#2dff8c',vals:[764.1,735.6,680.0,524.9,519.4,220.0,211.1,100.0]},{nome:'Saldo a entregar',cor:'#ff5b6e',vals:[340.9,408.6,0,135.4,519.4,220.0,211.1,100.0]}],
            q:'Analise a reconciliação das permutas da SKAL (planilha PERMUTA_SALDO). Regra: o material entregue conta como permuta ATÉ FECHAR O VALOR DO IMÓVEL; o que passar disso é venda normal. Valor total dos imóveis (contratos): R$ 3.755.211,18; já compensado com material: R$ 2.054.537,37 (55%); SALDO de material ainda a entregar: R$ 1.700.673,81 — isso é obrigação FUTURA de material, não caixa. Por permuta (valor / saldo a entregar): Rivello 764.146 / 340.880; Vanguarda 735.636 / 408.624; Gávea 680.000 / quitada (entregou ~33 mil a mais, que vira venda normal); Boa Vista 524.900 / 135.400; Triunfo 519.425 / 519.425 (ainda não iniciada); Felipe Melo 220.000 / 220.000; Macedo Fortes 211.104 / 211.104; Nailson Nortecor 100.000 / 100.000. Interprete: quais permutas estão perto de fechar, quanto de material ainda sai do estoque (custo, não dinheiro), e o que registrar no imobilizado (os R$ 3,76 mi de imóveis).'}
         ],
-        entradas:{data:'14/08 · fluxo',
-          cards:[['Faturamento do dia','R$ 176,8 mil','ok'],['Entrou em conta','R$ 159,2 mil','ok'],['Resgatado','R$ 5,7 mil','ok'],['Previsão 18–24/08','R$ 506,7 mil','oport']],
-          graf:{tipo:'bars2',tit:'Previsão de entrada · 18–24/08',unid:'R$ mil',cats:['18/08','19/08','20/08','21/08','24/08'],
-            series:[{nome:'Previsto',cor:'#57b6ff',vals:[183.36,80.84,73.39,58.13,111.00]}]},
-          q:'Analise as entradas do dia 14/08 da SKAL (faturamento do dia R$ 176.793,76 — à vista Oficial 8.056,25, à vista NG 3.701,70, a prazo 165.035,81; entrou em conta R$ 159.222,49 = boletos 83.928,90 + depósitos 75.293,59; resgatado de inadimplência R$ 5.686,66; ficou em atraso R$ 3.338,47) e a previsão de entrada de 18 a 24/08 (18/08 183.356,52; 19/08 80.840,86; 20/08 73.389,13; 21/08 58.129,79; 24/08 111.004,95; total 506.721,25). Lembre que folha (dia 03) e tributos (dia 17) já saíram no mês. O que isso diz sobre o fluxo da semana e o que priorizar na cobrança?'},
+        entradas:{data:'17/08 · fluxo',
+          cards:[['Faturamento do dia','R$ 151,7 mil','ok'],['Entrou em conta','R$ 233,8 mil','ok'],['Resgatado','R$ 3,5 mil','ok'],['Ficou em atraso','R$ 28,5 mil','crit']],
+          graf:{tipo:'bars2',tit:'Previsão de entrada · 19–25/08',unid:'R$ mil',cats:['19/08','20/08','21/08','24/08','25/08'],
+            series:[{nome:'Previsto',cor:'#57b6ff',vals:[74.59,71.26,55.94,102.27,250.48]}]},
+          q:'Analise as entradas do dia 17/08 da SKAL (faturamento do dia R$ 151.696,78 — a vista Oficial 49.700,85, a vista NG 6.651,70, a prazo 95.344,23; entrou em conta R$ 233.787,21 = boletos 163.678,15 + depositos 70.109,06; resgatado de inadimplencia R$ 3.503,18; ficou em atraso R$ 28.505,04 — alto) e a previsao de entrada de 19 a 25/08 (19/08 74.588,29; 20/08 71.259,13; 21/08 55.942,97; 24/08 102.274,40; 25/08 250.480,26; total 554.545,05). Destaque o atraso alto do dia e o pico previsto de 25/08. O que priorizar na cobranca.'},
         producao:{data:'jan–ago 2026 · 1.316 ordens · marca Kalfix',
           cards:[['Produção (jan–ago)','1,54 mi sc','ok'],['Ordens (consolidadas)','1.316','ok'],['Areia consumida','17.983 t','aten'],['Cimento consumido','4.999 t','aten']],
           graf:[
