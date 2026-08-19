@@ -68,6 +68,45 @@ const SYSTEM = [
 ].join("\n");
 
 const crypto = require("crypto");
+const RADAR_DATA = require("./data");
+
+// Monta um retrato COMPACTO e AO VIVO do painel (mesma fonte de dados do /api/data),
+// para o cerebro responder ligado aos numeros que estao na tela, incluindo o Forno.
+async function liveContext(co, grupo){
+  var payload;
+  try { payload = await RADAR_DATA.payloadWithForno(); }
+  catch(e){ try { payload = RADAR_DATA.buildData(); } catch(e2){ return ""; } }
+  if(!payload) return "";
+  var DATA = payload.DATA||{}, ORDER = payload.ORDER||Object.keys(DATA);
+  var L = [];
+  L.push("=== ESTADO ATUAL DO PAINEL (dados AO VIVO — quando divergir do texto acima, PRIORIZE estes numeros e diga a data/origem) ===");
+  L.push("EMPRESAS DO GRUPO: " + ORDER.map(function(k){ var d=DATA[k]||{}; return (d.nome||k)+" ["+(d.dados?"com dados":"sem dados")+(d.parcial?", parcial":"")+"]"; }).join(" · "));
+  var key = (co && DATA[co]) ? co : (DATA.SKAL?"SKAL":ORDER[0]);
+  var d = DATA[key]||{};
+  L.push("");
+  L.push("AGENTE/EMPRESA EM FOCO: " + (d.nome||key) + (grupo? " (usuario esta na visao de GRUPO — pode cruzar todas as empresas)":"") + ". Responda como o R.A.D.A.R. desta empresa, usando os numeros abaixo.");
+  if(d.kpis && d.kpis.length) L.push("KPIs: " + d.kpis.map(function(k){return k.l+": "+k.v;}).join(" | "));
+  if(d.alerta && d.alerta.tit) L.push("Alerta principal: " + d.alerta.tit);
+  if(d.eventos && d.eventos.length){
+    L.push("Cards/eventos ativos no painel:");
+    d.eventos.forEach(function(e){ if(e && e.tt) L.push("- ["+(e.tp||e.t||"")+"] "+String(e.tt).slice(0,240)); });
+  }
+  if(d.hoje && d.hoje.det){
+    var det=d.hoje.det;
+    ["decisoes","riscos","pendencias","oportunidades"].forEach(function(kk){ if(det[kk]) L.push(kk.toUpperCase()+": "+String(det[kk]).replace(/\n/g," ").slice(0,700)); });
+  }
+  if(d.nota) L.push("Nota do painel: " + d.nota);
+  var F = payload.FORNO;
+  if(F && F.live){
+    var lv=F.live, meta=(F.params&&F.params.meta)||8;
+    L.push("");
+    L.push("FORNO — CONTROLE DE AREIA E OLEO (AO VIVO, "+lv.turnos+" turnos): areia seca "+lv.areiaSeca_ton+" t; consumo medio "+ (lv.consumo_lton_medio!=null?lv.consumo_lton_medio:"s/ medicao") +" L/ton (meta "+meta+"); ultimo turno "+ (lv.consumo_lton_ultimo!=null?lv.consumo_lton_ultimo:"s/ dado") +" L/ton"+(lv.ultimo_estimado?" (estimado)":"")+"; dentro da meta "+ (lv.dentroMeta_pct!=null?lv.dentroMeta_pct+"%":"s/d") +"; preco oleo R$ "+lv.preco_litro+"/L; custo secagem R$ "+ (lv.custo_ton!=null?lv.custo_ton:"s/d") +"/ton; status "+lv.status+"; ultimo lancamento "+(lv.ultimo&&lv.ultimo.data||"")+" ("+(lv.ultimo&&lv.ultimo.turno||"")+").");
+  } else {
+    L.push("");
+    L.push("FORNO: interligado ao Radar, mas SEM dados ao vivo carregados neste momento (o app do forno pode estar sem lancamentos recentes ou a variavel de ambiente do banco nao esta ligada).");
+  }
+  return L.join("\n");
+}
 function parseUsers(){ var raw=process.env.RADAR_USERS||"",m={}; raw.split(/[,\n]/).forEach(function(p){var i=p.indexOf(":");if(i>0){var u=p.slice(0,i).trim();if(u)m[u]=p.slice(i+1).trim();}}); return Object.keys(m).length?m:null; }
 function secret(){ return process.env.RADAR_SECRET || crypto.createHash("sha256").update("radar|"+(process.env.RADAR_USERS||"")).digest("hex"); }
 function mac(p){ return crypto.createHmac("sha256", secret()).update(p).digest("base64").replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""); }
@@ -81,7 +120,7 @@ function send(res, code, obj) {
   res.end(JSON.stringify(obj));
 }
 
-async function askAnthropic(key, q) {
+async function askAnthropic(key, q, sys) {
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
@@ -89,7 +128,7 @@ async function askAnthropic(key, q) {
       model: "claude-opus-5",
       max_tokens: 4096,
       thinking: { type: "disabled" },
-      system: SYSTEM,
+      system: sys || SYSTEM,
       messages: [{ role: "user", content: q }]
     })
   });
@@ -99,7 +138,7 @@ async function askAnthropic(key, q) {
   return { ok: true, text };
 }
 
-async function askGemini(key, q) {
+async function askGemini(key, q, sys) {
   const models = ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest", "gemini-2.5-flash-lite", "gemini-flash-lite-latest"];
   let last = null;
   for (const model of models) {
@@ -110,7 +149,7 @@ async function askGemini(key, q) {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          system_instruction: { parts: [{ text: SYSTEM }] },
+          system_instruction: { parts: [{ text: sys || SYSTEM }] },
           contents: [{ role: "user", parts: [{ text: q }] }],
           generationConfig: { maxOutputTokens: 8192, temperature: 0.6 }
         })
@@ -140,7 +179,14 @@ module.exports = async (req, res) => {
   if (!authOk(req)) return send(res, 401, { reply: "Acesso não autorizado. Faça login novamente.", auth: true });
   let q = (url.searchParams.get("q") || "").slice(0, 6000).trim();
   const debug = url.searchParams.get("debug") === "1";
+  const co = (url.searchParams.get("co") || "").slice(0, 20).trim();
+  const grupo = url.searchParams.get("grupo") === "1";
   if (!q) return send(res, 200, { reply: "Pode falar. Em que posso ajudar?" });
+
+  // Liga o cerebro aos dados AO VIVO do painel (mesma fonte do /api/data), incluindo o Forno.
+  let sys = SYSTEM;
+  try { const lc = await liveContext(co, grupo); if (lc) sys = SYSTEM + "\n\n" + lc; }
+  catch (e) { console.error("LIVECTX_FAIL", String(e)); }
 
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const geminiKey = process.env.GEMINI_API_KEY;
@@ -156,14 +202,14 @@ module.exports = async (req, res) => {
   try {
     let out;
     if (anthropicKey) {
-      out = await askAnthropic(anthropicKey, q);
+      out = await askAnthropic(anthropicKey, q, sys);
       if (!out.ok && geminiKey) {
         console.error("ANTHROPIC_FAIL_FALLBACK_GEMINI", out.status, out.detail);
-        const g = await askGemini(geminiKey, q);
+        const g = await askGemini(geminiKey, q, sys);
         if (g.ok) out = g;
       }
     } else {
-      out = await askGemini(geminiKey, q);
+      out = await askGemini(geminiKey, q, sys);
     }
     if (!out.ok) {
       console.error("LLM_FAIL", out.status, out.detail, out.model || "");

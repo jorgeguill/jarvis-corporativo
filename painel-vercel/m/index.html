@@ -329,7 +329,8 @@
 
   /* ---------- Brain ---------- */
   function askBrain(q,onText){vtxt('<b>R.A.D.A.R.</b> · pensando…');
-    return fetch('/api/chat?q='+encodeURIComponent(q),{headers:AUTHTOK?{'x-radar-auth':AUTHTOK}:{}}).then(function(r){if(r.status===401){showLogin();throw 0;}return r.json();}).then(function(d){
+    var ctx='&co='+encodeURIComponent(state.co||'')+(state.grupo?'&grupo=1':'');
+    return fetch('/api/chat?q='+encodeURIComponent(q)+ctx,{headers:AUTHTOK?{'x-radar-auth':AUTHTOK}:{}}).then(function(r){if(r.status===401){showLogin();throw 0;}return r.json();}).then(function(d){
       var t=(d&&d.reply)||'Não consegui responder agora.';onText(t);vtxt('<b>R.A.D.A.R.</b> · '+t.slice(0,64));speak(t);return t;
     }).catch(function(){onText('Não consegui me conectar agora.');vtxt('<b>R.A.D.A.R.</b> · sem conexão');});}
 
