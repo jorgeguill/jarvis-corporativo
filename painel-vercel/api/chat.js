@@ -74,9 +74,16 @@ const RADAR_DATA = require("./data");
 // para o cerebro responder ligado aos numeros que estao na tela, incluindo o Forno.
 async function liveContext(co, grupo){
   var payload;
-  try { payload = await RADAR_DATA.payloadWithForno(); }
-  catch(e){ try { payload = RADAR_DATA.buildData(); } catch(e2){ return ""; } }
+  try { payload = RADAR_DATA.buildData(); } catch(e2){ return ""; }
   if(!payload) return "";
+  // Forno so entra se responder rapido (corrida com 1,2s) — nunca deixa o cerebro lento.
+  try {
+    var forno = await Promise.race([
+      RADAR_DATA.fetchForno(),
+      new Promise(function(r){ setTimeout(function(){ r(null); }, 1200); })
+    ]);
+    if(forno) payload.FORNO = forno;
+  } catch(e){}
   var DATA = payload.DATA||{}, ORDER = payload.ORDER||Object.keys(DATA);
   var L = [];
   L.push("=== ESTADO ATUAL DO PAINEL (dados AO VIVO — quando divergir do texto acima, PRIORIZE estes numeros e diga a data/origem) ===");

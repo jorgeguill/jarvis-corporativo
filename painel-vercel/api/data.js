@@ -241,11 +241,15 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Headers', 'content-type, x-radar-auth');
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
+  var isForno = false; try { isForno = new URL(req.url, 'http://x').searchParams.get('forno') === '1'; } catch(e) {}
   var users = parseUsers();
-  if (!users) { res.statusCode = 200; return res.end(JSON.stringify({ auth: false, payload: await payloadWithForno() })); }
-  var u = verify(tokenOf(req));
-  if (!u) { res.statusCode = 401; return res.end(JSON.stringify({ auth: true })); }
-  res.statusCode = 200; return res.end(JSON.stringify({ auth: true, user: u, payload: await payloadWithForno() }));
+  var authed = !users || !!verify(tokenOf(req));
+  if (users && !authed) { res.statusCode = 401; return res.end(JSON.stringify({ auth: true })); }
+  // Modo FORNO: so os dados ao vivo do forno (rede). Carregado separado para NAO travar o painel.
+  if (isForno) { res.statusCode = 200; return res.end(JSON.stringify({ auth: !!users, FORNO: await fetchForno() })); }
+  // Modo painel: KPIs e cards saem NA HORA (buildData e sincrono, sem esperar rede). O forno vem depois.
+  var u = users ? verify(tokenOf(req)) : null;
+  res.statusCode = 200; return res.end(JSON.stringify({ auth: !!users, user: u || undefined, payload: buildData() }));
 };
 
 // Exporta as funcoes para o cerebro (api/chat.js) usar a MESMA fonte de dados do painel.
