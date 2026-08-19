@@ -509,7 +509,7 @@
     var c=co(),el=$('charts'),sec=$('chartsSec');
     if(!c.dados||!c.graf||!c.graf.length){el.style.display='none';sec.style.display='none';return;}
     el.style.display='grid';sec.style.display='flex';el.innerHTML='';
-    c.graf.forEach(function(g){var d=document.createElement('div');d.className='chart';
+    c.graf.forEach(function(g){if(!g)return;var d=document.createElement('div');d.className='chart';
       var body=g.tipo==='donut'?svgDonut(g):(g.tipo==='fluxo'?svgFluxo(g):svgBars(g));
       d.innerHTML='<div class="ct">'+g.tit+'</div><div class="cv"><small>'+g.unid+'</small></div>'+body+'<div class="cta">toque para a análise do R.A.D.A.R. ›</div>';
       d.onclick=function(){openDrawer('bi',g.tit+' · '+c.nome,g.q,[{label:'🔮 E a projeção?',q:g.q+' Depois projete o cenário para os próximos 6 a 12 meses com premissas explícitas.'},{label:'✅ O que fazer',q:'Com base em '+g.tit+' da '+c.nome+', quais as ações práticas recomendadas, priorizadas por impacto?'}]);};
@@ -573,7 +573,7 @@
       fornoBlock(state.co)+
       '<div class="charts" id="prodCharts"></div>'+
       '<div class="chart" id="prodCTA"><div class="cta">🏭 Abrir a análise de Operações · Produção ›</div></div>';
-    var pc=$('prodCharts');(p.graf||[]).forEach(function(g){var d=document.createElement('div');d.className='chart';
+    var pc=$('prodCharts');(p.graf||[]).forEach(function(g){if(!g)return;var d=document.createElement('div');d.className='chart';
       var body=g.tipo==='donut'?svgDonut(g):(g.tipo==='fluxo'?svgFluxo(g):svgBars(g));
       d.innerHTML='<div class="ct">'+g.tit+'</div><div class="cv"><small>'+g.unid+'</small></div>'+body+'<div class="cta">toque para a análise do R.A.D.A.R. ›</div>';
       d.onclick=function(){openDrawer('prod',g.tit+' · '+c.nome,g.q,[{label:'🔮 Projeção',q:g.q+' Depois projete os próximos meses com premissas.'},{label:'✅ Ações',q:'Com base em '+g.tit+' da produção da '+c.nome+', quais as ações recomendadas, priorizadas?'}]);};
@@ -601,7 +601,9 @@
 
   function renderEmpresa(){
     $('coName').textContent=state.co;
-    renderCore();renderKpis();renderAgents();renderEntradas();renderProducao();renderCharts();renderAlerta();renderFeed();renderHoje();renderNote();
+    // Cada seção é isolada: se uma falhar, as outras continuam (nunca mais apagar o painel inteiro).
+    [renderCore,renderKpis,renderAgents,renderEntradas,renderProducao,renderCharts,renderAlerta,renderFeed,renderHoje,renderNote]
+      .forEach(function(fn){ try{ fn(); }catch(err){ try{ console.error('render '+(fn.name||'?')+' falhou:', err); }catch(e){} } });
   }
 
   /* ---------- Visão Grupo ---------- */
