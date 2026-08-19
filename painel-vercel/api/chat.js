@@ -67,6 +67,18 @@ const SYSTEM = [
   "Se a pergunta for de consultoria (diagnostico, estrategia, proposta, mercado), responda como a Radar, com metodo e conclusao acionavel. Sempre termine com uma recomendacao clara, deixando a decisao para a diretoria."
 ].join("\n");
 
+// Diretiva do COORDENADOR: roda sozinha (sem pergunta do usuario) e faz TODOS os agentes
+// trabalharem ao mesmo tempo sobre os dados ao vivo, entregando um briefing executivo cruzado.
+const COORD_PROMPT = [
+  "Aja como o COORDENADOR do R.A.D.A.R., comandando TODOS os agentes ao mesmo tempo (Financeiro, Controladoria, Cobranca, Comercial, Producao, Logistica, Compras, RH/DP, Fiscal/Incentivos, Contratos, Auditoria). Ninguem perguntou nada: faca a leitura cruzada da empresa em foco usando os DADOS AO VIVO do painel (KPIs, cards, decisoes/riscos/pendencias, forno) e entregue um BRIEFING EXECUTIVO curto e acionavel.",
+  "Estrutura obrigatoria, com estes titulos em negrito:",
+  "**Leitura por area** — uma linha por area QUE TEM DADOS, comecando por um emoji de status (🟢 ok / 🟡 atencao / 🔴 critico) e o numero-chave da area. Pule as areas sem dados (nao invente).",
+  "**Cruzamentos** — 2 ou 3 conexoes entre areas que so aparecem olhando junto (ex.: cobranca × caixa × permutas × fiscal; producao × forno × custo).",
+  "**Prioridades de hoje** — as 3 acoes mais importantes, em ordem, cada uma com a evidencia em numero do porque.",
+  "**Alertas preditivos** — 1 ou 2 riscos dos proximos 30 a 90 dias, com o gatilho a observar.",
+  "Regras: seja direto e curto (no maximo ~250 palavras). Use SO os numeros reais do contexto; onde faltar dado, diga em uma linha o que falta. Nao repita texto institucional nem se apresente — va direto aos numeros e as acoes."
+].join("\n");
+
 const crypto = require("crypto");
 const RADAR_DATA = require("./data");
 
@@ -188,6 +200,8 @@ module.exports = async (req, res) => {
   const debug = url.searchParams.get("debug") === "1";
   const co = (url.searchParams.get("co") || "").slice(0, 20).trim();
   const grupo = url.searchParams.get("grupo") === "1";
+  const mode = (url.searchParams.get("mode") || "").trim();
+  if (mode === "coord") q = COORD_PROMPT;   // o Coordenador roda sozinho, sem pergunta
   if (!q) return send(res, 200, { reply: "Pode falar. Em que posso ajudar?" });
 
   // Liga o cerebro aos dados AO VIVO do painel (mesma fonte do /api/data), incluindo o Forno.
