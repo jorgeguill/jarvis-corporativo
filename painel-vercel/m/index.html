@@ -666,10 +666,16 @@
     AUTHTOK=localStorage.getItem('radar_tok')||'';
     fetch('/api/data',{headers:AUTHTOK?{'x-radar-auth':AUTHTOK}:{}}).then(function(r){ if(r.status===401) return {_401:true}; return r.json(); }).then(function(j){
       if(j._401){ showLogin(); return; }
-      DATA=j.payload.DATA; ORDER=j.payload.ORDER||ORDER; FORNO=j.payload.FORNO||{}; hideLogin();
+      DATA=j.payload.DATA; ORDER=j.payload.ORDER||ORDER; FORNO=j.payload.FORNO||FORNO; hideLogin();
       $('logoutBtn').style.display=j.user?'block':'none';
       boot();
+      loadForno();
     }).catch(function(){ vtxt('<b>R.A.D.A.R.</b> · sem conexão'); });
+  }
+  function loadForno(){
+    fetch('/api/data?forno=1',{headers:AUTHTOK?{'x-radar-auth':AUTHTOK}:{}}).then(function(r){return r.json();}).then(function(j){
+      if(j&&j.FORNO){ FORNO=j.FORNO; if(!state.grupo) applyMode(); }
+    }).catch(function(){});
   }
   function doLogin(){
     var u=$('lgUser').value.trim(), p=$('lgPass').value; if(!u||!p){ $('lgErr').textContent='Informe usuário e senha.'; return; }
