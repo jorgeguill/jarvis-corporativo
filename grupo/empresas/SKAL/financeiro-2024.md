@@ -36,7 +36,7 @@ Mesmo com a **receita subindo 23%** (24,68 → 30,46 mi), o **lucro líquido cai
 | **Patrimônio líquido** | **R$ 12,70 mi** |
 
 ### Pontos para a Contabilidade
-1. **Permutas × Imobilizado:** o imobilizado cresceu **R$ 1,1 mi** em 2024. **Confirmar se os imóveis de permuta (Gávea R$ 251 mil etc.) estão registrados aqui** ou se ficaram fora do balanço (ver `grupo/permutas/REGISTRO-PERMUTAS.md`).
+1. **Permutas × Imobilizado:** o imobilizado cresceu **R$ 1,1 mi** em 2024. **Confirmar se os imóveis de permuta (Gávea R$ 251 mil etc.) estão registrados aqui** ou se ficaram fora do balanço (ver `grupo/projetos/permutas/REGISTRO-PERMUTAS.md`).
 2. **Capital social divergente:** o Balanço 2024 traz **Capital Social de R$ 140.000**, mas o contrato social (Aditivo 16) diz **R$ 3.000.000**. Provável aumento de capital posterior a 2024 (incorporação de reservas). Confirmar e amarrar.
 3. O ativo tem grande volume de **Adiantamentos a Fornecedores** (dezenas de contas) — coerente com a lição de não confundir adiantamento com conta a receber.
 
@@ -46,4 +46,4 @@ Mesmo com a **receita subindo 23%** (24,68 → 30,46 mi), o **lucro líquido cai
 - **Receita bruta 2025: R$ 33.859.028,25** (subiu de R$ 30,46 mi) · receita líquida R$ 24,14 mi · lucro bruto R$ 5,63 mi.
 - **Lucro líquido 2025: R$ 2.861.211,35** — **recuperou** vs 2024 (R$ 1,32 mi). Trajetória: 4,08 (2023) → 1,32 (2024) → 2,86 (2025).
 - **Balanço 2025:** ativo total **R$ 23,59 mi**; **patrimônio líquido R$ 12.755.356,96** (quase igual a 2024, apesar do lucro de R$ 2,86 mi → **provável distribuição de ~R$ 2,8 mi de lucros aos sócios** em 2025). Surge "Imobilizado em Andamento" (R$ 91.983,53) — obra/investimento em curso.
-- **2º trimestre 2026 (Lucro Real):** base R$ 982.848,54; IRPJ + adicional + CSLL ≈ R$ 328 mil no trimestre (ver `fiscal-compliance.md`).
+- **2º trimestre 2026 (Lucro Real):** base R$ 982.848,54; IRPJ + adicional + CSLL ≈ R$ 328 mil no trimestre (ver `grupo/empresas/SKAL/fiscal-compliance.md`).

@@ -39,5 +39,5 @@ As filiais fabricam: resinas termoplásticas/termofixas, tintas/vernizes/esmalte
 
 ## Pontos de atenção (para Documentos/Jurídico)
 1. **Sucessão pendente:** o espólio de Ramisa (falecida em 2016) ainda figura como sócio; a partilha das 7.000 cotas não foi concluída. Risco societário a acompanhar até o encerramento do inventário.
-2. **Objeto social já permite imóveis:** a matriz tem no objeto **6822-6/00 — gestão e administração da propriedade imobiliária**. Ou seja, a empresa **pode legitimamente deter e administrar imóveis** — o que reforça que os **imóveis recebidos em permuta devem estar no patrimônio** (ver `grupo/permutas/REGISTRO-PERMUTAS.md`). Não há impedimento societário para registrá-los.
+2. **Objeto social já permite imóveis:** a matriz tem no objeto **6822-6/00 — gestão e administração da propriedade imobiliária**. Ou seja, a empresa **pode legitimamente deter e administrar imóveis** — o que reforça que os **imóveis recebidos em permuta devem estar no patrimônio** (ver `grupo/projetos/permutas/REGISTRO-PERMUTAS.md`). Não há impedimento societário para registrá-los.
 3. **Areia no objeto:** confirma a atividade de extração/beneficiamento de areia — coerente com a análise da Reforma Tributária (areia **fora** do Imposto Seletivo).

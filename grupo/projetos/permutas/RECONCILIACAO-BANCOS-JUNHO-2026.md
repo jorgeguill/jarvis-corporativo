@@ -42,7 +42,7 @@
 3. **Permuta não aparece aqui.** Nenhum desses R$ 2,89 mi é permuta — permuta não entra em banco.
    Quando o ERP baixa uma permuta como "Depósito na Baixa" no caixa 16.09 (caso Gávea, R$ 251.150),
    ele cria um "recebido" que **não tem lastro em extrato**. Por isso a reconciliação banco × ERP é o
-   teste que separa dinheiro real de baixa de permuta. Ver `REGISTRO-PERMUTAS.md`.
+   teste que separa dinheiro real de baixa de permuta. Ver `grupo/projetos/permutas/REGISTRO-PERMUTAS.md`.
 
 > Próximo passo sugerido: pegar o "recebido" do ERP em junho e confrontar com os R$ 2,89 mi + Caixa.
 > A diferença que não bater com extrato tende a ser exatamente baixa de permuta / baixa não lançada.
