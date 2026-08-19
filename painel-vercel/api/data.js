@@ -247,3 +247,8 @@ module.exports = async (req, res) => {
   if (!u) { res.statusCode = 401; return res.end(JSON.stringify({ auth: true })); }
   res.statusCode = 200; return res.end(JSON.stringify({ auth: true, user: u, payload: await payloadWithForno() }));
 };
+
+// Exporta as funcoes para o cerebro (api/chat.js) usar a MESMA fonte de dados do painel.
+module.exports.buildData = buildData;
+module.exports.fetchForno = fetchForno;
+module.exports.payloadWithForno = payloadWithForno;
