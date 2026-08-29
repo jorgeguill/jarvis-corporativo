@@ -249,6 +249,32 @@ function buildData(){
   return { DATA: DATA, ORDER: ORDER };
 }
 
+// ---- PASSO 2 · overlay dos KPIs a partir do banco (Neon) ----
+// Quando DATABASE_URL existe, sobrepõe os valores dos KPIs monetários com os fatos
+// do banco (fonte única). Fallback TOTAL: sem DATABASE_URL, erro, timeout ou banco
+// vazio => mantém os literais. Com corrida de 1,5s, nunca trava o painel.
+var FACT_KPI = { caixa:'Caixa', inadimplencia:'Inadimplência' };  // metrica -> rótulo do KPI
+function fmtBRL(v){ v=Number(v); if(!isFinite(v)) return null;
+  if(Math.abs(v)>=1e6) return 'R$ '+(v/1e6).toFixed(2).replace('.',',')+' mi';
+  return 'R$ '+(v/1e3).toFixed(1).replace('.',',')+' mil'; }
+async function overlayFromDB(payload){
+  if(!process.env.DATABASE_URL || process.env.DATA_SOURCE==='literals') return payload;
+  try{
+    var neon = require('./_neon');
+    var rows = await Promise.race([
+      neon.neonQuery("SELECT e.codigo, f.metrica, f.valor FROM fato f JOIN empresa e ON e.id=f.empresa_id WHERE f.unidade_med='BRL'", []),
+      new Promise(function(res){ setTimeout(function(){ res(null); }, 1500); })
+    ]);
+    if(!rows || !rows.length) return payload;              // banco vazio/lento => literais
+    rows.forEach(function(r){
+      var co = payload.DATA && payload.DATA[r.codigo]; if(!co || !co.kpis) return;
+      var label = FACT_KPI[r.metrica]; if(!label) return;
+      for(var i=0;i<co.kpis.length;i++){ if(co.kpis[i].l===label){ var s=fmtBRL(r.valor); if(s) co.kpis[i].v=s; } }
+    });
+  }catch(e){ /* fallback silencioso: mantém literais, painel nunca cai */ }
+  return payload;
+}
+
 async function payloadWithForno(){
   var p = buildData();
   try { p.FORNO = await fetchForno(); } catch(e) { p.FORNO = { url: process.env.FORNO_URL||'', params:{meta:8,umidade:8,densidade:1.5}, live:null }; }
@@ -266,12 +292,15 @@ module.exports = async (req, res) => {
   if (users && !authed) { res.statusCode = 401; return res.end(JSON.stringify({ auth: true })); }
   // Modo FORNO: so os dados ao vivo do forno (rede). Carregado separado para NAO travar o painel.
   if (isForno) { res.statusCode = 200; return res.end(JSON.stringify({ auth: !!users, FORNO: await fetchForno() })); }
-  // Modo painel: KPIs e cards saem NA HORA (buildData e sincrono, sem esperar rede). O forno vem depois.
+  // Modo painel: KPIs e cards saem NA HORA. Sem DATABASE_URL, overlayFromDB retorna
+  // na hora (literais). Com banco, sobrepõe os KPIs monetários com corrida de 1,5s.
   var u = users ? verify(tokenOf(req)) : null;
-  res.statusCode = 200; return res.end(JSON.stringify({ auth: !!users, user: u || undefined, payload: buildData() }));
+  var payload = await overlayFromDB(buildData());
+  res.statusCode = 200; return res.end(JSON.stringify({ auth: !!users, user: u || undefined, payload: payload }));
 };
 
 // Exporta as funcoes para o cerebro (api/chat.js) usar a MESMA fonte de dados do painel.
 module.exports.buildData = buildData;
 module.exports.fetchForno = fetchForno;
 module.exports.payloadWithForno = payloadWithForno;
+module.exports.overlayFromDB = overlayFromDB;
