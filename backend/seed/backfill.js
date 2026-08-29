@@ -11,13 +11,15 @@ const EMPRESAS = [
   { codigo: 'FCK', nome: 'F.C.K. Ind. e Com. Mat. Construção' }
 ];
 
-// Fatos já confirmados da SKAL (mesmos valores do painel, em milhares de R$).
+// Fatos já confirmados da SKAL. CONVENÇÃO CANÔNICA: valor monetário em REAIS CHEIOS
+// (unidade_med 'BRL'). A tela é que divide por mil na exibição — o banco nunca mistura
+// "cheio" e "mil" (justamente a ambiguidade que a fonte única elimina).
 const FATOS_SKAL = [
-  { metrica: 'folha_liquida', valor: 124.3, unidade_med: 'BRL_mil', data_ref: '2026-07-01', confianca: 1 },
-  { metrica: 'caixa', valor: 651.2, unidade_med: 'BRL_mil', data_ref: '2026-08-25', confianca: 1 },
-  { metrica: 'inadimplencia', valor: 797.5, unidade_med: 'BRL_mil', data_ref: '2026-08-26', confianca: 1 },
-  { metrica: 'tributos_estaduais', valor: 263.8, unidade_med: 'BRL_mil', data_ref: '2026-08-17', confianca: 1 },
-  { metrica: 'tributos_federais', valor: 213.6, unidade_med: 'BRL_mil', data_ref: '2026-08-31', confianca: 1 }
+  { metrica: 'folha_liquida', valor: 124300, unidade_med: 'BRL', data_ref: '2026-07-01', confianca: 1 },
+  { metrica: 'caixa', valor: 651200, unidade_med: 'BRL', data_ref: '2026-08-25', confianca: 1 },
+  { metrica: 'inadimplencia', valor: 797500, unidade_med: 'BRL', data_ref: '2026-08-26', confianca: 1 },
+  { metrica: 'tributos_estaduais', valor: 263800, unidade_med: 'BRL', data_ref: '2026-08-17', confianca: 1 },
+  { metrica: 'tributos_federais', valor: 213600, unidade_med: 'BRL', data_ref: '2026-08-31', confianca: 1 }
 ];
 
 async function main() {

@@ -5,11 +5,12 @@ const d = require('../lib/detectors');
 let ok = 0, fail = 0;
 function assert(cond, msg) { if (cond) { ok++; console.log('  ✓ ' + msg); } else { fail++; console.log('  ✗ ' + msg); } }
 
-console.log('\n[1] 13º salário entra como compromisso futuro (folha SKAL 124,3 mil)');
-var e1 = d.detectCompromissosFuturos({ empresa: 'SKAL', hoje: new Date('2026-08-29'), folhaLiquidaMensal: 124.3 });
+console.log('\n[1] 13º salário entra como compromisso futuro (folha SKAL R$ 124.300, reais cheios)');
+// detector é agnóstico de unidade: opera no que recebe. Canônico = BRL cheio.
+var e1 = d.detectCompromissosFuturos({ empresa: 'SKAL', hoje: new Date('2026-08-29'), folhaLiquidaMensal: 124300 });
 var treze = e1.filter(function (x) { return x.entidade_id === 'folha_13o'; });
 assert(treze.length === 2, 'gera as 2 parcelas do 13º (nov e dez)');
-assert(Math.round(treze[0].valor) === 62, '1ª parcela ≈ R$ 62 mil (metade da folha)');
+assert(Math.round(treze[0].valor) === 62150, '1ª parcela = R$ 62.150 (metade da folha)');
 assert(treze[0].contexto.vence === '2026-11-30', '1ª parcela vence 30/11');
 assert(treze[1].contexto.vence === '2026-12-20', '2ª parcela vence 20/12');
 assert(treze[0].tipo === 'COMPROMISSO_FUTURO_DETECTADO', 'tipo de evento correto');

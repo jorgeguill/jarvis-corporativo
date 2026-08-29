@@ -59,6 +59,11 @@ node test/detectors.test.js      # 11 testes: o 13º nasce sozinho, desvio, reco
 | `CRON_SECRET` | protege o `/api/tick` (chamado só pelo cron) |
 | `RADAR_USERS` / `RADAR_SECRET` | já existem — os endpoints herdam o login atual |
 
+## Convenção canônica
+
+- **Dinheiro em reais cheios** (`unidade_med = 'BRL'`): folha = `124300`, não `124.3`.
+  A tela é que divide por mil e formata. O banco nunca mistura "cheio" e "mil".
+
 ## Garantias
 
 - **Fonte única:** `UNIQUE(empresa, unidade, metrica, data_ref)` em `fato` — o bug 152×124

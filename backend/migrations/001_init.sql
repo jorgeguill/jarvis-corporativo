@@ -75,6 +75,8 @@ CREATE TABLE IF NOT EXISTS ingestao (
 -- ============================================================= FATOS (o coração)
 -- O número de negócio vive AQUI, uma única vez. A UNIQUE abaixo é a garantia
 -- estrutural contra o bug 152×124 (o mesmo fato divergindo em vários lugares).
+-- CONVENÇÃO CANÔNICA: valores monetários em REAIS CHEIOS (unidade_med = 'BRL'),
+-- nunca em milhares. A formatação (÷1000, "R$ mil") é responsabilidade da tela.
 CREATE TABLE IF NOT EXISTS fato (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   empresa_id  uuid NOT NULL REFERENCES empresa(id),
