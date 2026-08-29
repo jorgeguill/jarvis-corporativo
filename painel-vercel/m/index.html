@@ -759,6 +759,8 @@
       boot();
       loadForno();
       fireTick();
+      // O vigia (IA) leva alguns segundos para varrer tudo; reconsulta para exibir os achados.
+      setTimeout(function(){ try{ if(!state.grupo) renderVigia(); }catch(e){} }, 13000);
     }).catch(function(){ vtxt('<b>R.A.D.A.R.</b> · sem conexão'); });
   }
   // Dispara o vigia (tick) em segundo plano ao abrir o painel — normaliza dados e
