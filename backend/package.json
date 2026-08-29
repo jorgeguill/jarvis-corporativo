@@ -1,0 +1,15 @@
+{
+  "name": "radar-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "R.A.D.A.R. Cognitive OS — Fase 1 (Data Fabric + Event Bus + Memória). Isolado do painel em produção.",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "migrate": "node seed/migrate.js",
+    "backfill": "node seed/backfill.js",
+    "test:detectors": "node test/detectors.test.js"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4"
+  }
+}
