@@ -735,8 +735,12 @@
       $('logoutBtn').style.display=j.user?'block':'none';
       boot();
       loadForno();
+      fireTick();
     }).catch(function(){ vtxt('<b>R.A.D.A.R.</b> · sem conexão'); });
   }
+  // Dispara o vigia (tick) em segundo plano ao abrir o painel — normaliza dados e
+  // gera eventos proativos. Fire-and-forget: ignora o resultado, nunca trava a tela.
+  function fireTick(){ try{ fetch('/api/tick',{headers:AUTHTOK?{'x-radar-auth':AUTHTOK}:{}}).catch(function(){}); }catch(e){} }
   function loadForno(){
     fetch('/api/data?forno=1',{headers:AUTHTOK?{'x-radar-auth':AUTHTOK}:{}}).then(function(r){return r.json();}).then(function(j){
       if(j&&j.FORNO){ FORNO=j.FORNO; if(!state.grupo) applyMode(); }
