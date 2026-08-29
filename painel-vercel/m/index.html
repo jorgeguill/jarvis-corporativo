@@ -245,6 +245,9 @@
     <div class="sec" id="coordSec"><h2>Coordenador · inteligência cruzada</h2><span class="c" id="coordStat"></span></div>
     <div id="coordBox"></div>
 
+    <div class="sec" id="vigiaSec" style="display:none"><h2>Vigia · detectado sozinho</h2><span class="c" id="vigiaCount"></span></div>
+    <div class="feed" id="vigiaBox"></div>
+
     <div class="sec" id="entradasSec"><h2>Entradas do dia</h2><span class="c" id="entData"></span></div>
     <div id="entradas"></div>
 
@@ -662,10 +665,30 @@
     };
   }
 
+  /* ---------- VIGIA · eventos proativos que o tick detectou (do banco) ---------- */
+  function renderVigia(){
+    var sec=$('vigiaSec'),box=$('vigiaBox'); if(!sec||!box) return;
+    var coName=state.co||'SKAL';
+    fetch('/api/events?empresa='+encodeURIComponent(coName),{headers:AUTHTOK?{'x-radar-auth':AUTHTOK}:{}})
+      .then(function(r){return r.json();}).then(function(j){
+        var evs=(j&&j.eventos)||[];
+        if((state.co||'SKAL')!==coName || state.grupo){ return; }
+        if(!evs.length){ sec.style.display='none'; box.innerHTML=''; return; }
+        sec.style.display='flex'; $('vigiaCount').textContent=evs.length+(evs.length>1?' alertas':' alerta');
+        box.innerHTML='';
+        evs.forEach(function(e){ var d=document.createElement('div'); d.className='ev '+(e.st||'oport');
+          d.innerHTML='<div class="tp">🛰️ '+esc(e.titulo||'Alerta')+'</div><div class="tt">'+esc(e.msg||'')+'</div>';
+          d.onclick=function(){ openDrawer('est2',e.titulo||'Alerta do R.A.D.A.R.',
+            'O R.A.D.A.R. detectou isto sozinho: "'+(e.titulo||'')+' — '+(e.msg||'')+'". Explique o contexto, o impacto no caixa e a ação recomendada, com base nos dados reais.',[]); };
+          box.appendChild(d);
+        });
+      }).catch(function(){});
+  }
+
   function renderEmpresa(){
     $('coName').textContent=state.co;
     // Cada seção é isolada: se uma falhar, as outras continuam (nunca mais apagar o painel inteiro).
-    [renderCore,renderKpis,renderAgents,renderCoord,renderEntradas,renderProducao,renderCharts,renderAlerta,renderFeed,renderHoje,renderNote]
+    [renderCore,renderKpis,renderAgents,renderCoord,renderVigia,renderEntradas,renderProducao,renderCharts,renderAlerta,renderFeed,renderHoje,renderNote]
       .forEach(function(fn){ try{ fn(); }catch(err){ try{ console.error('render '+(fn.name||'?')+' falhou:', err); }catch(e){} } });
   }
 
