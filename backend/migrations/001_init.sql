@@ -90,7 +90,9 @@ CREATE TABLE IF NOT EXISTS fato (
   detalhe     jsonb NOT NULL DEFAULT '{}',
   trace_id    uuid,
   created_at  timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (empresa_id, unidade_id, metrica, data_ref)
+  -- NULLS NOT DISTINCT: fatos a nível de empresa têm unidade_id NULL; sem isto o
+  -- Postgres trataria cada NULL como distinto e a "fonte única" teria furo (PG15+).
+  UNIQUE NULLS NOT DISTINCT (empresa_id, unidade_id, metrica, data_ref)
 );
 CREATE INDEX IF NOT EXISTS idx_fato_lookup ON fato (empresa_id, metrica, data_ref DESC);
 
