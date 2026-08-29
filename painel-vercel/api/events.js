@@ -20,6 +20,11 @@ function stOf(sev) { return sev >= 4 ? 'crit' : (sev === 3 ? 'aten' : 'oport'); 
 // Transforma um evento do banco numa linha legível para o painel.
 function present(e) {
   var c = e.contexto || {}, tp = e.tipo, titulo = 'Alerta', msg = '';
+  if (tp === 'VIGIA_ACHADO') {
+    titulo = c.titulo || 'Achado do vigia';
+    msg = (c.msg || '') + (c.acao ? ' → ' + c.acao : '');
+    return { tipo: tp, severidade: e.severidade, st: stOf(e.severidade), titulo: titulo, msg: msg, area: c.area || '', ts: e.ts };
+  }
   if (tp === 'COMPROMISSO_FUTURO_DETECTADO') {
     if (e.entidade_id === 'folha_13o') {
       titulo = '13º salário a caminho';
@@ -50,7 +55,7 @@ module.exports = async (req, res) => {
     var rows = await neonQuery(
       "SELECT ev.tipo, ev.entidade_id, ev.severidade, ev.valor, ev.contexto, ev.ts " +
       "FROM evento ev JOIN empresa e ON e.id=ev.empresa_id " +
-      "WHERE e.codigo=$1 ORDER BY ev.severidade DESC, ev.ts DESC LIMIT $2", [empresa, limite]);
+      "WHERE e.codigo=$1 AND ev.tipo <> 'VIGIA_SCAN' ORDER BY ev.severidade DESC, ev.ts DESC LIMIT $2", [empresa, limite]);
     var eventos = rows.map(function (r) {
       // contexto pode vir como string (raw text output) — normaliza para objeto
       if (typeof r.contexto === 'string') { try { r.contexto = JSON.parse(r.contexto); } catch (e) { r.contexto = {}; } }
