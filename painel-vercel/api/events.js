@@ -21,9 +21,7 @@ function stOf(sev) { return sev >= 4 ? 'crit' : (sev === 3 ? 'aten' : 'oport'); 
 function present(e) {
   var c = e.contexto || {}, tp = e.tipo, titulo = 'Alerta', msg = '';
   if (tp === 'VIGIA_ACHADO') {
-    titulo = c.titulo || 'Achado do vigia';
-    msg = (c.msg || '') + (c.acao ? ' → ' + c.acao : '');
-    return { tipo: tp, severidade: e.severidade, st: stOf(e.severidade), titulo: titulo, msg: msg, area: c.area || '', ts: e.ts };
+    return { tipo: tp, severidade: e.severidade, st: stOf(e.severidade), titulo: c.titulo || 'Achado do vigia', msg: c.msg || '', acao: c.acao || '', area: c.area || '', ts: e.ts };
   }
   if (tp === 'COMPROMISSO_FUTURO_DETECTADO') {
     if (e.entidade_id === 'folha_13o') {

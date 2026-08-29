@@ -99,6 +99,25 @@
   .ev.crit .tp{color:var(--crit)}.ev.aten .tp{color:var(--aten)}.ev.oport .tp{color:var(--oport)}.ev.prev .tp{color:var(--gold)}
   .ev .tt{font-size:12.5px;color:var(--ink);margin-top:3px;line-height:1.35}
 
+  /* VIGIA · cards de comando (achados da IA) */
+  .vig{position:relative;border:1px solid var(--line2);border-radius:14px;padding:14px 16px 14px 20px;cursor:pointer;overflow:hidden;
+    background:linear-gradient(135deg,rgba(34,14,16,.72),rgba(12,6,7,.6));box-shadow:0 0 18px rgba(232,32,46,.06);transition:transform .12s,box-shadow .2s}
+  .vig:active{transform:scale(.995)}
+  .vig::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--aten)}
+  .vig.s-crit::before{background:var(--crit)}.vig.s-aten::before{background:var(--aten)}.vig.s-oport::before{background:var(--oport)}
+  .vig.s-crit{box-shadow:0 0 22px rgba(255,90,110,.14)}
+  .vig .vhead{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+  .vig .area{font-family:var(--mono);font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);border:1px solid var(--line);border-radius:10px;padding:2px 8px}
+  .vig .sev{font-family:var(--mono);font-size:8px;letter-spacing:1.5px;text-transform:uppercase}
+  .vig.s-crit .sev{color:var(--crit)}.vig.s-aten .sev{color:var(--aten)}.vig.s-oport .sev{color:var(--oport)}
+  .vig h4{font-size:15.5px;color:var(--ink);margin:0 0 5px;letter-spacing:.2px;line-height:1.28}
+  .vig p{font-size:12.5px;color:var(--muted);line-height:1.5;margin:0}
+  .vig .acao{margin-top:9px;display:flex;gap:8px;align-items:flex-start;border-top:1px solid var(--line);padding-top:8px}
+  .vig .acao b{color:var(--gold);font-weight:600;font-family:var(--mono);font-size:8px;letter-spacing:1.5px;text-transform:uppercase;flex:none;padding-top:2px}
+  .vig .acao span{font-size:12px;color:var(--neon);line-height:1.4}
+  .vigload{font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--gold2);padding:8px 2px;display:flex;align-items:center;gap:8px}
+  .vigload .cd-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);animation:cdpulse 1.1s infinite}
+
   /* COORDENADOR (briefing cruzado automático) */
   .coord{border:1px solid var(--line2);background:var(--panel);border-radius:14px;padding:13px 14px;cursor:pointer;position:relative;border-left:3px solid var(--gold);transition:transform .12s}
   .coord:active{transform:scale(.995)}
@@ -665,23 +684,32 @@
     };
   }
 
-  /* ---------- VIGIA · eventos proativos que o tick detectou (do banco) ---------- */
+  /* ---------- VIGIA · achados proativos (IA + detectores) do banco ---------- */
+  var vigiaScanning=false;
+  function vigMap(e){
+    var d=document.createElement('div'); d.className='vig s-'+(e.st||'aten');
+    var sev=e.severidade||3;
+    var slabel=sev>=5?'CRÍTICO':(sev===4?'ALTO':(sev===3?'ATENÇÃO':(sev===2?'OBSERVAR':'INFO')));
+    var area=e.area?'<span class="area">'+esc(e.area)+'</span>':'';
+    var acao=e.acao?'<div class="acao"><b>Ação</b><span>'+esc(e.acao)+'</span></div>':'';
+    d.innerHTML='<div class="vhead">'+area+'<span class="sev">● '+slabel+'</span></div><h4>'+esc(e.titulo||'Alerta')+'</h4><p>'+esc(e.msg||'')+'</p>'+acao;
+    d.onclick=function(){ openDrawer('est2',e.titulo||'Achado',
+      'O R.A.D.A.R. detectou isto sozinho: "'+(e.titulo||'')+' — '+(e.msg||'')+'". Explique o contexto completo, o impacto no caixa e detalhe a ação recomendada, com os números reais.',[]); };
+    return d;
+  }
   function renderVigia(){
     var sec=$('vigiaSec'),box=$('vigiaBox'); if(!sec||!box) return;
     var coName=state.co||'SKAL';
     fetch('/api/events?empresa='+encodeURIComponent(coName),{headers:AUTHTOK?{'x-radar-auth':AUTHTOK}:{}})
       .then(function(r){return r.json();}).then(function(j){
+        if((state.co||'SKAL')!==coName || state.grupo) return;
         var evs=(j&&j.eventos)||[];
-        if((state.co||'SKAL')!==coName || state.grupo){ return; }
-        if(!evs.length){ sec.style.display='none'; box.innerHTML=''; return; }
-        sec.style.display='flex'; $('vigiaCount').textContent=evs.length+(evs.length>1?' alertas':' alerta');
+        if(!evs.length && !vigiaScanning){ sec.style.display='none'; box.innerHTML=''; return; }
+        sec.style.display='flex';
+        $('vigiaCount').textContent=(evs.length?evs.length+(evs.length>1?' achados':' achado'):'analisando…');
         box.innerHTML='';
-        evs.forEach(function(e){ var d=document.createElement('div'); d.className='ev '+(e.st||'oport');
-          d.innerHTML='<div class="tp">🛰️ '+esc(e.titulo||'Alerta')+'</div><div class="tt">'+esc(e.msg||'')+'</div>';
-          d.onclick=function(){ openDrawer('est2',e.titulo||'Alerta do R.A.D.A.R.',
-            'O R.A.D.A.R. detectou isto sozinho: "'+(e.titulo||'')+' — '+(e.msg||'')+'". Explique o contexto, o impacto no caixa e a ação recomendada, com base nos dados reais.',[]); };
-          box.appendChild(d);
-        });
+        evs.forEach(function(e){ box.appendChild(vigMap(e)); });
+        if(vigiaScanning){ var l=document.createElement('div'); l.className='vigload'; l.innerHTML='<span class="cd-dot"></span>Vigia varrendo toda a empresa com IA…'; box.appendChild(l); }
       }).catch(function(){});
   }
 
@@ -759,8 +787,10 @@
       boot();
       loadForno();
       fireTick();
-      // O vigia (IA) leva alguns segundos para varrer tudo; reconsulta para exibir os achados.
-      setTimeout(function(){ try{ if(!state.grupo) renderVigia(); }catch(e){} }, 13000);
+      // O vigia (IA) leva alguns segundos para varrer tudo; busca progressiva dos achados.
+      vigiaScanning=true;
+      [6000,15000,26000,38000].forEach(function(ms){ setTimeout(function(){ try{ if(!state.grupo) renderVigia(); }catch(e){} }, ms); });
+      setTimeout(function(){ vigiaScanning=false; try{ if(!state.grupo) renderVigia(); }catch(e){} }, 48000);
     }).catch(function(){ vtxt('<b>R.A.D.A.R.</b> · sem conexão'); });
   }
   // Dispara o vigia (tick) em segundo plano ao abrir o painel — normaliza dados e

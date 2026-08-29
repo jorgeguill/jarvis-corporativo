@@ -1,5 +1,8 @@
 {
   "cleanUrls": true,
+  "functions": {
+    "api/tick.js": { "maxDuration": 60 }
+  },
   "crons": [
     { "path": "/api/tick", "schedule": "0 9 * * *" }
   ],
