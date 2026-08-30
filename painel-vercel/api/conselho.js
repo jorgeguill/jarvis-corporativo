@@ -55,7 +55,7 @@ module.exports = async (req, res) => {
     // (concorrencia limitada evita estourar o limite de taxa da API e voltar vazio).
     var posicoes = await emLotes(ESP.AGENTES, 3, function(a){
       var p = BASE + a.p + '\n\nPERGUNTA DA DIRETORIA: "'+q+'".\n' +
-        'Responda com CONTEUDO de nivel internacional, curto (4-6 frases): traga 1 CALCULO/numero real, use um METODO quando projetar (metodo+premissa+cenario), LIGUE ao driver de mercado/macro quando relevante (Selic, cambio, credito, sazonalidade), e termine com RECOMENDACAO clara. Corrija erros de leitura comuns na sua area. Fale so pela sua area, sem preambulo.';
+        'Responda SO como a SUA cadeira, curto (4-5 frases), sem preambulo: traga a METRICA e o CALCULO que so a sua funcao produz (numero real do painel ou DADO A CONFIRMAR), depois a leitura e a RECOMENDACAO em R$. NAO reexplique o macro (Selic, cambio, sazonalidade) nem repita numeros de outra cadeira (compras, cimento, faturamento) — isso e contexto comum. Se projetar: metodo + premissa + faixa. Fale como dono, direto.';
       return askEx(p, 560, 'flash').then(function(r){
         return { id:a.id, agente:a.nome, ic:a.ic, cor:a.cor, texto:(r.t || ('⚠️ IA nao respondeu ('+r.why+')')), _ok:!!r.t };
       });
