@@ -28,29 +28,13 @@ function contexto(coKey) {
   return L.join('\n');
 }
 
-function withTimeout(ms) { var c = new AbortController(); setTimeout(function () { c.abort(); }, ms); return c; }
+var AI = require('./_ai');
 
+// Usa a camada única de IA (Gemini com fallback de modelo + Anthropic).
+// tier 'flash': rápido e confiável dentro do tempo da função (evita timeout).
 async function askLLM(prompt) {
-  var ak = process.env.ANTHROPIC_API_KEY, gk = process.env.GEMINI_API_KEY;
-  // Gemini flash PRIMEIRO: rápido e confiável dentro do tempo da função (evita timeout).
-  if (gk) {
-    try {
-      var u = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + encodeURIComponent(gk);
-      var r2 = await fetch(u, { method: 'POST', signal: withTimeout(40000).signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 3000, temperature: 0.5 } }) });
-      if (r2.ok) { var j2 = await r2.json(); var c = (j2.candidates || [])[0]; var t2 = (((c || {}).content || {}).parts || []).map(function (p) { return p.text || ''; }).join(''); if (t2) return t2; }
-    } catch (e) { }
-  }
-  if (ak) {
-    try {
-      var r = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST', signal: withTimeout(50000).signal,
-        headers: { 'x-api-key': ak, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-        body: JSON.stringify({ model: 'claude-opus-5', max_tokens: 2500, thinking: { type: 'disabled' }, messages: [{ role: 'user', content: prompt }] })
-      });
-      if (r.ok) { var j = await r.json(); return (j.content || []).filter(function (b) { return b.type === 'text'; }).map(function (b) { return b.text; }).join(''); }
-    } catch (e) { }
-  }
-  return '';
+  var r = await AI.ask(prompt, 3000, 'flash', 40000);
+  return r.t || '';
 }
 
 function parse(txt) {

@@ -1,61 +1,27 @@
-// GET /api/aicheck — termômetro da IA do Conselho. Diz SE as chaves existem e SE
-// cada provedor responde a uma chamada minima, com o codigo/erro quando falha.
-// NAO expoe nenhuma chave nem valor sensivel — so booleanos, status e um trecho
-// curto do erro. Serve para diagnosticar "todos os agentes deram (sem resposta)".
+// GET /api/aicheck — termômetro da IA do Conselho. Diz SE as chaves existem e
+// QUAL modelo Gemini responde (testa a lista de candidatos do _ai). NAO expoe
+// nenhuma chave nem valor sensivel — so booleanos, modelo, status e trecho do erro.
 'use strict';
-
-function withTimeout(ms){ var c=new AbortController(); setTimeout(function(){c.abort();},ms); return c; }
-
-// Testa o Gemini com o MESMO modelo que o Conselho usa.
-async function testGemini(model){
-  var gk = process.env.GEMINI_API_KEY;
-  if (!gk) return { key:false, ok:false, motivo:'sem GEMINI_API_KEY' };
-  try {
-    var u = 'https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+encodeURIComponent(gk);
-    var r = await fetch(u, { method:'POST', signal:withTimeout(12000).signal, headers:{'content-type':'application/json'},
-      body: JSON.stringify({ contents:[{role:'user',parts:[{text:'Responda apenas: OK'}]}], generationConfig:{maxOutputTokens:16,temperature:0} }) });
-    var body = await r.text();
-    if (r.ok) {
-      var j={}; try{ j=JSON.parse(body); }catch(e){}
-      var c=(j.candidates||[])[0]; var t=(((c||{}).content||{}).parts||[]).map(function(p){return p.text||'';}).join('').trim();
-      return { key:true, ok:!!t, status:r.status, amostra:t.slice(0,40) };
-    }
-    return { key:true, ok:false, status:r.status, motivo:body.slice(0,160) };
-  } catch(e){ return { key:true, ok:false, motivo:String(e).slice(0,120) }; }
-}
-
-async function testAnthropic(model){
-  var ak = process.env.ANTHROPIC_API_KEY;
-  if (!ak) return { key:false, ok:false, motivo:'sem ANTHROPIC_API_KEY' };
-  try {
-    var r = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', signal:withTimeout(15000).signal,
-      headers:{'x-api-key':ak,'anthropic-version':'2023-06-01','content-type':'application/json'},
-      body: JSON.stringify({ model:model, max_tokens:16, messages:[{role:'user',content:'Responda apenas: OK'}] }) });
-    var body = await r.text();
-    if (r.ok) {
-      var j={}; try{ j=JSON.parse(body); }catch(e){}
-      var t=(j.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('').trim();
-      return { key:true, ok:!!t, status:r.status, amostra:t.slice(0,40) };
-    }
-    return { key:true, ok:false, status:r.status, motivo:body.slice(0,160) };
-  } catch(e){ return { key:true, ok:false, motivo:String(e).slice(0,120) }; }
-}
+var AI = require('./_ai');
 
 module.exports = async (req, res) => {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('Access-Control-Allow-Origin', '*');
-  var out = { ts:new Date().toISOString() };
+  var out = { ts:new Date().toISOString(),
+    tem_chave_gemini: !!process.env.GEMINI_API_KEY,
+    tem_chave_anthropic: !!process.env.ANTHROPIC_API_KEY,
+    modelos_flash: AI.FLASH, modelos_pro: AI.PRO };
   try {
-    var g = await testGemini('gemini-2.5-flash');
-    var gp = g.ok ? { key:true, ok:true, pulado:true } : await testGemini('gemini-2.5-pro');
-    var a = await testAnthropic('claude-opus-5');
-    out.gemini_flash = g;
-    out.gemini_pro = gp;
-    out.anthropic = a;
-    out.veredito = (g.ok || a.ok)
-      ? 'IA OK — o Conselho tem como responder'
-      : 'IA NAO responde — por isso os agentes voltam vazios';
+    var g = await AI.gemini('Responda apenas: OK', 16, 'flash', 12000);
+    var gp = await AI.gemini('Responda apenas: OK', 16, 'pro', 12000);
+    var a = await AI.anthropic('Responda apenas: OK', 16, 15000);
+    out.gemini_flash = g.t ? { ok:true, modelo_que_funcionou:g.model } : { ok:false, motivo:g.why };
+    out.gemini_pro   = gp.t ? { ok:true, modelo_que_funcionou:gp.model } : { ok:false, motivo:gp.why };
+    out.anthropic    = a.t ? { ok:true } : { ok:false, motivo:a.why };
+    out.veredito = (g.t || gp.t || a.t)
+      ? ('IA OK — Conselho tem como responder (modelo: '+(g.model||gp.model||'anthropic')+')')
+      : 'IA NAO responde — nenhum modelo/provedor disponivel';
     res.statusCode = 200;
   } catch(e){ out.erro = String(e).slice(0,160); res.statusCode = 200; }
   return res.end(JSON.stringify(out, null, 2));
