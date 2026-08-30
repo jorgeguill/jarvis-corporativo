@@ -118,6 +118,27 @@
   .vigload{font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--gold2);padding:8px 2px;display:flex;align-items:center;gap:8px}
   .vigload .cd-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);animation:cdpulse 1.1s infinite}
 
+  /* CONSELHO DE AGENTES */
+  .cvbtn{width:100%;border:1px solid var(--line2);border-radius:15px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;
+    background:linear-gradient(135deg,rgba(40,16,20,.8),rgba(14,6,8,.7));box-shadow:0 0 20px rgba(232,32,46,.1)}
+  .cvbtn .ico{font-size:22px}
+  .cvbtn .tt{flex:1}.cvbtn .tt b{display:block;font-size:14px;color:var(--ink);letter-spacing:.2px}.cvbtn .tt span{font-size:10.5px;color:var(--muted)}
+  .cvbtn .ar{color:var(--green);font-family:var(--mono);font-size:11px}
+  .council{display:flex;flex-direction:column;gap:10px}
+  .cturn{display:flex;gap:10px;align-items:flex-start}
+  .cav{width:34px;height:34px;flex:none;border-radius:10px;display:grid;place-items:center;font-size:16px;border:1px solid var(--line2)}
+  .cbub{flex:1;border:1px solid var(--line);border-radius:4px 13px 13px 13px;padding:10px 13px;background:rgba(20,10,12,.5)}
+  .cbub .nm{font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+  .cbub .tx{font-size:12.5px;line-height:1.5;color:var(--ink)}
+  .cturn.risco .cbub{border-color:rgba(199,125,255,.4);background:rgba(40,20,50,.35)}
+  .csyn{border:1px solid var(--line2);border-radius:14px;padding:14px 15px;margin-top:6px;background:linear-gradient(150deg,rgba(40,20,12,.5),rgba(10,5,6,.6));border-left:3px solid var(--gold)}
+  .csyn .hd{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:9px}
+  .csyn .r{display:flex;gap:9px;padding:7px 0;border-bottom:1px solid var(--hair)}.csyn .r:last-child{border-bottom:none}
+  .csyn .r b{font-family:var(--mono);font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);flex:none;width:78px;padding-top:3px}
+  .csyn .r span{font-size:12.5px;line-height:1.5;color:var(--ink)}
+  .csyn .r.rec span{color:var(--neon)}
+  .cvin{width:100%;box-sizing:border-box;margin:6px 0 10px;padding:12px 14px;border:1px solid var(--line2);border-radius:12px;background:rgba(6,3,4,.6);color:var(--ink);font-size:15px;font-family:inherit}
+
   /* COORDENADOR (briefing cruzado automático) */
   .coord{border:1px solid var(--line2);background:var(--panel);border-radius:14px;padding:13px 14px;cursor:pointer;position:relative;border-left:3px solid var(--gold);transition:transform .12s}
   .coord:active{transform:scale(.995)}
@@ -263,6 +284,9 @@
 
     <div class="sec" id="coordSec"><h2>Coordenador · inteligência cruzada</h2><span class="c" id="coordStat"></span></div>
     <div id="coordBox"></div>
+
+    <div class="sec"><h2>Conselho de agentes</h2><span class="c">eles debatem entre si</span></div>
+    <div class="cvbtn" id="cvBtn"><span class="ico">⚖️</span><div class="tt"><b>Convocar o Conselho</b><span>Financeiro, Cobrança, Fiscal, Produção + Contraditório debatem sua pergunta</span></div><span class="ar">›</span></div>
 
     <div class="sec" id="vigiaSec" style="display:none"><h2>Vigia · detectado sozinho</h2><span class="c" id="vigiaCount"></span></div>
     <div class="feed" id="vigiaBox"></div>
@@ -713,6 +737,46 @@
       }).catch(function(){});
   }
 
+  /* ---------- CONSELHO DE AGENTES (multiagente ao vivo) ---------- */
+  function openConselhoPrompt(){
+    drawer.innerHTML='<div class="dh"><div class="di">⚖️</div><h3>Convocar o Conselho</h3><button class="x">✕</button></div>'+
+      '<input id="cvq" class="cvin" placeholder="Sua pergunta para o conselho…" autocomplete="off">'+
+      '<div class="qs" id="cvex"></div>';
+    backdrop.classList.add('show'); drawer.querySelector('.x').onclick=closeDrawer;
+    var ex=['Dezembro aperta — o que fazer?','Qual o maior risco do caixa agora?','Vale a pena renegociar o +90?','Como blindar o incentivo ICMS?'];
+    var box=$('cvex'); ex.forEach(function(q){var b=document.createElement('button');b.textContent=q;b.onclick=function(){convocarConselho(q);};box.appendChild(b);});
+    var inp=$('cvq'); setTimeout(function(){inp.focus();},60);
+    inp.addEventListener('keydown',function(e){ if(e.key==='Enter'&&inp.value.trim()) convocarConselho(inp.value.trim()); });
+  }
+  function convocarConselho(q){
+    drawer.innerHTML='<div class="dh"><div class="di">⚖️</div><h3>Conselho · '+esc(q).slice(0,54)+'</h3><button class="x">✕</button></div>'+
+      '<div class="resp think" id="cvResp"><span class="cd-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gold);margin-right:8px"></span>Os agentes estão debatendo…</div>';
+    backdrop.classList.add('show'); drawer.querySelector('.x').onclick=closeDrawer;
+    fetch('/api/conselho?q='+encodeURIComponent(q)+'&co='+encodeURIComponent(state.co||'SKAL'),{headers:AUTHTOK?{'x-radar-auth':AUTHTOK}:{}})
+      .then(function(r){return r.json();}).then(function(d){ renderConselho(d); })
+      .catch(function(){ var r=$('cvResp'); if(r){r.className='resp';r.textContent='Não consegui reunir o conselho agora. Tente de novo.';} });
+  }
+  function renderConselho(d){
+    var el=$('cvResp'); if(!el) return;
+    var t=(d&&d.turnos)||[];
+    if(!t.length){ el.className='resp'; el.textContent='O conselho não retornou agora. Tente reformular a pergunta.'; return; }
+    var h='<div class="council">';
+    t.forEach(function(x){
+      var risco=x.id==='risco'?' risco':'';
+      h+='<div class="cturn'+risco+'"><div class="cav" style="color:'+(x.cor||'#fff')+'">'+(x.ic||'•')+'</div>'+
+         '<div class="cbub"><div class="nm" style="color:'+(x.cor||'#fff')+'">'+esc(x.agente||'')+'</div><div class="tx">'+esc(x.texto||'').replace(/\n/g,'<br>')+'</div></div></div>';
+    });
+    h+='</div>';
+    var s=d.sintese;
+    if(s){ h+='<div class="csyn"><div class="hd">🎯 Coordenador · síntese</div>'+
+      (s.consenso?'<div class="r"><b>Consenso</b><span>'+esc(s.consenso)+'</span></div>':'')+
+      (s.divergencia?'<div class="r"><b>Divergência</b><span>'+esc(s.divergencia)+'</span></div>':'')+
+      (s.recomendacao?'<div class="r rec"><b>Recomendação</b><span>'+esc(s.recomendacao)+'</span></div>':'')+
+      (s.confianca?'<div class="r"><b>Confiança</b><span>'+esc(s.confianca)+'</span></div>':'')+
+      (s.acao?'<div class="r rec"><b>Próxima ação</b><span>'+esc(s.acao)+'</span></div>':'')+'</div>'; }
+    el.className='resp'; el.innerHTML=h;
+  }
+
   function renderEmpresa(){
     $('coName').textContent=state.co;
     // Cada seção é isolada: se uma falhar, as outras continuam (nunca mais apagar o painel inteiro).
@@ -814,6 +878,7 @@
   $('lgBtn').onclick=doLogin;
   $('lgPass').addEventListener('keydown',function(e){ if(e.key==='Enter')doLogin(); });
   $('logoutBtn').onclick=logout;
+  (function(){ var b=$('cvBtn'); if(b) b.onclick=openConselhoPrompt; })();
   loadData();
 })();
 </script>
