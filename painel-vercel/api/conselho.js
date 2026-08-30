@@ -29,17 +29,9 @@ async function askEx(prompt, max, tier) {
 }
 async function ask(prompt, max, tier){ var r = await askEx(prompt, max, tier); return r.t; }
 
-// Executa tarefas em LOTES (concorrencia limitada) com PAUSA entre lotes — reduz o
-// pico de requisicoes/minuto que gera 429 no tier gratuito do Gemini.
-async function emLotes(itens, tamLote, fn, gapMs) {
-  var out = [];
-  for (var i=0; i<itens.length; i+=tamLote) {
-    if (i>0 && gapMs) await sleep(gapMs);
-    var lote = itens.slice(i, i+tamLote);
-    var res = await Promise.all(lote.map(fn));
-    out = out.concat(res);
-  }
-  return out;
+// Divide uma lista em pedaços de tamanho n.
+function pedacos(arr, n) {
+  var g = []; for (var i=0; i<arr.length; i+=n) g.push(arr.slice(i, i+n)); return g;
 }
 
 module.exports = async (req, res) => {
@@ -50,16 +42,33 @@ module.exports = async (req, res) => {
 
   var ctx = vigia.contexto('SKAL');
   var BASE = ESP.CABECALHO + '\n\n=== SITUACAO REAL DA SKAL (dados do painel) ===\n' + ctx + '\n\n';
+
+  // Um PAINEL de várias cadeiras numa ÚNICA chamada (economiza chamadas e cota do
+  // tier gratuito: em vez de 1 chamada por agente, poucas chamadas por convocação).
+  async function painel(grupo) {
+    var cadeiras = grupo.map(function(a){ return '### CADEIRA '+a.id+' — '+a.nome+'\n'+a.p; }).join('\n\n');
+    var p = BASE +
+      'Voce e um PAINEL de '+grupo.length+' conselheiros especialistas. Para CADA cadeira abaixo produza a analise DELA — cada uma FICA NA SUA CADEIRA (metrica e numero PROPRIOS; sem repetir o macro nem numeros de outra cadeira). Cada texto: 4-5 frases, com CALCULO/numero real do painel (ou DADO A CONFIRMAR), leitura e RECOMENDACAO em R$.\n\n' +
+      cadeiras + '\n\nPERGUNTA DA DIRETORIA: "'+q+'".\n' +
+      'Responda SOMENTE um JSON array valido, um objeto por cadeira, NA ORDEM dada, assim: [{"id":"'+grupo[0].id+'","texto":"..."}, ...]. Nada fora do JSON.';
+    var r = await askEx(p, 300*grupo.length, 'flash');
+    var arr = []; try { var m = r.t.match(/\[[\s\S]*\]/); if (m) arr = JSON.parse(m[0]); } catch(e){}
+    var byId = {}; arr.forEach(function(o){ if (o && o.id) byId[String(o.id)] = o.texto || ''; });
+    return grupo.map(function(a){
+      var t = byId[a.id];
+      return { id:a.id, agente:a.nome, ic:a.ic, cor:a.cor,
+        texto:(t || ('⚠️ IA nao respondeu ('+(r.why||'sem JSON parseavel')+')')), _ok:!!t };
+    });
+  }
+
   try {
-    // Rodada 1 — cada ESPECIALISTA dá sua posição fundamentada, EM LOTES de 3
-    // (concorrencia limitada evita estourar o limite de taxa da API e voltar vazio).
-    var posicoes = await emLotes(ESP.AGENTES, 3, function(a){
-      var p = BASE + a.p + '\n\nPERGUNTA DA DIRETORIA: "'+q+'".\n' +
-        'Responda SO como a SUA cadeira, curto (4-5 frases), sem preambulo: traga a METRICA e o CALCULO que so a sua funcao produz (numero real do painel ou DADO A CONFIRMAR), depois a leitura e a RECOMENDACAO em R$. NAO reexplique o macro (Selic, cambio, sazonalidade) nem repita numeros de outra cadeira (compras, cimento, faturamento) — isso e contexto comum. Se projetar: metodo + premissa + faixa. Fale como dono, direto.';
-      return askEx(p, 560, 'flash').then(function(r){
-        return { id:a.id, agente:a.nome, ic:a.ic, cor:a.cor, texto:(r.t || ('⚠️ IA nao respondeu ('+r.why+')')), _ok:!!r.t };
-      });
-    }, 1200);
+    // Rodada 1 — os 12 especialistas em 2 painéis de 6 (2 chamadas, não 12).
+    var grupos = pedacos(ESP.AGENTES, 6);
+    var posicoes = [];
+    for (var gi=0; gi<grupos.length; gi++) {
+      if (gi>0) await sleep(1000);
+      posicoes = posicoes.concat(await painel(grupos[gi]));
+    }
     var okN = posicoes.filter(function(p){ return p._ok; }).length;
     // Se NINGUEM respondeu, e falha de IA (chave/limite) — nao adianta seguir para as sinteses.
     if (okN === 0) {
@@ -76,11 +85,11 @@ module.exports = async (req, res) => {
 
     // Rodada 2 — Challenger (modelo mais fundo) acha o furo
     var chP = BASE + ESP.CHALLENGER + '\n\nPERGUNTA: "'+q+'".\nPOSICOES DOS COLEGAS:\n'+resumo+'\n\nAponte o furo com numero, 3-5 frases. Nao suavize.';
-    var challenger = await ask(chP, 480, 'pro');
+    var challenger = await ask(chP, 480, 'flash');
 
     // Rodada 3 — Coordenador sintetiza (modelo mais fundo, JSON)
     var coP = BASE + ESP.COORDENADOR + '\n\nPERGUNTA: "'+q+'".\nDEBATE:\n'+resumo+'\n\nCONTRADITORIO: '+challenger+'\n\nSintetize agora.';
-    var coTxt = await ask(coP, 800, 'pro');
+    var coTxt = await ask(coP, 800, 'flash');
     var sintese=null; try { var m=coTxt.match(/\{[\s\S]*\}/); if(m) sintese=JSON.parse(m[0]); } catch(e){}
 
     var turnos = posicoes.concat([{ id:'risco', agente:'Auditoria · Contraditório', ic:'⚔️', cor:'#c77dff', texto:(challenger||'(sem resposta)') }]);

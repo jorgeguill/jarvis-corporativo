@@ -87,9 +87,13 @@ vs **17.983 t** consumidas (~15% déficit). Permutas mapeadas ~R$ 3,76 mi. Cimen
 - **Nome de modelo Gemini caduca.** `gemini-2.5-flash`/`-pro` viraram **404** ("não disponível
   para novos usuários"). Por isso o `_ai.js` tem LISTA de modelos com fallback e é o único lugar
   do nome. Nunca cravar um modelo Gemini solto de novo.
-- **Tier gratuito do Gemini estoura** com o Conselho (14 chamadas/convocação): **429**
-  (cota) e **503** (sobrecarga). Mitigação: lotes de 3 + retry + fallback Anthropic. **Robustez
-  plena exige cota paga do Gemini OU `ANTHROPIC_API_KEY`.**
+- **Tier gratuito do Gemini estoura** com o Conselho: **429** (cota) e **503** (sobrecarga).
+  O Jorge **não tem verba** para cota paga nem `ANTHROPIC_API_KEY` → a solução tem que caber
+  no gratuito. **Correção que ficou:** o Conselho não faz mais 1 chamada por agente (eram 14);
+  faz um **painel agrupado** — 2 chamadas para os 12 (6 por chamada) + Challenger + Coordenador
+  = **~4 chamadas/convocação**, tudo no modelo **flash** (o `pro` gratuito é o que mais dá 429).
+  Isso corta cota E desperdício (o contexto ia 12×; agora vai 2×). Não voltar ao padrão de
+  1-chamada-por-agente.
 - **Falha de IA tem que ser VISÍVEL.** Nunca "(sem resposta)" mudo — mostrar o motivo
   (`⚠️ IA não respondeu (motivo)`) e apontar `/api/aicheck`. Foi assim que achamos os bugs acima.
 - **Conselho virava eco:** dar o mesmo contexto macro a todos os agentes faz os 12 repetirem
