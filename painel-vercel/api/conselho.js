@@ -29,10 +29,12 @@ async function askEx(prompt, max, tier) {
 }
 async function ask(prompt, max, tier){ var r = await askEx(prompt, max, tier); return r.t; }
 
-// Executa tarefas em LOTES (concorrencia limitada) para nao estourar o limite da API.
-async function emLotes(itens, tamLote, fn) {
+// Executa tarefas em LOTES (concorrencia limitada) com PAUSA entre lotes — reduz o
+// pico de requisicoes/minuto que gera 429 no tier gratuito do Gemini.
+async function emLotes(itens, tamLote, fn, gapMs) {
   var out = [];
   for (var i=0; i<itens.length; i+=tamLote) {
+    if (i>0 && gapMs) await sleep(gapMs);
     var lote = itens.slice(i, i+tamLote);
     var res = await Promise.all(lote.map(fn));
     out = out.concat(res);
@@ -57,7 +59,7 @@ module.exports = async (req, res) => {
       return askEx(p, 560, 'flash').then(function(r){
         return { id:a.id, agente:a.nome, ic:a.ic, cor:a.cor, texto:(r.t || ('⚠️ IA nao respondeu ('+r.why+')')), _ok:!!r.t };
       });
-    });
+    }, 1200);
     var okN = posicoes.filter(function(p){ return p._ok; }).length;
     // Se NINGUEM respondeu, e falha de IA (chave/limite) — nao adianta seguir para as sinteses.
     if (okN === 0) {

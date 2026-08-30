@@ -42,8 +42,14 @@ async function gemini(prompt, max, tier, timeoutMs){
     try {
       var r = await geminiOnce(m, prompt, max, timeoutMs);
       if (r.ok) { cache[tier] = m; return { t:r.t || r.text, model:m, why:'' }; }
-      if (r.status === 404) { why = 'gemini 404 (modelo indisponivel)'; continue; } // tenta o próximo
-      why = 'gemini HTTP '+r.status; break; // 401/403/429/500: não adianta trocar modelo
+      // 404 (modelo aposentado), 503 (sobrecarga) e 429 (limite) sao ESPECIFICOS
+      // do modelo/momento -> vale tentar OUTRO modelo da lista antes de desistir.
+      if (r.status === 404 || r.status === 503 || r.status === 429) {
+        why = 'gemini HTTP '+r.status+(r.status===429?' (limite de cota)':r.status===503?' (sobrecarga)':' (modelo indisponivel)');
+        if (cache[tier] === m) cache[tier] = null; // o cache falhou; nao insista nele
+        continue;
+      }
+      why = 'gemini HTTP '+r.status; break; // 401/403/400: trocar modelo nao ajuda
     } catch(e){ why = 'gemini '+String(e&&e.name||e).slice(0,40); break; }
   }
   return { t:'', model:'', why:why||'gemini sem resposta' };
