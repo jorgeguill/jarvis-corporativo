@@ -55,17 +55,24 @@ async function gemini(prompt, max, tier, timeoutMs){
   return { t:'', model:'', why:why||'gemini sem resposta' };
 }
 
-async function anthropic(prompt, max, timeoutMs){
+// Fallback Anthropic ciente do tier: 'flash' (12 agentes) usa modelo economico;
+// 'pro' (Challenger/Coordenador) usa modelo fundo. Sobrescrevivel por env.
+function anthropicModelFor(tier){
+  if (tier === 'pro') return process.env.ANTHROPIC_MODEL_PRO || 'claude-opus-5';
+  return process.env.ANTHROPIC_MODEL_FLASH || 'claude-sonnet-5';
+}
+async function anthropic(prompt, max, timeoutMs, tier){
   var ak = process.env.ANTHROPIC_API_KEY;
   if (!ak) return { t:'', why:'sem ANTHROPIC_API_KEY' };
+  var model = process.env.ANTHROPIC_MODEL || anthropicModelFor(tier);
   try {
     var r = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', signal:withTimeout(timeoutMs||40000).signal,
       headers:{'x-api-key':ak,'anthropic-version':'2023-06-01','content-type':'application/json'},
-      body: JSON.stringify({ model: process.env.ANTHROPIC_MODEL || 'claude-opus-5', max_tokens:max||520, messages:[{role:'user',content:prompt}] }) });
+      body: JSON.stringify({ model: model, max_tokens:max||520, messages:[{role:'user',content:prompt}] }) });
     var body = await r.text();
     if (r.ok) { var j={}; try{ j=JSON.parse(body); }catch(e){}
       var t=(j.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('').trim();
-      if (t) return { t:t, why:'' }; return { t:'', why:'anthropic vazio' }; }
+      if (t) return { t:t, model:model, why:'' }; return { t:'', why:'anthropic vazio' }; }
     return { t:'', why:'anthropic HTTP '+r.status };
   } catch(e){ return { t:'', why:'anthropic '+String(e&&e.name||e).slice(0,40) }; }
 }
@@ -75,8 +82,8 @@ async function anthropic(prompt, max, timeoutMs){
 async function ask(prompt, max, tier, timeoutMs){
   var g = await gemini(prompt, max, tier, timeoutMs);
   if (g.t) return g;
-  var a = await anthropic(prompt, max, timeoutMs);
-  if (a.t) return { t:a.t, model:'anthropic', why:'' };
+  var a = await anthropic(prompt, max, timeoutMs, tier);
+  if (a.t) return { t:a.t, model:a.model||'anthropic', why:'' };
   return { t:'', model:'', why:(g.why||'') + (a.why ? ' | '+a.why : '') };
 }
 
