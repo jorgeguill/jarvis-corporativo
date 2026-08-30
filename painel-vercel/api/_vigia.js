@@ -4,6 +4,7 @@
 // situações cruzadas. Regra dura: nunca inventar número fora do contexto.
 'use strict';
 const DATA = require('./data');
+const COB = require('./_cobranca');
 
 // Monta um retrato COMPLETO da empresa a partir dos dados já implantados.
 function contexto(coKey) {
@@ -25,6 +26,9 @@ function contexto(coKey) {
     });
   }
   if (d.nota) L.push('NOTA: ' + d.nota);
+  // Carteira a receber POR CLIENTE (só SKAL) — alimenta a análise de maus
+  // pagadores/clientes críticos da cadeira de Cobrança.
+  if (coKey === 'SKAL') { try { L.push(''); L.push(COB.bloco()); } catch (e) {} }
   return L.join('\n');
 }
 
