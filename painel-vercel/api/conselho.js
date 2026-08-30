@@ -6,6 +6,7 @@
 const { authOk } = require('./_auth');
 const vigia = require('./_vigia');
 const ESP = require('./_especialistas');
+const AI = require('./_ai');
 
 function send(res, code, obj) {
   res.statusCode = code;
@@ -14,43 +15,19 @@ function send(res, code, obj) {
   res.setHeader('Cache-Control', 'no-store');
   res.end(JSON.stringify(obj));
 }
-function withTimeout(ms){ var c=new AbortController(); setTimeout(function(){c.abort();},ms); return c; }
 function sleep(ms){ return new Promise(function(r){ setTimeout(r,ms); }); }
 
-// Uma tentativa. Retorna {t, why}: t = texto (pode ser ''), why = motivo da falha.
-async function tryAsk(prompt, max, model) {
-  var gk = process.env.GEMINI_API_KEY, ak = process.env.ANTHROPIC_API_KEY;
-  var why = '';
-  if (gk) {
-    try {
-      var u = 'https://generativelanguage.googleapis.com/v1beta/models/'+(model||'gemini-2.5-flash')+':generateContent?key=' + encodeURIComponent(gk);
-      var r = await fetch(u, { method:'POST', signal:withTimeout(30000).signal, headers:{'content-type':'application/json'},
-        body: JSON.stringify({ contents:[{role:'user',parts:[{text:prompt}]}], generationConfig:{maxOutputTokens:max||520,temperature:0.55} }) });
-      if (r.ok) { var j=await r.json(); var c=(j.candidates||[])[0]; var t=(((c||{}).content||{}).parts||[]).map(function(p){return p.text||'';}).join('').trim(); if(t) return { t:t, why:'' }; why='gemini vazio'; }
-      else { why='gemini HTTP '+r.status; }
-    } catch(e){ why='gemini '+String(e&&e.name||e).slice(0,40); }
-  } else { why='sem GEMINI_API_KEY'; }
-  if (ak) {
-    try {
-      var r2 = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', signal:withTimeout(35000).signal,
-        headers:{'x-api-key':ak,'anthropic-version':'2023-06-01','content-type':'application/json'},
-        body: JSON.stringify({ model:'claude-opus-5', max_tokens:max||520, thinking:{type:'disabled'}, messages:[{role:'user',content:prompt}] }) });
-      if (r2.ok) { var j2=await r2.json(); var ta=(j2.content||[]).filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('').trim(); if(ta) return { t:ta, why:'' }; why+=' | anthropic vazio'; }
-      else { why+=' | anthropic HTTP '+r2.status; }
-    } catch(e){ why+=' | anthropic '+String(e&&e.name||e).slice(0,40); }
-  } else if(!gk){ why='sem chave de IA (GEMINI/ANTHROPIC)'; }
-  return { t:'', why:why||'sem resposta' };
-}
-
-// Com retry (1 reintento com backoff) — protege contra limite de taxa (429) em rajada.
-async function askEx(prompt, max, model) {
-  var a = await tryAsk(prompt, max, model);
+// Chamada de IA via camada única (_ai): Gemini com fallback de MODELO (resolve o
+// 404 de nomes aposentados) e, se houver chave, Anthropic. tier: 'flash' | 'pro'.
+// Retry: 1 reintento com backoff — protege contra limite de taxa (429) em rajada.
+async function askEx(prompt, max, tier) {
+  var a = await AI.ask(prompt, max, tier, 30000);
   if (a.t) return a;
   await sleep(900);
-  var b = await tryAsk(prompt, max, model);
+  var b = await AI.ask(prompt, max, tier, 30000);
   return b.t ? b : a;
 }
-async function ask(prompt, max, model){ var r = await askEx(prompt, max, model); return r.t; }
+async function ask(prompt, max, tier){ var r = await askEx(prompt, max, tier); return r.t; }
 
 // Executa tarefas em LOTES (concorrencia limitada) para nao estourar o limite da API.
 async function emLotes(itens, tamLote, fn) {
@@ -77,7 +54,7 @@ module.exports = async (req, res) => {
     var posicoes = await emLotes(ESP.AGENTES, 3, function(a){
       var p = BASE + a.p + '\n\nPERGUNTA DA DIRETORIA: "'+q+'".\n' +
         'Responda com CONTEUDO de nivel internacional, curto (4-6 frases): traga 1 CALCULO/numero real, use um METODO quando projetar (metodo+premissa+cenario), LIGUE ao driver de mercado/macro quando relevante (Selic, cambio, credito, sazonalidade), e termine com RECOMENDACAO clara. Corrija erros de leitura comuns na sua area. Fale so pela sua area, sem preambulo.';
-      return askEx(p, 560, 'gemini-2.5-flash').then(function(r){
+      return askEx(p, 560, 'flash').then(function(r){
         return { id:a.id, agente:a.nome, ic:a.ic, cor:a.cor, texto:(r.t || ('⚠️ IA nao respondeu ('+r.why+')')), _ok:!!r.t };
       });
     });
@@ -97,11 +74,11 @@ module.exports = async (req, res) => {
 
     // Rodada 2 — Challenger (modelo mais fundo) acha o furo
     var chP = BASE + ESP.CHALLENGER + '\n\nPERGUNTA: "'+q+'".\nPOSICOES DOS COLEGAS:\n'+resumo+'\n\nAponte o furo com numero, 3-5 frases. Nao suavize.';
-    var challenger = await ask(chP, 480, 'gemini-2.5-pro');
+    var challenger = await ask(chP, 480, 'pro');
 
     // Rodada 3 — Coordenador sintetiza (modelo mais fundo, JSON)
     var coP = BASE + ESP.COORDENADOR + '\n\nPERGUNTA: "'+q+'".\nDEBATE:\n'+resumo+'\n\nCONTRADITORIO: '+challenger+'\n\nSintetize agora.';
-    var coTxt = await ask(coP, 800, 'gemini-2.5-pro');
+    var coTxt = await ask(coP, 800, 'pro');
     var sintese=null; try { var m=coTxt.match(/\{[\s\S]*\}/); if(m) sintese=JSON.parse(m[0]); } catch(e){}
 
     var turnos = posicoes.concat([{ id:'risco', agente:'Auditoria · Contraditório', ic:'⚔️', cor:'#c77dff', texto:(challenger||'(sem resposta)') }]);
