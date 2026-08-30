@@ -45,13 +45,13 @@ module.exports = async (req, res) => {
   if (!q) return send(res, 200, { pergunta:'', turnos:[], erro:'sem_pergunta' });
 
   var ctx = vigia.contexto('SKAL');
-  var BASE = ESP.REGRAS + '\n\n=== SITUACAO REAL DA SKAL (dados do painel) ===\n' + ctx + '\n\n';
+  var BASE = ESP.CABECALHO + '\n\n=== SITUACAO REAL DA SKAL (dados do painel) ===\n' + ctx + '\n\n';
   try {
     // Rodada 1 — cada ESPECIALISTA dá sua posição fundamentada, EM PARALELO
     var posicoes = await Promise.all(ESP.AGENTES.map(function(a){
       var p = BASE + a.p + '\n\nPERGUNTA DA DIRETORIA: "'+q+'".\n' +
-        'Responda com CONTEUDO, curto (3-5 frases): traga 1 CALCULO/numero real que sustente sua posicao, a INTERPRETACAO especialista e a RECOMENDACAO clara. Se a pergunta induz um erro de leitura comum na sua area, corrija-o. Fale so pela sua area, sem preambulo.';
-      return ask(p, 480, 'gemini-2.5-flash').then(function(t){ return { id:a.id, agente:a.nome, ic:a.ic, cor:a.cor, texto:(t||'(sem resposta)') }; });
+        'Responda com CONTEUDO de nivel internacional, curto (4-6 frases): traga 1 CALCULO/numero real, use um METODO quando projetar (metodo+premissa+cenario), LIGUE ao driver de mercado/macro quando relevante (Selic, cambio, credito, sazonalidade), e termine com RECOMENDACAO clara. Corrija erros de leitura comuns na sua area. Fale so pela sua area, sem preambulo.';
+      return ask(p, 560, 'gemini-2.5-flash').then(function(t){ return { id:a.id, agente:a.nome, ic:a.ic, cor:a.cor, texto:(t||'(sem resposta)') }; });
     }));
     var resumo = posicoes.map(function(p){ return '['+p.agente+'] '+p.texto; }).join('\n\n');
 
