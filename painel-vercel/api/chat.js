@@ -86,11 +86,13 @@ const COORD_PROMPT = [
   "**Cruzamentos** — 2 ou 3 conexoes entre areas que so aparecem olhando junto (ex.: cobranca × caixa × permutas × fiscal; producao × forno × custo).",
   "**Prioridades de hoje** — as 3 acoes mais importantes, em ordem, cada uma com a evidencia em numero do porque.",
   "**O que vem ai (radar preditivo)** — OBRIGATORIO: 2 ou 3 compromissos ou riscos FUTUROS (30 a 90 dias) que ainda NAO estao plenamente nos numeros, cada um quantificado e com o gatilho a observar. Sempre checar o card 'Radar · O que vem ai' e citar o que se aplica: 13º salario da SKAL parcelado (nov/dez ~R$ 124,3 mil — 62,2 por parcela; derruba dezembro para ~R$ 304,1 mil, mes mais apertado do ano; cada empresa tem folha propria), ferias, prazos tributarios, validade do incentivo ICMS (A CONFIRMAR), cauda de recebiveis esvaziando em nov/dez. O objetivo e a diretoria nunca ser pega de surpresa.",
-  "Regras: seja direto e curto (no maximo ~250 palavras). Use SO os numeros reais do contexto; onde faltar dado, diga em uma linha o que falta. Nao repita texto institucional nem se apresente — va direto aos numeros e as acoes."
+  "Regras: seja direto e curto (no maximo ~250 palavras). Use SO os numeros reais do contexto; onde faltar dado, diga em uma linha o que falta. Nao repita texto institucional nem se apresente — va direto aos numeros e as acoes.",
+  "NUNCA RECUSE SECO UMA LISTA/DETALHE. Se a diretoria pedir uma lista que o painel nao tem inteira (ex.: TODOS os devedores acima de 90 dias — o '+90 pulverizado'), NAO responda so 'nao tenho'/'nao posso'. Entregue: (1) os itens que VOCE TEM nomeados (ex.: no +90 = R$ 640,4 mil, os casos conhecidos MRV R$ 74,2 mil em cobranca judicial, Vanguarda R$ 49,3 mil, Rivello R$ 164,1 mil; e os maiores vencidos da carteira quando estiverem no contexto); (2) quanto sobra PULVERIZADO (o +90 menos os nomeados, ~R$ 350 mil espalhados em muitos devedores pequenos) — deixe claro que sao muitos titulos de baixo valor; (3) o RELATORIO EXATO a exportar para ter a lista completa: no TOTVS, o ACOMPCOB / aging por cliente da faixa +90 (cliente, titulo, vencimento, valor) — e ofereca carregar no painel assim que a diretoria enviar. Regra de ouro: nunca invente nome de cliente; mas tambem nunca deixe a diretoria de maos vazias — entregue o que ha e o caminho para o resto."
 ].join("\n");
 
 const crypto = require("crypto");
 const RADAR_DATA = require("./data");
+const COB = require("./_cobranca");
 
 // Monta um retrato COMPACTO e AO VIVO do painel (mesma fonte de dados do /api/data),
 // para o cerebro responder ligado aos numeros que estao na tela, incluindo o Forno.
@@ -125,6 +127,8 @@ async function liveContext(co, grupo){
     ["decisoes","riscos","pendencias","oportunidades"].forEach(function(kk){ if(det[kk]) L.push(kk.toUpperCase()+": "+String(det[kk]).replace(/\n/g," ").slice(0,700)); });
   }
   if(d.nota) L.push("Nota do painel: " + d.nota);
+  // Carteira a receber POR CLIENTE (só SKAL) — para a Cobrança nomear devedores/críticos.
+  if(key === "SKAL"){ try { L.push(""); L.push(COB.bloco()); } catch(e){} }
   var F = payload.FORNO;
   if(F && F.live){
     var lv=F.live, meta=(F.params&&F.params.meta)||8;
