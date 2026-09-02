@@ -1,34 +1,35 @@
-// _cobranca.js — carteira a receber POR CLIENTE + posição de inadimplência, para a
-// cadeira de Cobrança analisar maus pagadores / clientes críticos com NOME e NÚMERO
-// real, em vez de repetir agregado.
+// _cobranca.js — inadimplência da SKAL: SÉRIE no tempo (ACOMPCOB diário) + carteira
+// a receber POR CLIENTE (snapshot), para a cadeira de Cobrança ler TENDÊNCIA e
+// nomear críticos, em vez de repetir um número solto.
 //
-// DUAS fontes, DUAS datas (não confundir):
-//  (A) POSIÇÃO/AGING — ACOMPCOB de 31/08/2026 (relatório diário, o mais recente).
-//      Traz o aging e os 3 casos especiais nomeados; NÃO itemiza o +90 pulverizado.
-//  (B) CARTEIRA POR CLIENTE — snapshot de 27/07/2026 (radar/dashboard...xlsx,
-//      abas "Inadimplência ERP"/"Contrapartes"): TOP 20 devedores com NOME e vencido.
+// FONTES / DATAS (não confundir):
+//  (A) SÉRIE ACOMPCOB — retratos diários (o relatório traz aging + 3 casos, NÃO
+//      itemiza o +90 pulverizado). Cada dia que o Jorge manda entra em HIST.
+//  (B) CARTEIRA POR CLIENTE — snapshot 27/07/2026 (radar/dashboard...xlsx): TOP 20
+//      devedores com NOME e vencido. O "quem".
 // O +90 pulverizado completo (todos os pequenos) exige o relatório ANALÍTICO por
 // cliente do TOTVS — não vem no ACOMPCOB diário nem no top-20.
 'use strict';
 
-// ---------- (A) POSIÇÃO — ACOMPCOB 31/08/2026 ----------
-var CORTE_POS = '31/08/2026';
-var TOTAL = 809620.43;                 // saldo devedores 01/08/2021 a 31/08/2026
-// Aging (faixa, saldo, dos quais dos 3 casos, operacional = tirando os 3 casos).
-var AGING = [
-  { faixa:'0-30 dias',   saldo:66163.99,  casos:27664.30, operacional:38499.79 },  // MRV 20.688,30 + Rivello 6.976
-  { faixa:'31-60 dias',  saldo:87732.30,  casos:4368.00,  operacional:73364.30 },  // Rivello 4.368
-  { faixa:'61-90 dias',  saldo:15342.35,  casos:0,        operacional:15342.35 },
-  { faixa:'+90 dias',    saldo:640381.79, casos:287589.26,operacional:352792.53 }  // Vanguarda 49.340 + MRV 74.175 + Rivello 164.074,26
+// ---------- (A) SÉRIE — ACOMPCOB (mais recente por último) ----------
+// data, total, e as 4 faixas do aging (0-30, 31-60, 61-90, +90). Reconciliam: soma = total.
+var HIST = [
+  { data:'26/08/2026', total:797494.81, f0_30:61862.71, f31_60:82740.46, f61_90:12509.85, f90:640381.79 },
+  { data:'31/08/2026', total:809620.43, f0_30:66163.99, f31_60:87732.30, f61_90:15342.35, f90:640381.79 },
+  { data:'01/09/2026', total:825130.89, f0_30:81674.45, f31_60:87732.30, f61_90:15342.35, f90:640381.79 }
 ];
-var OPERACIONAL = 479998.97;           // inadimplência operacional (tirando os 3 casos): soma das faixas "operacional"
+var HOJE = HIST[HIST.length-1];
+var ANT  = HIST.length>1 ? HIST[HIST.length-2] : null;
 
-// 3 casos especiais (fora do padrão — tratar à parte, NÃO como régua de cobrança comum).
+// 3 casos especiais (tratar à parte — NÃO régua comum). Valores em 01/09.
 var CASOS = [
-  { cliente:'MRV',       total:94863.30,  mais90:74175.00, nota:'em cobrança judicial, dentro do previsto' },
-  { cliente:'Vanguarda', total:49340.00,  mais90:49340.00, nota:'ligada a permuta em andamento (Studio V)' },
-  { cliente:'Rivello',   total:175418.26, mais90:164074.26,nota:'quer NOVA PERMUTA — decisão de alto impacto pendente da diretoria; permuta não é caixa' }
+  { cliente:'MRV',       total:94863.30,  mais90:74175.00,  nota:'em cobrança judicial, dentro do previsto (R$ 20.688,30 no 0-30 é recente/normal)' },
+  { cliente:'Vanguarda', total:49340.00,  mais90:49340.00,  nota:'ligada a permuta em andamento (Studio V)' },
+  { cliente:'Rivello',   total:175418.26, mais90:164074.26, nota:'quer NOVA PERMUTA — decisão de alto impacto pendente da diretoria; permuta não é caixa' }
 ];
+// Operacional (tirando os 3 casos): o relatório traz R$ 526.197,63 (total − 298.933,26).
+// Há pequena inconsistência nas subtrações por faixa do relatório — DADO A CONFIRMAR o corte exato.
+var OPERACIONAL_RELATORIO = 526197.63;
 
 // ---------- (B) CARTEIRA POR CLIENTE — snapshot 27/07/2026 ----------
 var CORTE_CART = '27/07/2026';
@@ -54,8 +55,6 @@ var TOP = [
   { cliente:'Jorge Guilherme Costa Ferreira',                            aberto:47600.00,  vencido:47600.00,  docs:34 },
   { cliente:'J. B. Pinto Neto Materiais e Construçoes',                  aberto:47197.00,  vencido:0.00,      docs:15 }
 ];
-
-// Reconciliações de dono (para NÃO ler intragrupo/sócio como mau pagador de mercado).
 var NOTAS = [
   'KALFIX (R$ 78,1k, 0 vencido) é COLIGADA do grupo — intragrupo, não mau pagador de mercado.',
   'Jorge Guilherme Costa Ferreira (R$ 47,6k, 100% vencido) é o SÓCIO — conta de sócio, tratar à parte, não inadimplência de cliente.',
@@ -63,23 +62,28 @@ var NOTAS = [
 ];
 
 function mil(n){
-  if (n >= 1000000) return 'R$ ' + (Math.round(n/10000)/100).toLocaleString('pt-BR') + ' mi';
-  return 'R$ ' + (Math.round(n/100)/10).toLocaleString('pt-BR') + 'k';
+  var s = n<0 ? '-' : '';
+  n = Math.abs(n);
+  if (n >= 1000000) return s+'R$ ' + (Math.round(n/10000)/100).toLocaleString('pt-BR') + ' mi';
+  return s+'R$ ' + (Math.round(n/100)/10).toLocaleString('pt-BR') + 'k';
 }
+function delta(a,b){ var d=a-b; return (d>=0?'+':'')+mil(d); }
 
-// Bloco de texto para o contexto do Conselho/chat (a cadeira de Cobrança usa; as outras ignoram).
 function bloco(){
   var L = [];
-  L.push('COBRANÇA — POSIÇÃO ATUAL (ACOMPCOB '+CORTE_POS+') — use SÓ na cadeira de Cobrança:');
-  L.push('Inadimplência total '+mil(TOTAL)+'. Aging (faixa | saldo | operacional s/ os 3 casos): ' +
-    AGING.map(function(a){ return a.faixa+' '+mil(a.saldo)+' (op '+mil(a.operacional)+')'; }).join('; ') + '.');
-  L.push('3 CASOS ESPECIAIS (tratar à parte, não régua comum): ' +
+  L.push('COBRANÇA — POSIÇÃO ATUAL (ACOMPCOB '+HOJE.data+') — use SÓ na cadeira de Cobrança:');
+  L.push('Inadimplência total '+mil(HOJE.total)+'. Aging: 0-30 '+mil(HOJE.f0_30)+'; 31-60 '+mil(HOJE.f31_60)+'; 61-90 '+mil(HOJE.f61_90)+'; +90 '+mil(HOJE.f90)+'.');
+  // Tendência (o valor da série)
+  var serie = HIST.map(function(h){ return h.data.slice(0,5)+' '+mil(h.total); }).join(' → ');
+  L.push('TENDÊNCIA ('+HIST.length+' retratos): '+serie+' ('+delta(HOJE.total,HIST[0].total)+' no período). '+
+    'O aumento está no 0-30 ('+mil(HIST[0].f0_30)+' → '+mil(HOJE.f0_30)+', '+delta(HOJE.f0_30,HIST[0].f0_30)+') = NOVA inadimplência entrando; '+
+    'o +90 está CONGELADO em '+mil(HOJE.f90)+' (dívida antiga não se move).' +
+    (ANT ? ' No último dia: '+delta(HOJE.total,ANT.total)+' vs o retrato anterior.' : ''));
+  L.push('3 CASOS ESPECIAIS (à parte, não régua comum): ' +
     CASOS.map(function(c){ return c.cliente+' '+mil(c.total)+' ('+c.nota+')'; }).join('; ') + '.');
-  L.push('Inadimplência OPERACIONAL (tirando os 3 casos) = '+mil(OPERACIONAL)+' — é aqui que a régua D-5..D90 foca.');
-  L.push('ATENÇÃO: o +90 (op '+mil(352792.53)+') é PULVERIZADO em muitos devedores pequenos — este relatório NÃO os itemiza. Para nomear todos, exportar o relatório ANALÍTICO por cliente do TOTVS (cliente, título, vencimento, valor, faixa).');
+  L.push('Inadimplência OPERACIONAL (tirando os 3 casos) ≈ '+mil(OPERACIONAL_RELATORIO)+' (relatório; pequena inconsistência nas subtrações por faixa — DADO A CONFIRMAR o corte exato). O +90 pulverizado ≈ '+mil(352792.53)+' NÃO está itemizado aqui — para nomear todos, exportar o relatório ANALÍTICO por cliente do TOTVS.');
   L.push('');
-  L.push('CARTEIRA A RECEBER POR CLIENTE (snapshot '+CORTE_CART+' — o "quem", top-20 por saldo):');
-  L.push('(aberto | vencido | %vencido | docs) — %vencido alto = mau pagador:');
+  L.push('CARTEIRA A RECEBER POR CLIENTE (snapshot '+CORTE_CART+' — o "quem", top-20 por saldo; aberto | vencido | %vencido | docs):');
   TOP.forEach(function(c){
     var pv = c.aberto>0 ? Math.round(c.vencido/c.aberto*100) : 0;
     var flag = pv>=80 ? '  <= CRÍTICO' : (pv>=40 ? '  <= atenção' : '');
@@ -89,5 +93,5 @@ function bloco(){
   return L.join('\n');
 }
 
-module.exports = { CORTE_POS:CORTE_POS, CORTE_CART:CORTE_CART, TOTAL:TOTAL, AGING:AGING,
-  OPERACIONAL:OPERACIONAL, CASOS:CASOS, TOP:TOP, NOTAS:NOTAS, bloco:bloco };
+module.exports = { HIST:HIST, HOJE:HOJE, CASOS:CASOS, TOP:TOP, NOTAS:NOTAS,
+  OPERACIONAL_RELATORIO:OPERACIONAL_RELATORIO, CORTE_CART:CORTE_CART, bloco:bloco };
