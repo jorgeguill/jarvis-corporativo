@@ -60,6 +60,16 @@ async function fetchForno(){
   var sorted=turnos.slice().sort(function(a,b){return new Date(a.data)-new Date(b.data);});
   var last=sorted[sorted.length-1], lastC=last?compute(last):null;
   var custo=oleoPeriodo*pmed;
+  // Produção de areia seca por DIA e por MÊS (espelha os turnos — para "produção diária de areia").
+  var porDiaMap={}, porMesMap={};
+  turnos.forEach(function(t,i){
+    var d=String(t.data||'').slice(0,10); if(!d) return; var mes=d.slice(0,7);
+    var ton=(computed[i]&&computed[i].ton)||0;
+    (porDiaMap[d]=porDiaMap[d]||{data:d,areiaSeca_ton:0,turnos:0}); porDiaMap[d].areiaSeca_ton+=ton; porDiaMap[d].turnos++;
+    (porMesMap[mes]=porMesMap[mes]||{competencia:mes,areiaSeca_ton:0,turnos:0}); porMesMap[mes].areiaSeca_ton+=ton; porMesMap[mes].turnos++;
+  });
+  function fix2(m){ return Object.keys(m).sort().map(function(k){ m[k].areiaSeca_ton=+m[k].areiaSeca_ton.toFixed(2); return m[k]; }); }
+  var porDia=fix2(porDiaMap), porMes=fix2(porMesMap);
   var status='sem'; if(lastC&&lastC.lton){ status=lastC.lton<=meta?'ok':(lastC.lton<=limite?'aten':'crit'); }
   out.live = {
     turnos: turnos.length,
@@ -77,7 +87,9 @@ async function fetchForno(){
     custo_ton: tonSeca>0? +(custo/tonSeca).toFixed(2) : null,
     custo_m3: areiaTotal>0? +(custo/areiaTotal).toFixed(2) : null,
     status: status,
-    ultimo: { data:last.data||'', turno:last.turno||'', operador:last.operador||'', silo:last.silo||'' }
+    ultimo: { data:last.data||'', turno:last.turno||'', operador:last.operador||'', silo:last.silo||'' },
+    porDia: porDia.slice(-14),   // últimos 14 dias de produção de areia seca
+    porMes: porMes               // produção de areia seca por mês (competência)
   };
   return out;
 }
