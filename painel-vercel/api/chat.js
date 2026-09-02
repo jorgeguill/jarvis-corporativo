@@ -93,6 +93,7 @@ const COORD_PROMPT = [
 const crypto = require("crypto");
 const RADAR_DATA = require("./data");
 const COB = require("./_cobranca");
+const FOLHA = require("./_folha");
 
 // Monta um retrato COMPACTO e AO VIVO do painel (mesma fonte de dados do /api/data),
 // para o cerebro responder ligado aos numeros que estao na tela, incluindo o Forno.
@@ -129,6 +130,7 @@ async function liveContext(co, grupo){
   if(d.nota) L.push("Nota do painel: " + d.nota);
   // Carteira a receber POR CLIENTE (só SKAL) — para a Cobrança nomear devedores/críticos.
   if(key === "SKAL"){ try { L.push(""); L.push(COB.bloco()); } catch(e){} }
+  if(key === "SKAL"){ try { L.push(""); L.push(FOLHA.bloco()); } catch(e){} }
   var F = payload.FORNO;
   if(F && F.live){
     var lv=F.live, meta=(F.params&&F.params.meta)||8;
