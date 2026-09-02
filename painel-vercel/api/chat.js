@@ -138,6 +138,9 @@ async function liveContext(co, grupo){
     var lv=F.live, meta=(F.params&&F.params.meta)||8;
     L.push("");
     L.push("FORNO — CONTROLE DE AREIA E OLEO (AO VIVO, "+lv.turnos+" turnos): areia seca "+lv.areiaSeca_ton+" t; consumo medio "+ (lv.consumo_lton_medio!=null?lv.consumo_lton_medio:"s/ medicao") +" L/ton (meta "+meta+"); ultimo turno "+ (lv.consumo_lton_ultimo!=null?lv.consumo_lton_ultimo:"s/ dado") +" L/ton"+(lv.ultimo_estimado?" (estimado)":"")+"; dentro da meta "+ (lv.dentroMeta_pct!=null?lv.dentroMeta_pct+"%":"s/d") +"; preco oleo R$ "+lv.preco_litro+"/L; custo secagem R$ "+ (lv.custo_ton!=null?lv.custo_ton:"s/d") +"/ton; status "+lv.status+"; ultimo lancamento "+(lv.ultimo&&lv.ultimo.data||"")+" ("+(lv.ultimo&&lv.ultimo.turno||"")+").");
+    if(lv.porMes&&lv.porMes.length){ L.push("PRODUCAO DE AREIA SECA por mes (competencia · ton · turnos): "+lv.porMes.map(function(m){return m.competencia+" "+m.areiaSeca_ton+"t/"+m.turnos;}).join(" · ")+"."); }
+    if(lv.porDia&&lv.porDia.length){ L.push("Producao de areia seca por DIA (ultimos): "+lv.porDia.map(function(d){return d.data.slice(5)+" "+d.areiaSeca_ton+"t";}).join(" · ")+"."); }
+    L.push("LIGACAO COM O CUSTO DA AREIA: use a producao de areia seca do MES (porMes) como DENOMINADOR e o custo secagem R$/ton do forno como a SECAGEM REAL na ficha de custo da areia (matéria-prima da argamassa) — fecha o R$/ton in natura + secagem.");
   } else {
     L.push("");
     L.push("FORNO: interligado ao Radar, mas SEM dados ao vivo carregados neste momento (o app do forno pode estar sem lancamentos recentes ou a variavel de ambiente do banco nao esta ligada).");
