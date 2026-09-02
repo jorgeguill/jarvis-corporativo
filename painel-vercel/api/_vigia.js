@@ -5,6 +5,7 @@
 'use strict';
 const DATA = require('./data');
 const COB = require('./_cobranca');
+const FOLHA = require('./_folha');
 
 // Monta um retrato COMPLETO da empresa a partir dos dados já implantados.
 function contexto(coKey) {
@@ -29,6 +30,7 @@ function contexto(coKey) {
   // Carteira a receber POR CLIENTE (só SKAL) — alimenta a análise de maus
   // pagadores/clientes críticos da cadeira de Cobrança.
   if (coKey === 'SKAL') { try { L.push(''); L.push(COB.bloco()); } catch (e) {} }
+  if (coKey === 'SKAL') { try { L.push(''); L.push(FOLHA.bloco()); } catch (e) {} }
   return L.join('\n');
 }
 
