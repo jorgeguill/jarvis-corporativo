@@ -191,11 +191,11 @@ function buildData(){
            series:[{nome:'Baixado',cor:'#57b6ff',vals:[859.2,371.7,359.5,304.9,147.4,112.8,33.8]}],
            q:'Analise a carteira de representantes da SKAL em julho (base baixada R$ 2,19 mi, comissão R$ 97,7 mil = 4,46% médio): Pedro Soares sozinho é R$ 859,2 mil (39% do total, comissão 5%); os três maiores (Pedro, Klésio, Juvêncio) somam 73%. Explique a concentração no Pedro Soares, o risco de dependência de um representante, e a dispersão de comissão (3% a 5%) — vale padronizar? Priorize por reais.'}
         ],
-        entradas:{data:'26/08 · fluxo',
-          cards:[['Faturamento do dia','R$ 162,9 mil','ok'],['Entrou em conta','R$ 110,5 mil','ok'],['Resgatado','R$ 33,2 mil','ok'],['Ficou em atraso','R$ 12,0 mil','crit']],
-          graf:{tipo:'bars2',tit:'Previsão de entrada · 28/08–03/09',unid:'R$ mil',cats:['28/08','31/08','01/09','02/09','03/09'],
-            series:[{nome:'Previsto',cor:'#57b6ff',vals:[71.55,115.67,171.62,127.55,108.71]}]},
-          q:'Analise as entradas do dia 26/08 da SKAL (faturamento do dia R$ 162.855,87 — a vista Oficial 17.131,68, a vista NG 30.500,50, a prazo 115.223,69; entrou em conta R$ 110.512,03 = boletos 91.344,44 + depositos 19.167,59; previsto era 62.979,93; resgatado de inadimplencia R$ 33.182,37 — alto; ficou em atraso R$ 12.048,32 — baixo) e a previsao de entrada de 28/08 a 03/09 (28/08 71.547,92; 31/08 115.668,85; 01/09 171.623,19; 02/09 127.552,98; 03/09 108.713,65; total 595.106,59). Destaque a forte previsao do inicio de setembro (01-03/09 somam ~408 mil) e o que priorizar na cobranca.'},
+        entradas:{data:'01/09 · fluxo',
+          cards:[['Faturamento do dia','R$ 42,4 mil','aten'],['Entrou em conta','R$ 121,1 mil','ok'],['Resgatado','R$ 8,2 mil','aten'],['Ficou em atraso','R$ 23,7 mil','crit']],
+          graf:{tipo:'bars2',tit:'Previsão de entrada · 03/09–09/09',unid:'R$ mil',cats:['03/09','04/09','07/09','08/09','09/09'],
+            series:[{nome:'Previsto',cor:'#57b6ff',vals:[91.64,74.47,88.57,131.93,90.54]}]},
+          q:'Analise as entradas do dia 01/09 da SKAL (faturamento do dia R$ 42.376,80 — a vista Oficial 4.246,23, a vista NG 5.820,90, a prazo 32.309,67; entrou em conta R$ 121.079,80 = boletos 115.876,77 + depositos 5.203,03; previsto era 115.092,79; resgatado de inadimplencia R$ 8.180,24 — baixo; ficou em atraso R$ 23.690,70 — alto, atencao) e a previsao de entrada dos proximos dias (03/09 91.644,32; 04/09 74.468,57; 07/09 88.572,80; 08/09 131.929,55; 09/09 90.540,34; total 477.155,58). Destaque o pico de 08/09, e que o atraso novo (R$ 23,7 mil) superou o resgate (R$ 8,2 mil) — a inadimplencia esta subindo (todo o aumento no 0-30); priorize a cobranca do 0-30.'},
         producao:{data:'jan–ago 2026 · 1.316 ordens · marca Kalfix',
           cards:[['Produção (jan–ago)','1,54 mi sc','ok'],['Ordens (consolidadas)','1.316','ok'],['Areia consumida','17.983 t','aten'],['Cimento consumido','4.999 t','aten']],
           graf:[
