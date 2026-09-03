@@ -263,15 +263,16 @@ function buildData(){
 }
 
 // ---- PASSO 2 · overlay dos KPIs a partir do banco (Neon) ----
-// Quando DATABASE_URL existe, sobrepõe os valores dos KPIs monetários com os fatos
-// do banco (fonte única). Fallback TOTAL: sem DATABASE_URL, erro, timeout ou banco
-// vazio => mantém os literais. Com corrida de 1,5s, nunca trava o painel.
+// FONTE ÚNICA DE VERDADE = o CÓDIGO (GitHub -> Vercel). O overlay do Neon é OPT-IN:
+// só sobrepõe os KPIs quando DATA_SOURCE='neon' estiver setado — o que só deve ser
+// ligado quando o Neon estiver sendo mantido atualizado (via página de importação).
+// Por padrão o Neon NÃO sobrepõe, para não reescrever o painel com dado velho do seed.
 var FACT_KPI = { caixa:'Caixa', inadimplencia:'Inadimplência' };  // metrica -> rótulo do KPI
 function fmtBRL(v){ v=Number(v); if(!isFinite(v)) return null;
   if(Math.abs(v)>=1e6) return 'R$ '+(v/1e6).toFixed(2).replace('.',',')+' mi';
   return 'R$ '+(v/1e3).toFixed(1).replace('.',',')+' mil'; }
 async function overlayFromDB(payload){
-  if(!process.env.DATABASE_URL || process.env.DATA_SOURCE==='literals') return payload;
+  if(process.env.DATA_SOURCE!=='neon' || !process.env.DATABASE_URL) return payload;
   try{
     var neon = require('./_neon');
     var rows = await Promise.race([
