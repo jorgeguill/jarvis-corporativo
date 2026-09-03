@@ -16,7 +16,8 @@
 var HIST = [
   { data:'26/08/2026', total:797494.81, f0_30:61862.71, f31_60:82740.46, f61_90:12509.85, f90:640381.79 },
   { data:'31/08/2026', total:809620.43, f0_30:66163.99, f31_60:87732.30, f61_90:15342.35, f90:640381.79 },
-  { data:'01/09/2026', total:825130.89, f0_30:81674.45, f31_60:87732.30, f61_90:15342.35, f90:640381.79 }
+  { data:'01/09/2026', total:825130.89, f0_30:81674.45, f31_60:87732.30, f61_90:15342.35, f90:640381.79 },
+  { data:'02/09/2026', total:841991.33, f0_30:98534.89, f31_60:87732.30, f61_90:15342.35, f90:640381.79 }
 ];
 var HOJE = HIST[HIST.length-1];
 var ANT  = HIST.length>1 ? HIST[HIST.length-2] : null;
@@ -29,7 +30,7 @@ var CASOS = [
 ];
 // Operacional (tirando os 3 casos): o relatório traz R$ 526.197,63 (total − 298.933,26).
 // Há pequena inconsistência nas subtrações por faixa do relatório — DADO A CONFIRMAR o corte exato.
-var OPERACIONAL_RELATORIO = 526197.63;
+var OPERACIONAL_RELATORIO = 543058.12;
 
 // ---------- (B) CARTEIRA POR CLIENTE — snapshot 27/07/2026 ----------
 var CORTE_CART = '27/07/2026';
