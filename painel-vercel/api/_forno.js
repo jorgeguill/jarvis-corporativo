@@ -88,7 +88,7 @@ async function snapshot() {
   var prodTon = 0, porOrigem = {};
   turnos.forEach(function (t) {
     var ton = tonOf(t, P).ton; prodTon += ton;
-    var o = (t.fornecedor_areia || '—'); porOrigem[o] = (porOrigem[o] || 0) + ton;
+    var o = String(t.fornecedor_areia || '—').trim().toUpperCase().replace(/\s+/g, ' '); porOrigem[o] = (porOrigem[o] || 0) + ton;
   });
 
   // consumo específico do PERÍODO do combustível atual (desde a 1ª nota dele)
@@ -98,6 +98,13 @@ async function snapshot() {
   var mp = mediaPeriodo(atual, turnosAtual, recsAtual, P);
   var preco = precoMedio(atual, recsAtual.length ? recsAtual : recs, atual === 'gas' ? 5.60 : 2.50);
   var custoSecagemTon = (mp.cons != null) ? mp.cons * preco : null;
+  // Representatividade: um combustível recém-iniciado (poucos dias / poucas notas) tem o
+  // kg/ton distorcido — uma carga a granel diluída em pouca produção infla o consumo.
+  function diasEntre(a, b) { return (a && b) ? Math.round((new Date(b) - new Date(a)) / 86400000) : 0; }
+  var fimData = datas.length ? datas[datas.length - 1] : null;
+  var diasAtual = iniAtual ? diasEntre(iniAtual, fimData) : 0;
+  var parcial = (!iniAtual) || diasAtual < 21 || recsAtual.length < 2;
+  var custoRef = +((P.meta || 0) * preco).toFixed(2); // meta × preço = referência saudável
 
   // quebra mensal
   var meses = {};
@@ -137,8 +144,11 @@ async function snapshot() {
     producao_seca_ton: +prodTon.toFixed(1),
     producao_por_origem: origemArr,
     consumo_especifico: mp.cons != null ? +mp.cons.toFixed(2) : null, // do período do combustível atual
+    consumo_parcial: parcial,            // true = combustível recém-iniciado, número ainda não representativo
+    dias_combustivel_atual: diasAtual,
     preco_medio: +preco.toFixed(2),
     custo_secagem_ton: custoSecagemTon != null ? +custoSecagemTon.toFixed(2) : null,
+    custo_secagem_ton_referencia: custoRef, // meta × preço (usar quando o atual está parcial)
     parametros: P,
     mensal: mensal
   };
@@ -154,6 +164,7 @@ function bloco(s) {
   L.push('Produção SECA no período: ' + s.producao_seca_ton.toLocaleString('pt-BR') + ' t' + (s.producao_por_origem.length ? ' (por origem: ' + s.producao_por_origem.map(function (o) { return o.origem + ' ' + o.ton.toLocaleString('pt-BR') + ' t'; }).join('; ') + ')' : '') + '.');
   if (s.consumo_especifico != null) L.push('Consumo específico (combustível atual): ' + s.consumo_especifico.toLocaleString('pt-BR') + ' ' + uc + ' · preço médio R$ ' + s.preco_medio.toLocaleString('pt-BR') + '/' + u + ' · CUSTO DA SECAGEM ≈ R$ ' + (s.custo_secagem_ton != null ? s.custo_secagem_ton.toLocaleString('pt-BR') : '?') + '/t (só combustível).');
   else L.push('Consumo específico: sem nota suficiente no período atual para fechar — DADO A CONFIRMAR.');
+  if (s.consumo_parcial) L.push('⚠ ATENÇÃO: o combustível atual (' + nome + ') começou há ' + s.dias_combustivel_atual + ' dia(s) / poucas notas — o consumo e o custo ACIMA são PARCIAIS e NÃO representativos (carga a granel diluída em pouca produção infla o ' + uc + '). Use como referência a meta: ' + s.parametros.meta + ' ' + uc + ' × R$ ' + s.preco_medio.toLocaleString('pt-BR') + '/' + u + ' = ~R$ ' + s.custo_secagem_ton_referencia.toLocaleString('pt-BR') + '/t. Aguardar o mês fechar para o número real.');
   if (s.mensal && s.mensal.length) {
     var ult = s.mensal.slice(-3);
     L.push('Últimos meses: ' + ult.map(function (m) { return m.mes + ' (' + combLabel(m.combustivel) + '): ' + (m.consumo_esp != null ? m.consumo_esp + ' ' + m.unidade : 's/ fechar') + ', prod ' + m.producao_ton + ' t' + (m.custo_secagem_ton != null ? ', secagem R$ ' + m.custo_secagem_ton + '/t' : ''); }).join(' | ') + '.');
