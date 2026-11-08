@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>R.A.D.A.R. · Importar dados</title>
+<style>
+  :root{ --bg:#070b10; --panel:#0e141c; --line:#1e2a38; --ink:#e9f0f7; --muted:#8aa0b4; --dim:#5f7183;
+         --blue:#57b6ff; --green:#2dff8c; --red:#ff5b6e; --amber:#e6c15a; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+       -webkit-text-size-adjust:100%}
+  .wrap{max-width:640px;margin:0 auto;padding:20px 16px 60px}
+  h1{font-size:19px;margin:6px 0 2px;letter-spacing:.3px}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 18px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0}
+  label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px;text-transform:uppercase;letter-spacing:.4px}
+  input,select{width:100%;background:#0a1017;border:1px solid var(--line);color:var(--ink);border-radius:10px;
+       padding:11px 12px;font-size:16px;outline:none}
+  input:focus,select:focus{border-color:var(--blue)}
+  .row{display:flex;gap:10px}.row>div{flex:1}
+  .grid4{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  button{appearance:none;border:0;border-radius:10px;padding:12px 16px;font-size:15px;font-weight:600;cursor:pointer}
+  .primary{background:var(--green);color:#042313;width:100%;margin-top:16px}
+  .primary:disabled{opacity:.5;cursor:default}
+  .ghost{background:#141c26;color:var(--ink);border:1px solid var(--line)}
+  .tabs{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 2px}
+  .tab{flex:1;min-width:120px;text-align:center;background:#0a1017;border:1px solid var(--line);border-radius:10px;
+       padding:10px;color:var(--muted);cursor:pointer;font-weight:600;font-size:14px}
+  .tab.on{background:#122033;border-color:var(--blue);color:var(--ink)}
+  .hint{color:var(--dim);font-size:12px;margin-top:6px}
+  .msg{border-radius:10px;padding:12px 14px;margin-top:14px;font-size:14px;display:none}
+  .msg.ok{display:block;background:#0f2a1c;border:1px solid #1f6b43;color:#9ff0c2}
+  .msg.err{display:block;background:#2a1216;border:1px solid #6b1f2a;color:#ffb7c0}
+  .filebox{border:1px dashed var(--line);border-radius:10px;padding:12px;text-align:center;color:var(--muted);font-size:13px}
+  .raw{max-height:180px;overflow:auto;background:#060a0f;border:1px solid var(--line);border-radius:8px;
+       padding:8px;font:11px/1.35 ui-monospace,Menlo,monospace;color:var(--dim);white-space:pre;margin-top:8px;display:none}
+  .foot{color:var(--dim);font-size:12px;margin-top:22px;text-align:center}
+  a{color:var(--blue)}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>R.A.D.A.R. · Importar dados</h1>
+  <p class="sub">Atualize o painel subindo os relatórios reais — sem código, sem espera.</p>
+
+  <!-- LOGIN -->
+  <div id="login" class="card hidden">
+    <label>Usuário</label><input id="lu" autocomplete="username">
+    <label>Senha</label><input id="lp" type="password" autocomplete="current-password">
+    <button class="primary" id="btnLogin">Entrar</button>
+    <div id="loginMsg" class="msg"></div>
+  </div>
+
+  <!-- IMPORTADOR -->
+  <div id="app" class="hidden">
+    <div class="card">
+      <label>Relatório</label>
+      <div class="tabs" id="tabs"></div>
+      <div class="hint" id="tipoHint"></div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div><label>Empresa</label>
+          <select id="empresa"><option>SKAL</option><option>KALFIX</option><option>QUIMIKA</option><option>FCK</option></select>
+        </div>
+        <div><label>Data do retrato</label><input id="data_ref" type="date"></div>
+      </div>
+
+      <div id="fields"></div>
+
+      <label style="margin-top:16px">Arquivo (opcional · Excel/CSV do TOTVS/banco)</label>
+      <div class="filebox">
+        <input id="file" type="file" accept=".xlsx,.xls,.csv" style="border:0;background:transparent;padding:0">
+        <div class="hint">O arquivo é lido <b>no seu navegador</b> (não sai do aparelho). Ele tenta preencher os campos; confira sempre antes de salvar.</div>
+      </div>
+      <div id="raw" class="raw"></div>
+
+      <button class="primary" id="btnSave">Salvar no banco</button>
+      <div id="saveMsg" class="msg"></div>
+    </div>
+
+    <div class="foot">
+      Conectado como <b id="who">—</b> · <a href="#" id="logout">sair</a><br>
+      Grava no Neon via <code>/api/import</code>. Re-subir o mesmo relatório/data substitui (não duplica).
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+(function(){
+  var TOKKEY='radar_tok';
+  var $=function(s){return document.querySelector(s);};
+  function tok(){ try{return localStorage.getItem(TOKKEY)||'';}catch(e){return '';} }
+
+  // ---------- definição dos relatórios ----------
+  var REPORTS = {
+    inadimplencia: { nome:'Inadimplência', emp:'SKAL',
+      hint:'ACOMPCOB — total vencido + aging por faixa (0–30/31–60/61–90/+90).',
+      fields:[['total','Total inadimplência'],['f0_30','0–30 dias'],['f31_60','31–60 dias'],['f61_90','61–90 dias'],['f90','+90 dias']],
+      build:function(v){ return { kpis:[{metrica:'inadimplencia',valor:v.total,detalhe:{aging:{f0_30:v.f0_30,f31_60:v.f31_60,f61_90:v.f61_90,f90:v.f90}}}],
+                                   payload:{ total:v.total, aging:{f0_30:v.f0_30,f31_60:v.f31_60,f61_90:v.f61_90,f90:v.f90} } }; } },
+    caixa: { nome:'Caixa', emp:'SKAL',
+      hint:'Extrato BB + CEF — liquidez total e quebra por banco.',
+      fields:[['total','Liquidez total'],['bb_cc','BB conta+resgate'],['bb_cdb','BB CDB DI'],['cef','Caixa Econômica']],
+      build:function(v){ return { kpis:[{metrica:'caixa',valor:v.total,detalhe:{bancos:{bb_cc:v.bb_cc,bb_cdb:v.bb_cdb,cef:v.cef}}}],
+                                   payload:{ total:v.total, bancos:{bb_cc:v.bb_cc,bb_cdb:v.bb_cdb,cef:v.cef} } }; } },
+    carteira: { nome:'Carteira', emp:'SKAL',
+      hint:'F.CRC.01 / F.CPG.01 — total a receber e a pagar por previsão de baixa.',
+      fields:[['a_receber','A receber (total)'],['a_pagar','A pagar (total)']],
+      build:function(v){ return { kpis:[{metrica:'a_receber',valor:v.a_receber,detalhe:{}},{metrica:'a_pagar',valor:v.a_pagar,detalhe:{}}],
+                                   payload:{ a_receber:v.a_receber, a_pagar:v.a_pagar, liquido:(v.a_receber||0)-(v.a_pagar||0) } }; } },
+    folha: { nome:'Folha', emp:'SKAL',
+      hint:'Extrato da folha — líquido e encargos (INSS+FGTS). Escolha a empresa certa.',
+      fields:[['liquido','Folha líquida'],['encargos','Encargos (INSS+FGTS)']],
+      build:function(v){ return { kpis:[{metrica:'folha_liquida',valor:v.liquido,detalhe:{encargos:v.encargos}}],
+                                   payload:{ liquido:v.liquido, encargos:v.encargos } }; } }
+  };
+  var ORDER=['inadimplencia','caixa','carteira','folha'];
+  var cur='inadimplencia';
+
+  // ---------- helpers de número BR ----------
+  function brNum(s){ if(s===''||s==null) return null;
+    var t=String(s).replace(/[^\d,.\-]/g,'');
+    if(t.indexOf(',')>=0){ t=t.replace(/\./g,'').replace(',','.'); }   // 3.573.810,19
+    var n=Number(t); return isFinite(n)?n:null; }
+
+  // ---------- UI ----------
+  function renderTabs(){
+    var h=''; ORDER.forEach(function(k){ h+='<div class="tab'+(k===cur?' on':'')+'" data-k="'+k+'">'+REPORTS[k].nome+'</div>'; });
+    $('#tabs').innerHTML=h;
+    [].forEach.call(document.querySelectorAll('.tab'),function(el){ el.onclick=function(){ cur=el.getAttribute('data-k'); renderTabs(); renderFields(); }; });
+    $('#tipoHint').textContent=REPORTS[cur].hint;
+  }
+  function renderFields(){
+    var r=REPORTS[cur], h='<div class="grid4">';
+    r.fields.forEach(function(f){ h+='<div><label>'+f[1]+'</label><input data-f="'+f[0]+'" inputmode="decimal" placeholder="0,00"></div>'; });
+    h+='</div>';
+    $('#fields').innerHTML=h;
+    $('#empresa').value = r.emp;
+    $('#saveMsg').className='msg';
+  }
+  function collect(){
+    var v={}; [].forEach.call(document.querySelectorAll('#fields input'),function(el){ v[el.getAttribute('data-f')]=brNum(el.value); });
+    return v;
+  }
+
+  // ---------- auto-preenchimento best-effort do arquivo ----------
+  function flatten(aoa){ return aoa.map(function(r){ return (r||[]).join('  '); }).join('\n'); }
+  function findNum(text, patterns){
+    for(var i=0;i<patterns.length;i++){ var m=text.match(patterns[i]); if(m){ var n=brNum(m[1]); if(n!=null) return n; } }
+    return null;
+  }
+  function autofill(text){
+    var set=function(f,val){ if(val==null) return; var el=document.querySelector('#fields input[data-f="'+f+'"]'); if(el&&!el.value) el.value=String(val).replace('.',','); };
+    var T=text.replace(/\r/g,'');
+    if(cur==='inadimplencia'){
+      set('total', findNum(T,[/TOTAL[^\n]*?([\d.]+,\d{2})/i]));
+    } else if(cur==='carteira'){
+      set('a_receber', findNum(T,[/TOTAL DA FILIAL[^\n]*?([\d.]+,\d{2})/i,/TOTAL GERAL[^\n]*?([\d.]+,\d{2})/i]));
+    } else {
+      // caixa/folha: tenta o último "total"
+      set('total', findNum(T,[/TOTAL[^\n]*?([\d.]+,\d{2})/i]));
+      set('liquido', findNum(T,[/L[ÍI]QUIDO[^\n]*?([\d.]+,\d{2})/i]));
+    }
+  }
+  $('#file').onchange=function(e){
+    var f=e.target.files[0]; if(!f) return;
+    var rd=new FileReader();
+    rd.onload=function(ev){
+      try{
+        var wb=XLSX.read(ev.target.result,{type:'array'});
+        var ws=wb.Sheets[wb.SheetNames[0]];
+        var aoa=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});
+        var text=flatten(aoa);
+        var raw=$('#raw'); raw.style.display='block'; raw.textContent=aoa.slice(0,40).map(function(r){return (r||[]).join(' | ');}).join('\n');
+        autofill(text);
+        flash($('#saveMsg'),'ok','Arquivo lido ("'+f.name+'"). Confira os valores preenchidos antes de salvar.');
+        window.__fonte=f.name;
+      }catch(err){ flash($('#saveMsg'),'err','Não consegui ler o arquivo — digite os valores na mão. ('+String(err).slice(0,80)+')'); }
+    };
+    rd.readAsArrayBuffer(f);
+  };
+
+  // ---------- salvar ----------
+  function flash(el,kind,txt){ el.className='msg '+kind; el.textContent=txt; }
+  $('#btnSave').onclick=function(){
+    var r=REPORTS[cur], v=collect(), built=r.build(v);
+    // validação mínima: o 1º KPI precisa de valor
+    if(built.kpis[0].valor==null) return flash($('#saveMsg'),'err','Preencha ao menos o valor principal ('+r.fields[0][1]+').');
+    var body={ empresa:$('#empresa').value, tipo:cur, data_ref:$('#data_ref').value, kpis:built.kpis, payload:built.payload, fonte:window.__fonte||'' };
+    $('#btnSave').disabled=true; flash($('#saveMsg'),'ok','Gravando…');
+    fetch('/api/import',{ method:'POST', headers:{'content-type':'application/json','x-radar-auth':tok()}, body:JSON.stringify(body) })
+      .then(function(r){ return r.json(); })
+      .then(function(j){ $('#btnSave').disabled=false;
+        if(j.ok){ flash($('#saveMsg'),'ok','✅ '+j.msg+' O painel passa a mostrar no próximo carregamento (com DATA_SOURCE=neon).'); }
+        else if(j.auth){ flash($('#saveMsg'),'err','Sessão expirada — recarregue e faça login.'); showLogin(); }
+        else { flash($('#saveMsg'),'err','⚠️ '+(j.erro||'Falha desconhecida.')); } })
+      .catch(function(e){ $('#btnSave').disabled=false; flash($('#saveMsg'),'err','Erro de rede: '+String(e).slice(0,80)); });
+  };
+
+  // ---------- login ----------
+  function showApp(user){ $('#login').classList.add('hidden'); $('#app').classList.remove('hidden'); $('#who').textContent=user||'(sessão)';
+    renderTabs(); renderFields(); $('#data_ref').value=new Date().toISOString().slice(0,10); }
+  function showLogin(){ $('#app').classList.add('hidden'); $('#login').classList.remove('hidden'); }
+  $('#btnLogin').onclick=function(){
+    var u=$('#lu').value.trim(), p=$('#lp').value;
+    fetch('/api/login',{ method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({user:u,pass:p}) })
+      .then(function(r){return r.json();})
+      .then(function(j){ if(j.token){ try{localStorage.setItem(TOKKEY,j.token);}catch(e){} showApp(j.user); }
+        else if(j.auth===false){ showApp('(sem senha)'); }   // app sem RADAR_USERS configurado
+        else { flash($('#loginMsg'),'err','Usuário ou senha inválidos.'); } })
+      .catch(function(e){ flash($('#loginMsg'),'err','Erro de rede: '+String(e).slice(0,80)); });
+  };
+  $('#logout').onclick=function(e){ e.preventDefault(); try{localStorage.removeItem(TOKKEY);}catch(_){ } showLogin(); };
+
+  // ---------- boot: se já há token, tenta direto; valida com /api/import OPTIONS-like ----------
+  if(tok()){ showApp(''); } else { showLogin(); }
+})();
+</script>
+</body>
+</html>
