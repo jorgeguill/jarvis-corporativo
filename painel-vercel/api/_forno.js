@@ -40,6 +40,7 @@ function tonOf(t, P) { var m3u = num(t.m3_umida); if (!m3u) { var c = turnoConch
 function byDate(a, b) { var x = a && a.data || '', y = b && b.data || ''; return x < y ? -1 : (x > y ? 1 : 0); }
 function combDaData(data, recs) {
   if (data && data < OLEO_ATE) return 'oleo';
+  if (data && data >= GAS_DESDE) return 'gas'; // virada real da secagem p/ gás (espelho do piso de óleo)
   var rs = recs.filter(function (r) { return r && r.data && r.data <= data; }).slice().sort(byDate);
   return rs.length ? recebComb(rs[rs.length - 1]) : 'oleo';
 }
