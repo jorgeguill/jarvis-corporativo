@@ -25,6 +25,11 @@ async function jget(url, ms){
 }
 function asList(v){ if(!v) return []; if(Array.isArray(v)) return v.filter(Boolean); return Object.keys(v).map(function(k){ return v[k]; }).filter(Boolean); }
 async function fetchForno(){
+  // Gás-aware, ao vivo: delega ao _forno.js. Mantém o shape {url, params, live} que buildData()/chat.js consomem.
+  try { return await require('./_forno').live(); }
+  catch(e){ return { url: process.env.FORNO_URL||'', params:{meta:5,umidade:8,densidade:1.5,tolerancia:15,concha_m3:2.1}, live:null }; }
+}
+var _fetchFornoLegacy = async function(){
   var base = (process.env.FORNO_DB_URL||'').replace(/\/+$/,'');
   var out = { url: process.env.FORNO_URL||'', params:{meta:8,umidade:8,densidade:1.5,tolerancia:15,concha_m3:2.1}, live:null };
   if(!base) return out;

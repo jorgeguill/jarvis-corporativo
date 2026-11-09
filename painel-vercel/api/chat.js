@@ -135,14 +135,15 @@ async function liveContext(co, grupo){
   if(key === "SKAL"){ try { L.push(""); L.push(AREIA.bloco()); } catch(e){} }
   var F = payload.FORNO;
   if(F && F.live){
-    var lv=F.live, meta=(F.params&&F.params.meta)||8;
+    var lv=F.live, meta=(F.params&&F.params.meta)||5, comb=lv.combustivel||'gas', uc=lv.unidade_consumo||'kg/ton', uq=lv.unidade_qtd||'kg';
     L.push("");
-    L.push("CUSTO DA AREIA SECA (do forno) — no RADAR o forno entra APENAS como o custo da areia seca, matéria-prima da argamassa; NÃO como painel operacional. Do forno (ao vivo): produção seca acumulada "+lv.areiaSeca_ton+" t; custo de SECAGEM R$ "+ (lv.custo_ton!=null?lv.custo_ton:"s/d") +"/ton (óleo R$ "+lv.preco_litro+"/L). O controle operacional (L/ton por turno, meta, dentro da meta, paradas, status) fica no Painel do Forno — não trazer isso aqui.");
-    if(lv.porMes&&lv.porMes.length){ L.push("Produção de areia seca por MÊS (competência · ton) — é o DENOMINADOR do R$/ton: "+lv.porMes.map(function(m){return m.competencia+" "+m.areiaSeca_ton+"t";}).join(" · ")+"."); }
-    L.push("FECHAR O R$/ton DA AREIA SECA: (in natura do mês, da ficha de custo da areia) + (secagem = custo secagem R$/ton do forno), ÷ a produção seca do mês. Esse R$/ton × (kg de areia por saco ÷ 1000) entra no custo da argamassa. Só falar do forno como CUSTO da areia — nada de operação.");
+    L.push("CUSTO DA AREIA SECA (do forno) — no RADAR o forno entra APENAS como o custo da areia seca, matéria-prima da argamassa; NÃO como painel operacional. Do forno (AO VIVO): combustível atual "+comb+"; produção seca acumulada "+lv.areiaSeca_ton+" t; consumo da secagem "+(lv.consumo!=null?(lv.consumo+" "+uc+(lv.consumo_mes?" (ref. "+lv.consumo_mes+")":"")):"s/d")+"; CUSTO DE SECAGEM R$ "+(lv.custo_ton!=null?lv.custo_ton:"s/d")+"/ton (preço R$ "+lv.preco+"/"+uq+"). O controle operacional (consumo por turno, meta, paradas, status) fica no Painel do Forno — não trazer aqui.");
+    if(lv.parcial){ L.push("Obs.: o combustível atual é recente; o custo da secagem usa o mês fechado mais recente como referência e fecha de vez com o medidor de gás por turno."); }
+    if(lv.porMes&&lv.porMes.length){ L.push("Produção de areia seca por MÊS (competência · ton · combustível) — DENOMINADOR do R$/ton: "+lv.porMes.map(function(m){return m.competencia+" "+m.areiaSeca_ton+"t ("+(m.combustivel||"")+")";}).join(" · ")+"."); }
+    L.push("FECHAR O R$/ton DA AREIA SECA: (in natura do mês, da ficha de custo da areia) + (secagem = custo secagem R$/ton do forno acima), ÷ a produção seca do mês. Esse R$/ton × (kg de areia por saco ÷ 1000) entra no custo da argamassa. Só falar do forno como CUSTO da areia — nada de operação.");
   } else {
     L.push("");
-    L.push("CUSTO DA AREIA SECA: o custo vindo do forno NÃO está carregado ao vivo (FORNO_DB_URL não ligado). Use a ficha de custo da areia (in natura jun/26) e marque a secagem e o denominador (ton seca do mês) como A APURAR. Trate o forno só como custo da areia seca, não como painel operacional.");
+    L.push("CUSTO DA AREIA SECA: o custo vindo do forno não está disponível agora. Use a ficha de custo da areia (in natura) e marque a secagem e o denominador (ton seca do mês) como A APURAR. Trate o forno só como custo da areia seca, não como painel operacional.");
   }
   return L.join("\n");
 }

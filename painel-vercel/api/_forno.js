@@ -77,7 +77,8 @@ async function snapshot() {
     umidade: isFinite(Number(pm.umidade)) && pm.umidade !== '' ? Number(pm.umidade) : DEFAULT.umidade,
     densidade: isFinite(Number(pm.densidade)) && pm.densidade !== '' ? Number(pm.densidade) : DEFAULT.densidade,
     concha_m3: isFinite(Number(pm.concha_m3)) && pm.concha_m3 !== '' ? Number(pm.concha_m3) : DEFAULT.concha_m3,
-    meta: isFinite(Number(pm.meta)) && pm.meta !== '' ? Number(pm.meta) : DEFAULT.meta
+    meta: isFinite(Number(pm.meta)) && pm.meta !== '' ? Number(pm.meta) : DEFAULT.meta,
+    tolerancia: isFinite(Number(pm.tolerancia)) && pm.tolerancia !== '' ? Number(pm.tolerancia) : 15
   };
   if (!turnos.length && !recs.length) {
     return { ok: false, fonte: 'Painel do Forno (Firebase)', msg: 'conectou, mas sem dados (turnos/recebimentos vazios ou sem leitura)' };
@@ -134,6 +135,17 @@ async function snapshot() {
 
   var origemArr = Object.keys(porOrigem).map(function (o) { return { origem: o, ton: +porOrigem[o].toFixed(1) }; }).sort(function (a, b) { return b.ton - a.ton; });
 
+  // Representativo: último mês do combustível atual com consumo real (número estável p/ o Conselho);
+  // evita o headline do período acumulado, distorcido por carga de gás a granel (recebido ≠ queimado).
+  var representativo = null;
+  for (var ri = mensal.length - 1; ri >= 0; ri--) {
+    if (mensal[ri].combustivel === atual && mensal[ri].consumo_esp != null) {
+      var mr = mensal[ri];
+      representativo = { mes: mr.mes, combustivel: mr.combustivel, unidade: mr.unidade, consumo_esp: mr.consumo_esp, preco: mr.preco, custo_secagem_ton: mr.custo_secagem_ton };
+      break;
+    }
+  }
+
   return {
     ok: true,
     fonte: 'Painel do Forno (Firebase)',
@@ -151,6 +163,7 @@ async function snapshot() {
     preco_medio: +preco.toFixed(2),
     custo_secagem_ton: custoSecagemTon != null ? +custoSecagemTon.toFixed(2) : null,
     custo_secagem_ton_referencia: custoRef, // meta × preço (usar quando o atual está parcial)
+    representativo: representativo,          // último mês do combustível atual com consumo real
     parametros: P,
     mensal: mensal
   };
@@ -164,9 +177,11 @@ function bloco(s) {
   L.push('PAINEL DO FORNO — DADOS AO VIVO (usina de areia; fonte do custo de secagem e da produção seca):');
   L.push('Combustível atual: ' + nome + '. Período com dados: ' + (s.periodo.ini || '?') + ' a ' + (s.periodo.fim || '?') + '. Turnos: ' + s.turnos + ' · Abastecimentos: ' + s.recebimentos + '.');
   L.push('Produção SECA no período: ' + s.producao_seca_ton.toLocaleString('pt-BR') + ' t' + (s.producao_por_origem.length ? ' (por origem: ' + s.producao_por_origem.map(function (o) { return o.origem + ' ' + o.ton.toLocaleString('pt-BR') + ' t'; }).join('; ') + ')' : '') + '.');
-  if (s.consumo_especifico != null) L.push('Consumo específico (combustível atual): ' + s.consumo_especifico.toLocaleString('pt-BR') + ' ' + uc + ' · preço médio R$ ' + s.preco_medio.toLocaleString('pt-BR') + '/' + u + ' · CUSTO DA SECAGEM ≈ R$ ' + (s.custo_secagem_ton != null ? s.custo_secagem_ton.toLocaleString('pt-BR') : '?') + '/t (só combustível).');
-  else L.push('Consumo específico: sem nota suficiente no período atual para fechar — DADO A CONFIRMAR.');
-  if (s.consumo_parcial) L.push('⚠ ATENÇÃO: o combustível atual (' + nome + ') começou há ' + s.dias_combustivel_atual + ' dia(s) / poucas notas — o consumo e o custo ACIMA são PARCIAIS e NÃO representativos (carga a granel diluída em pouca produção infla o ' + uc + '). Use como referência a meta: ' + s.parametros.meta + ' ' + uc + ' × R$ ' + s.preco_medio.toLocaleString('pt-BR') + '/' + u + ' = ~R$ ' + s.custo_secagem_ton_referencia.toLocaleString('pt-BR') + '/t. Aguardar o mês fechar para o número real.');
+  var rep = s.representativo;
+  if (rep) L.push('Consumo da secagem — REFERÊNCIA (mês mais recente fechado ' + rep.mes + ', ' + nome + '): ' + rep.consumo_esp.toLocaleString('pt-BR') + ' ' + uc + ' · preço R$ ' + s.preco_medio.toLocaleString('pt-BR') + '/' + u + ' · CUSTO DA SECAGEM ≈ R$ ' + (rep.custo_secagem_ton != null ? rep.custo_secagem_ton.toLocaleString('pt-BR') : '?') + '/t (só combustível). USE ESTE número como custo da secagem.');
+  if (s.consumo_especifico != null) L.push('Período acumulado (' + (s.periodo.ini || '?') + '–' + (s.periodo.fim || '?') + '): ' + s.consumo_especifico.toLocaleString('pt-BR') + ' ' + uc + ' (R$ ' + (s.custo_secagem_ton != null ? s.custo_secagem_ton.toLocaleString('pt-BR') : '?') + '/t) — pode distorcer quando há estoque de gás a granel (recebido ≠ queimado). Fecha de vez com o medidor de gás por turno.');
+  if (!rep && s.consumo_especifico == null) L.push('Consumo da secagem: sem nota suficiente para fechar — DADO A CONFIRMAR; referência pela meta R$ ' + s.custo_secagem_ton_referencia.toLocaleString('pt-BR') + '/t.');
+  if (s.consumo_parcial && !rep) L.push('⚠ o combustível atual começou há ' + s.dias_combustivel_atual + ' dia(s) / poucas notas — número parcial; usar a referência da meta ' + s.parametros.meta + ' ' + uc + ' = ~R$ ' + s.custo_secagem_ton_referencia.toLocaleString('pt-BR') + '/t.');
   if (s.mensal && s.mensal.length) {
     var ult = s.mensal.slice(-3);
     L.push('Últimos meses: ' + ult.map(function (m) { return m.mes + ' (' + combLabel(m.combustivel) + '): ' + (m.consumo_esp != null ? m.consumo_esp + ' ' + m.unidade : 's/ fechar') + ', prod ' + m.producao_ton + ' t' + (m.custo_secagem_ton != null ? ', secagem R$ ' + m.custo_secagem_ton + '/t' : ''); }).join(' | ') + '.');
@@ -218,4 +233,33 @@ async function auditoria(desde) {
   };
 }
 
-module.exports = { snapshot: snapshot, bloco: bloco, auditoria: auditoria, FORNO_DB: FORNO_DB, GAS_DESDE: GAS_DESDE };
+// Adapter p/ o shape {url, params, live} que data.js/chat.js já consomem — porém GÁS-AWARE.
+// custo_ton/consumo usam o REPRESENTATIVO (mês fechado), não o período acumulado distorcido.
+async function live() {
+  var s;
+  try { s = await snapshot(); } catch (e) { s = { ok: false, msg: String(e && e.message || e).slice(0, 160) }; }
+  var out = { url: process.env.FORNO_URL || '', params: { meta: 5, umidade: 8, densidade: 1.5, tolerancia: 15, concha_m3: 2.1 }, live: null };
+  if (!s || !s.ok) { out.msg = (s && s.msg) || 'forno indisponível'; return out; }
+  var rep = s.representativo;
+  var custoRep = (rep && rep.custo_secagem_ton != null) ? rep.custo_secagem_ton
+               : (s.consumo_parcial ? s.custo_secagem_ton_referencia : s.custo_secagem_ton);
+  out.params = { meta: s.parametros.meta, umidade: s.parametros.umidade, densidade: s.parametros.densidade, tolerancia: s.parametros.tolerancia, concha_m3: s.parametros.concha_m3 };
+  out.live = {
+    combustivel: s.combustivel_atual,
+    unidade_consumo: s.unidade_consumo,
+    unidade_qtd: unidadeQtd(s.combustivel_atual),
+    areiaSeca_ton: s.producao_seca_ton,
+    consumo: rep ? rep.consumo_esp : s.consumo_especifico,
+    consumo_mes: rep ? rep.mes : null,
+    consumo_periodo: s.consumo_especifico,
+    parcial: s.consumo_parcial,
+    preco: s.preco_medio,
+    custo_ton: (custoRep != null) ? +Number(custoRep).toFixed(2) : null,
+    custo_ton_periodo: s.custo_secagem_ton,
+    turnos: s.turnos, recebimentos: s.recebimentos,
+    porMes: (s.mensal || []).map(function (m) { return { competencia: m.mes, combustivel: m.combustivel, areiaSeca_ton: m.producao_ton, consumo: m.consumo_esp, custo_ton: m.custo_secagem_ton }; })
+  };
+  return out;
+}
+
+module.exports = { snapshot: snapshot, bloco: bloco, auditoria: auditoria, live: live, FORNO_DB: FORNO_DB, GAS_DESDE: GAS_DESDE };

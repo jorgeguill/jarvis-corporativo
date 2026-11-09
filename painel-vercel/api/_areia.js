@@ -50,7 +50,7 @@ function bloco(){
   L.push('CUSTO DA AREIA SECA — MATÉRIA-PRIMA PRINCIPAL DA ARGAMASSA (competência '+COMPETENCIA+') — use nas cadeiras de Produção, Controladoria e Suprimentos:');
   L.push('A areia seca sai do forno e é o maior componente do custo por saco da argamassa. Custeia-se só o que foi SECO no período (não o comprado); mistura Assis+Skal nos silos = média ponderada.');
   L.push('(A) IN NATURA jun/26 (REAL): ' + IN_NATURA.map(function(o){ return o.origem+' '+mil(o.custo)+' ('+o.base+')'; }).join('; ') + '. Total in natura = '+mil(IN_NATURA_TOTAL)+'.');
-  L.push('(B) SECAGEM (óleo): '+SECAGEM.status+'. Estimativa na meta: '+SECAGEM.meta_l_ton+' L/ton × R$ '+SECAGEM.preco_oleo_l.toFixed(2)+'/L = ~R$ '+SECAGEM.custo_ton_estimado_meta.toFixed(2)+'/ton (só combustível).');
+  L.push('(B) SECAGEM: o custo da secagem (combustível) e a produção seca do período vêm AO VIVO do Painel do Forno — ver o bloco "PAINEL DO FORNO — DADOS AO VIVO" (combustível atual, consumo em kg/ton ou L/ton, R$/ton). Use AQUELES números; a antiga estimativa de óleo (8 L/ton × R$ 1,30) está OBSOLETA (a usina secava a óleo até 17/10 e passou a GÁS em 18/10).');
   L.push('(C) Parâmetros: umidade '+PARAMS.umidade_pct+'% · densidade seca '+PARAMS.densidade_seca_ton_m3+' t/m³ (conversão m³ úmida -> ton seca).');
   L.push('A APURAR (sem isso NÃO há R$/ton fechado): ' + A_APURAR.join('; ') + '.');
   L.push('REGRA: NÃO apresentar um R$/ton final como fechado — faltam o denominador (ton seca do mês) e os itens acima. Ao ligar na argamassa: custo da areia por saco = (R$/ton da areia seca) × (kg de areia por saco ÷ 1000) — a formulação (kg areia/saco) é DADO A CONFIRMAR.');
