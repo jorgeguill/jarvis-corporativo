@@ -8,6 +8,7 @@
 
 var FORNO_DB = process.env.FORNO_DB_URL || 'https://painel-forno-default-rtdb.firebaseio.com';
 var OLEO_ATE = '2026-09-15'; // turnos/datas antes disto = óleo por padrão (mesmo piso do Painel)
+var GAS_DESDE = '2026-10-18'; // virada real da secagem para gás (confirmada pelo Jorge) — usada só na auditoria
 var DEFAULT = { umidade: 8, densidade: 1.5, concha_m3: 2.1, meta: 5 };
 
 // ---- util ----
@@ -173,4 +174,47 @@ function bloco(s) {
   return L.join('\n');
 }
 
-module.exports = { snapshot: snapshot, bloco: bloco, FORNO_DB: FORNO_DB };
+// AUDITORIA registro a registro — para achar abastecimentos de gás lançados como óleo
+// no período da virada (gás desde 18/10). Lista os recebimentos desde `desde` e, por mês,
+// quantos turnos estão marcados gás / óleo / sem combustível.
+async function auditoria(desde) {
+  desde = desde || '2026-09-01';
+  var raw;
+  try {
+    var r = await Promise.all([getJSON('/turnos'), getJSON('/recebimentos')]);
+    raw = { turnos: r[0], recebimentos: r[1] };
+  } catch (e) {
+    return { ok: false, fonte: 'Painel do Forno (Firebase)', msg: String(e && e.message || e).slice(0, 160) };
+  }
+  var turnos = toArr(raw.turnos).filter(function (t) { return t && t.data; });
+  var recs = toArr(raw.recebimentos).filter(function (r) { return r && r.data; });
+
+  var lista = recs.filter(function (r) { return r.data >= desde; }).slice().sort(byDate).map(function (r) {
+    var c = recebComb(r), q = recebQtd(r), p = recebPreco(r);
+    var suspeito = (c === 'oleo' && r.data >= GAS_DESDE); // de 18/10 em diante, óleo é provável gás mal lançado
+    return {
+      data: r.data, hora: r.hora || '', combustivel: c, qtd: +q.toFixed(1), unidade: unidadeQtd(c),
+      preco: p != null ? +p.toFixed(2) : null, fornecedor: r.fornecedor || '', suspeito: suspeito
+    };
+  });
+
+  var porMes = {};
+  turnos.filter(function (t) { return t.data >= desde; }).forEach(function (t) {
+    var k = mes(t.data); var b = porMes[k] = porMes[k] || { mes: k, gas_tag: 0, oleo_tag: 0, sem_tag: 0, sem_tag_apos_gas: 0 };
+    if (t.combustivel === 'gas') b.gas_tag++;
+    else if (t.combustivel === 'oleo') b.oleo_tag++;
+    else { b.sem_tag++; if (t.data >= GAS_DESDE) b.sem_tag_apos_gas++; }
+  });
+  var turnosPorMes = Object.keys(porMes).sort().map(function (k) { return porMes[k]; });
+
+  var nSus = lista.filter(function (x) { return x.suspeito; }).length;
+  return {
+    ok: true, fonte: 'Painel do Forno (Firebase)', desde: desde, gas_desde: GAS_DESDE,
+    recebimentos_total: recs.length, recebimentos_desde: lista.length, suspeitos: nSus,
+    nota: 'suspeito=true: recebimento marcado ÓLEO com data ≥ ' + GAS_DESDE + ' (virada do gás) — provável gás lançado como óleo; re-etiquetar como Gás (kg) no admin. "sem_tag_apos_gas": turnos de ' + GAS_DESDE + ' em diante sem combustível marcado (classificados pela linha do tempo).',
+    recebimentos: lista,
+    turnos_por_mes: turnosPorMes
+  };
+}
+
+module.exports = { snapshot: snapshot, bloco: bloco, auditoria: auditoria, FORNO_DB: FORNO_DB, GAS_DESDE: GAS_DESDE };
