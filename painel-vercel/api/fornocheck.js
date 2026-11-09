@@ -13,7 +13,10 @@ module.exports = async (req, res) => {
     var u = new URL(req.url, 'http://x');
     var det = u.searchParams.get('detalhe');
     var audit = u.searchParams.get('audit');
-    var out = (det || audit) ? await forno.auditoria(det || undefined) : await forno.snapshot();
+    var liveQ = u.searchParams.get('live');
+    var out = liveQ ? await forno.live()
+            : (det || audit) ? await forno.auditoria(det || undefined)
+            : await forno.snapshot();
     res.statusCode = 200;
     return res.end(JSON.stringify(out, null, 2));
   } catch (e) {

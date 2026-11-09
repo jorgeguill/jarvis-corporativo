@@ -40,7 +40,7 @@ module.exports = async (req, res) => {
   var q = (u.searchParams.get('q')||'').slice(0,600).trim();
   if (!q) return send(res, 200, { pergunta:'', turnos:[], erro:'sem_pergunta' });
 
-  var ctx = vigia.contexto('SKAL');
+  var ctx = await vigia.contextoAoVivo('SKAL');
   var BASE = ESP.CABECALHO + '\n\n=== SITUACAO REAL DA SKAL (dados do painel) ===\n' + ctx + '\n\n';
 
   // Um PAINEL de várias cadeiras numa ÚNICA chamada (economiza chamadas e cota do

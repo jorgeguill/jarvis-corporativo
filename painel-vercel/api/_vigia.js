@@ -36,6 +36,18 @@ function contexto(coKey) {
   return L.join('\n');
 }
 
+// Versão AO VIVO do contexto: o estático + o bloco do Painel do Forno em tempo real
+// (Firebase, via _forno). Defensivo: se o forno não responder, cai no contexto estático.
+async function contextoAoVivo(coKey) {
+  var base = contexto(coKey);
+  try {
+    var F = require('./_forno');
+    var s = await F.snapshot();
+    base += '\n\n' + F.bloco(s);
+  } catch (e) {}
+  return base;
+}
+
 var AI = require('./_ai');
 
 // Usa a camada única de IA (Gemini com fallback de modelo + Anthropic).
@@ -54,7 +66,7 @@ function parse(txt) {
 
 // Roda o scan de uma empresa e devolve a lista de achados (objetos).
 async function scan(coKey) {
-  var ctx = contexto(coKey || 'SKAL');
+  var ctx = await contextoAoVivo(coKey || 'SKAL');
   var prompt =
     'Voce e o VIGIA do R.A.D.A.R., analista senior da diretoria. Abaixo esta TODA a situacao atual da empresa, com dados reais. ' +
     'Sua tarefa: revisar o conjunto inteiro e listar os pontos que a diretoria precisa ver HOJE — riscos, desembolsos futuros, anomalias, ' +
@@ -69,4 +81,4 @@ async function scan(coKey) {
   return parse(txt).slice(0, 10);
 }
 
-module.exports = { scan: scan, contexto: contexto };
+module.exports = { scan: scan, contexto: contexto, contextoAoVivo: contextoAoVivo };
